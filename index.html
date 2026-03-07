@@ -1009,6 +1009,7 @@
                 <button class="app-tab active" data-tab="tippning" onclick="window.switchTab('tippning')">🎯 Tippa</button>
                 <button class="app-tab" data-tab="matcher" onclick="window.switchTab('matcher')">📅 Matcher</button>
                 <button class="app-tab" data-tab="topplista" onclick="window.switchTab('topplista')">🏆 Topplista</button>
+                <button class="app-tab" data-tab="regler" onclick="window.switchTab('regler')">📋 Regler</button>
                 <button class="app-tab" id="adminTab" data-tab="admin" style="display:none" onclick="window.switchTab('admin')">⚙️ Admin</button>
             </div>
         </div>
@@ -1063,6 +1064,88 @@
                                 <tr><td colspan="6" style="text-align:center;color:#9ca3af;padding:24px;">Laddar...</td></tr>
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Regler -->
+            <div id="tab-regler" class="tab-content" style="display:none">
+                <div class="app-card">
+                    <div class="app-card-title">📋 Regler &amp; Poängsystem</div>
+
+                    <div style="display:flex;flex-direction:column;gap:18px;margin-top:4px;">
+
+                        <!-- Tippa -->
+                        <div>
+                            <div style="font-weight:700;color:#1e2535;margin-bottom:6px;">🎯 Så här tippar du</div>
+                            <div style="font-size:.88em;color:#4a5568;line-height:1.6;">
+                                Välj vilket lag du tror vinner varje match – eller om det blir oavgjort (X).
+                                Du kan också tippa exakt slutresultat för bonuspoäng.
+                                Ditt tips låses när spelets deadline passerat – du kan inte ändra efteråt.
+                            </div>
+                        </div>
+
+                        <!-- Poäng -->
+                        <div style="background:#f8fafc;border-radius:10px;padding:14px;">
+                            <div style="font-weight:700;color:#1e2535;margin-bottom:10px;">🏅 Poängberäkning</div>
+                            <div style="font-size:.85em;color:#4a5568;line-height:1.7;">
+                                Poängen är <strong>dynamiska</strong> – ju färre som gissar rätt, desto mer är poängen värda.
+                            </div>
+                            <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px;">
+                                <div style="background:white;border:1px solid #dde3ec;border-radius:8px;padding:10px 12px;">
+                                    <div style="font-size:.8em;font-weight:700;color:#d4930a;margin-bottom:2px;">RÄTT 1X2-TIPS</div>
+                                    <div style="font-size:.85em;color:#374151;">0–100 poäng beroende på hur många som tippade samma</div>
+                                    <div style="font-size:.78em;color:#6b7280;margin-top:3px;">Ensam rätt = 100p &nbsp;·&nbsp; Hälften rätt = 50p &nbsp;·&nbsp; Alla rätt = 0p</div>
+                                </div>
+                                <div style="background:white;border:1px solid #dde3ec;border-radius:8px;padding:10px 12px;">
+                                    <div style="font-size:.8em;font-weight:700;color:#8b5cf6;margin-bottom:2px;">EXAKT SLUTRESULTAT 🔮</div>
+                                    <div style="font-size:.85em;color:#374151;">+50 bonuspoäng om du gissade rätt exakt resultat</div>
+                                    <div style="font-size:.78em;color:#6b7280;margin-top:3px;">Kombineras med 1X2-poängen ovan</div>
+                                </div>
+                                <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:10px 12px;">
+                                    <div style="font-size:.8em;font-weight:700;color:#92400e;margin-bottom:2px;">EXEMPEL</div>
+                                    <div style="font-size:.85em;color:#374151;">4 spelare, 1 gissar rätt → 100p. 2 gissar rätt → 67p. 3 gissar rätt → 33p. 4 gissar rätt → 0p.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Titlar -->
+                        <div>
+                            <div style="font-weight:700;color:#1e2535;margin-bottom:8px;">🏆 Titlar på topplistan</div>
+                            <div style="display:flex;flex-direction:column;gap:6px;">
+                                <div class="title-chip title-chip-sniper" style="margin-bottom:0;padding:10px 14px;">
+                                    <div class="title-chip-header">🎯 Sniper</div>
+                                    <div style="font-size:.85em;margin-top:2px;">Spelaren med flest soloträffar – dvs. ensam om att tippa rätt på en match.</div>
+                                </div>
+                                <div class="title-chip title-chip-nostradamus" style="margin-bottom:0;padding:10px 14px;">
+                                    <div class="title-chip-header">🔮 Nostradamus</div>
+                                    <div style="font-size:.85em;margin-top:2px;">Spelaren med flest korrekta exakta resultat.</div>
+                                </div>
+                                <div class="title-chip title-chip-unicorn" style="margin-bottom:0;padding:10px 14px;">
+                                    <div class="title-chip-header">🦄 Unicorn</div>
+                                    <div style="font-size:.85em;margin-top:2px;">Spelaren som ensam tippat rätt 1X2 <em>och</em> exakt resultat på samma match.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Deadline -->
+                        <div>
+                            <div style="font-weight:700;color:#1e2535;margin-bottom:6px;">⏰ Spelstopp</div>
+                            <div style="font-size:.88em;color:#4a5568;line-height:1.6;">
+                                Varje omgång har ett spelstopp som sätts av din ligaadmin.
+                                När stoppet passerat kan inga tips läggas eller ändras för den omgången.
+                                Nedräkning visas direkt på tippningskortet.
+                            </div>
+                        </div>
+
+                        <!-- Inställda -->
+                        <div>
+                            <div style="font-weight:700;color:#1e2535;margin-bottom:6px;">⚠️ Inställda matcher</div>
+                            <div style="font-size:.88em;color:#4a5568;line-height:1.6;">
+                                Om en match ställs in får alla spelare 0 poäng på den matchen, oavsett tips.
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
