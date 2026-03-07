@@ -142,6 +142,8 @@ Kopiera och anpassa dessa delar (byt hårdkodade sökvägar mot `/leagues/{kod}/
 | Session 6 | ✅ Klar | 2026-03-07 | Firebase Auth: login/register/createLeague/logout, members-struktur, ghost-bakdörr bevarad |
 | Session 7 | ✅ Klar | 2026-03-07 | Bjud in via e-post, inbjudna e-poster visas, alla kan sätta resultat, POSTPONED only admin, ta bort aktivitetslogg/spara säsong/nollställ |
 | Session 8 | ✅ Klar | 2026-03-07 | Troféer/historik/åskådare borttagna, Firebase Rules låsta (auth != null) |
+| Session 9 | ✅ Klar | 2026-03-07 | EmailJS-integration, aktivitetslogg förbättrad, superadmin-panel med ligaöversikt och radering |
+| Session 10 | ✅ Klar | 2026-03-07 | Buggfixar (inbjudningslänk, auth-fel, lösenordsåterställning), Regler-tab, mobiloptimering |
 
 ---
 
@@ -299,21 +301,3 @@ Dessa kräver att du är inloggad på Firebase/GitHub:
 ### Inför deploy (Session 4)
 - [ ] Aktivera GitHub Pages på repot (Settings → Pages → branch: main, folder: root)
 
----
-
-## Manuella steg (görs av David, inte Claude)
-
-Dessa kräver att du är inloggad på Firebase/GitHub:
-
-### Innan Session 1
-- [x] Skapa Firebase-projekt "KrokensCopa-Multi" ✅ 2026-03-03
-- [x] Aktivera Realtime Database ✅ 2026-03-03
-- [x] Firebase-konfiguration sparad i CLAUDE.md ✅ 2026-03-03
-- [x] Skapa GitHub-repo `KC` under `vg1414` ✅ 2026-03-03
-
-### Kvar att göra i Session 1 (git-setup)
-- [ ] Kör i KC-mappen: `git init && git remote add origin https://github.com/vg1414/KC.git`
-- [ ] GitHub Pages aktiveras i Session 4 (Settings → Pages → branch: main)
-
-### Inför deploy (Session 4)
-- [ ] Aktivera GitHub Pages på repot (Settings → Pages → branch: main, folder: root)

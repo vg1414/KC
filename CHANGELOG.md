@@ -1,5 +1,39 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-07 – Session 10: Buggfixar, Regler-tab & Mobiloptimering
+
+### Buggfixar
+- Inbjudningslänk (admin-panel & skapelse-vy): lade till `&register=1` så mottagaren landar på "Registrera dig"-fliken
+- Skapa liga: fångar nu `auth/invalid-credential` (nyare Firebase SDK) vid fel lösenord på befintligt konto
+- Glömt lösenord: ersatt otydlig UX med inline-panel med eget e-postfält + tydligt felmeddelande + "kolla skräpposten"-påminnelse
+- Superadmin: raderingsknapp fungerar nu – loggar in med Firebase Auth (krävs av Firebase-regler)
+- Superadmin: bekräftelseruta scrollas automatiskt in i vy vid radering
+- Stavfel: "Fyll i bada siffrorna" → "Fyll i båda siffrorna"
+
+### Spelregistrering
+- Uppdaterade texter: "Jag lägger in spelare" → "Jag bjuder in spelare" och "Spelare registrerar sig själva" → "Öppen registrering"
+- Beskrivningar mer korrekta och tydliga
+
+### Aktivitetslogg
+- Svart bakgrund (`#0a0c10`) istället för ljusgrå
+- Senaste post visas längst ner med automatisk scroll dit
+- Större textstorlek (`.88em`)
+
+### Regler-tab
+- Ny "📋 Regler"-tab synlig för alla inloggade spelare
+- Förklarar: dynamiskt poängsystem (0–100p), +50p bonuspoäng, titlarna Sniper/Nostradamus/Unicorn, spelstopp/deadlines
+
+### Mobiloptimering
+- `touch-action: manipulation` på alla knappar (eliminerar 300ms iOS-klickfördröjning)
+- Admin-inputs: `font-size: 1em` (förhindrar auto-zoom på iPhone vid fokus)
+- Score-inputs: ökad storlek (48px → 52px på liten skärm)
+- `btn-admin`: mer padding för godkänd touch-yta
+- Tab-padding reducerad på `< 480px`
+- Topplista: "Snitt"-kolumn dold på mobil, kompaktare padding
+- Result-modal: större sifferfält på liten skärm
+
+---
+
 ## 2026-03-07 – EmailJS: riktiga inbjudningsmail + auto-öppna registreringsflik
 
 ### EmailJS-integration
