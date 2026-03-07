@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        button, a { touch-action: manipulation; }
 
         /* ── Bas – mörk "Matchnight"-bakgrund (landningssida) ── */
         body {
@@ -507,7 +508,7 @@
         .app-tabs::-webkit-scrollbar { display: none; }
 
         .app-tab {
-            padding: 12px 18px;
+            padding: 12px 16px;
             background: transparent;
             border: none;
             border-bottom: 2px solid transparent;
@@ -518,6 +519,7 @@
             cursor: pointer;
             white-space: nowrap;
             transition: color .2s, border-color .2s;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .app-tab:hover { color: #d4930a; }
@@ -621,10 +623,11 @@
         .score-dash { font-weight: bold; color: #9ca3af; }
 
         .score-input {
-            width: 44px;
-            padding: 7px 2px;
+            width: 48px;
+            height: 48px;
+            padding: 4px 2px;
             text-align: center;
-            font-size: 1.1em;
+            font-size: 1.2em;
             font-weight: 700;
             border: 2px solid #dde3ec;
             border-radius: 8px;
@@ -684,9 +687,20 @@
         .leaderboard-placeholder { text-align: center; padding: 40px 16px; color: #9ca3af; }
         .leaderboard-placeholder .big-icon { font-size: 2.5em; margin-bottom: 10px; }
 
-        @media (max-width: 440px) {
+        @media (max-width: 480px) {
             .app-league-chip { display: none; }
             .app-user-badge { display: none; }
+            .app-tab { padding: 11px 11px; font-size: .82em; }
+            .leaderboard-table { font-size: .82em; }
+            .leaderboard-table th, .leaderboard-table td { padding: 8px 6px; }
+            .leaderboard-table th:last-child,
+            .leaderboard-table td:last-child { display: none; } /* dölj Snitt-kolumn */
+            .score-input { width: 52px; height: 52px; font-size: 1.3em; }
+            .app-content { padding: 12px; }
+            .app-card { padding: 14px; }
+            .card { padding: 22px 18px; }
+            .result-modal { padding: 20px 16px; }
+            .result-modal-input { width: 52px; font-size: 1.4em; }
         }
 
         /* ── Topplista-tabell ── */
@@ -720,9 +734,9 @@
         .admin-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; align-items: flex-end; }
         .admin-field { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 120px; }
         .admin-field label { font-size: .75em; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: .05em; }
-        .admin-field input, .admin-field select { padding: 9px 12px; border: 1px solid #dde3ec; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: .9em; color: #1e2535; background: white; width: 100%; }
+        .admin-field input, .admin-field select { padding: 9px 12px; border: 1px solid #dde3ec; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 1em; color: #1e2535; background: white; width: 100%; }
         .admin-field input:focus, .admin-field select:focus { outline: none; border-color: #d4930a; }
-        .btn-admin { padding: 9px 14px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: .85em; font-weight: 600; cursor: pointer; border: none; transition: background .15s, transform .1s; white-space: nowrap; }
+        .btn-admin { padding: 11px 14px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: .85em; font-weight: 600; cursor: pointer; border: none; transition: background .15s, transform .1s; white-space: nowrap; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
         .btn-admin:hover { transform: translateY(-1px); }
         .btn-admin:active { transform: none; }
         .btn-admin-primary { background: #f0b429; color: #0a0c10; }
@@ -1135,14 +1149,6 @@
                                 Varje omgång har ett spelstopp som sätts av din ligaadmin.
                                 När stoppet passerat kan inga tips läggas eller ändras för den omgången.
                                 Nedräkning visas direkt på tippningskortet.
-                            </div>
-                        </div>
-
-                        <!-- Inställda -->
-                        <div>
-                            <div style="font-weight:700;color:#1e2535;margin-bottom:6px;">⚠️ Inställda matcher</div>
-                            <div style="font-size:.88em;color:#4a5568;line-height:1.6;">
-                                Om en match ställs in får alla spelare 0 poäng på den matchen, oavsett tips.
                             </div>
                         </div>
 
