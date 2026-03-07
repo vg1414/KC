@@ -1,5 +1,18 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-07 – Superadmin-panel: ligaöversikt med skapare och radering
+
+### Superadmin-overlay uppgraderad
+- Steg 2 (efter inloggning) visar nu alla ligor som individuella kort istället för en dropdown-lista
+- Varje ligakort visar: ligans namn, ligakod (guld/monospace), "Skapad av: [namn]" och skapelsedatum
+- Ligor sorteras nyaste först (efter `createdAt`)
+- **"→ Gå till"**-knapp på varje kort – öppnar ligan direkt i ghost-admin-läge
+- **"🗑"**-knapp visar ett inline-bekräftelsesteg ("Ja, radera" / "Avbryt") utan blockande `confirm()`-dialog
+- Raderat ligas kort försvinner direkt ur listan; om listan blir tom visas "Inga ligor kvar"
+- Statusmeddelande (grönt/rött) visas i panelen vid lyckad/misslyckad radering
+
+---
+
 ## 2026-03-07 – Session 8: Rensning + Firebase Rules + Buggfixar
 
 ### Borttaget
