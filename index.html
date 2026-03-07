@@ -3516,6 +3516,18 @@
                 setEl('createdUrl', `https://vg1414.github.io/KC/?liga=${code}&register=1`);
                 showView('viewCreated');
 
+                // Skicka notifikation till viarkroken@gmail.com
+                emailjs.send('service_2p2viit', 'template_x9yftzs', {
+                    to_email:     'viarkroken@gmail.com',
+                    league_name:  name,
+                    league_code:  code,
+                    admin_name:   creatorName,
+                    admin_email:  creatorEmail,
+                    competitions: comps.join(', '),
+                    join_mode:    joinMode,
+                    league_url:   `https://vg1414.github.io/KC/?liga=${code}`
+                }).catch(err => console.error('[EmailJS] Notifikation misslyckades:', err));
+
             } catch (err) {
                 let msg = '❌ Kunde inte skapa liga: ' + err.message;
                 if (err.code === 'auth/weak-password')        msg = '❌ Lösenordet är för svagt (minst 6 tecken)';

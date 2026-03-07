@@ -1,5 +1,10 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-07 – E-postnotifikation vid ny liga
+
+### Nytt
+- Skickar automatiskt e-post till viarkroken@gmail.com (via EmailJS) när en ny liga skapas, med liganamn, kod, admin-info, tävlingar och länk
+
 ## 2026-03-07 – Session 10: Buggfixar, Regler-tab & Mobiloptimering
 
 ### Buggfixar
