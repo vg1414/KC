@@ -1226,7 +1226,7 @@
             <!-- Steg 2: liga-lista -->
             <div id="saStep2" style="display:none;flex-direction:column;gap:10px;">
                 <div style="font-size:.78em;font-weight:500;color:#8896aa;letter-spacing:.06em;text-transform:uppercase;">Alla ligor</div>
-                <div id="saLeagueList" style="display:flex;flex-direction:column;gap:8px;max-height:380px;overflow-y:auto;padding-right:2px;"></div>
+                <div id="saLeagueList" style="display:flex;flex-direction:column;gap:8px;max-height:55vh;overflow-y:auto;padding-right:2px;"></div>
             </div>
             <button onclick="window.closeSuperAdminOverlay()" style="background:transparent;color:#4a5568;border:none;font-size:.85em;cursor:pointer;padding:4px;">Avbryt</button>
         </div>
@@ -3597,7 +3597,10 @@
             const btns = document.getElementById(`saCardBtns_${code}`);
             const confirm = document.getElementById(`saDeleteConfirm_${code}`);
             if (btns) btns.style.display = 'none';
-            if (confirm) confirm.style.display = 'flex';
+            if (confirm) {
+                confirm.style.display = 'flex';
+                setTimeout(() => confirm.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+            }
         };
 
         window.superAdminCancelDelete = function(code) {
