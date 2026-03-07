@@ -769,6 +769,8 @@
         .result-set-btn { display: block; width: 100%; padding: 6px 10px; margin-top: 6px; background: #f0f4f8; color: #1e2535; border: none; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: .82em; font-weight: 600; cursor: pointer; text-align: left; }
         .result-set-btn:hover { background: #e2e8f0; }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script>emailjs.init('9rPplYGAXUrKEEOiq');</script>
 </head>
 <body>
 
@@ -1685,24 +1687,28 @@
             // Rendera login-formulär
             const container = document.getElementById('loginFormContainer');
             if (container) {
-                container.innerHTML = buildLoginForm();
+                const defaultTab = new URLSearchParams(window.location.search).get('register') === '1' ? 'register' : 'login';
+                container.innerHTML = buildLoginForm(defaultTab);
+                if (defaultTab === 'register') window.switchAuthTab('register');
             }
 
             showView('viewLeague');
             setupLeagueListeners(code);
         }
 
-        function buildLoginForm() {
+        function buildLoginForm(defaultTab = 'login') {
             const isSelf = currentLeagueInfo.joinMode === 'self';
             const tabStyle = 'flex:1;padding:10px;background:transparent;border:none;border-bottom:2px solid transparent;font-family:\'DM Sans\',sans-serif;font-size:.9em;font-weight:600;cursor:pointer;transition:color .2s,border-color .2s;';
+            const loginActive   = defaultTab === 'login'    ? 'color:#f0b429;border-bottom-color:#f0b429;' : 'color:#4a5568;';
+            const registerActive = defaultTab === 'register' ? 'color:#f0b429;border-bottom-color:#f0b429;' : 'color:#4a5568;';
             return `
                 <div style="display:flex;flex-direction:column;gap:12px;">
                     <div style="display:flex;border-bottom:1px solid #1e2535;margin-bottom:4px;">
-                        <button id="tabLogin" style="${tabStyle}color:#f0b429;border-bottom-color:#f0b429;" onclick="window.switchAuthTab('login')">Logga in</button>
-                        <button id="tabRegister" style="${tabStyle}color:#4a5568;" onclick="window.switchAuthTab('register')">Registrera dig</button>
+                        <button id="tabLogin" style="${tabStyle}${loginActive}" onclick="window.switchAuthTab('login')">Logga in</button>
+                        <button id="tabRegister" style="${tabStyle}${registerActive}" onclick="window.switchAuthTab('register')">Registrera dig</button>
                     </div>
 
-                    <div id="authLoginForm">
+                    <div id="authLoginForm" ${defaultTab === 'register' ? 'style="display:none"' : ''}>
                         <div style="display:flex;flex-direction:column;gap:12px;">
                             <div class="field">
                                 <label>E-post</label>
@@ -1719,7 +1725,7 @@
                         </div>
                     </div>
 
-                    <div id="authRegisterForm" style="display:none">
+                    <div id="authRegisterForm" ${defaultTab === 'register' ? '' : 'style="display:none"'}>
                         <div style="display:flex;flex-direction:column;gap:12px;">
                             ${isSelf ? `<div class="field">
                                 <label>Ditt visningsnamn i ligan</label>
@@ -2989,9 +2995,20 @@
             const encodedEmail = email.replace('@', '_AT_').replace(/\./g, '_DOT_');
             try {
                 await set(ref(database, `leagues/${currentLeagueCode}/invitedEmails/${encodedEmail}`), true);
-                showAppMsg(`✅ ${email} tillagd i inbjudningslistan. Dela liga-länken manuellt med personen så kan de registrera sig.`, 'success');
+                console.log('[EmailJS] Firebase OK, skickar till:', email);
+                const leagueUrl = `https://vg1414.github.io/KC/?liga=${currentLeagueCode}&register=1`;
+                const result = await emailjs.send('service_2p2viit', 'template_7444d1m', {
+                    to_email: email,
+                    league_name: currentLeagueInfo.name || currentLeagueCode,
+                    league_url: leagueUrl
+                });
+                console.log('[EmailJS] Resultat:', result);
+                showAppMsg(`✅ Inbjudan skickad till ${email}`, 'success');
                 if (input) input.value = '';
-            } catch (err) { showAppMsg('❌ ' + err.message, 'error'); }
+            } catch (err) {
+                console.error('[EmailJS] Fel:', err);
+                showAppMsg('❌ ' + err.message, 'error');
+            }
         };
 
         window.adminRemovePlayer = async function(uid) {

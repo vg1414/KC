@@ -1,5 +1,16 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-07 – EmailJS: riktiga inbjudningsmail + auto-öppna registreringsflik
+
+### EmailJS-integration
+- EmailJS SDK inläst (`@emailjs/browser@4`) + initierat med publik nyckel
+- När admin bjuder in via e-post skickas nu ett riktigt mail med liga-URL via EmailJS
+- Länken i mailet innehåller `?register=1` som automatiskt öppnar registreringsfliken
+- Login-formuläret läser `?register=1` och öppnar rätt flik direkt vid sidladdning
+- `buildLoginForm(defaultTab)` – stöd för att rendera formuläret med förvald flik
+
+---
+
 ## 2026-03-07 – Aktivitetslogg: inloggningar + grupperade tipp-poster
 
 ### Aktivitetslogg förbättrad
