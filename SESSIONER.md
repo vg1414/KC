@@ -140,8 +140,8 @@ Kopiera och anpassa dessa delar (byt hårdkodade sökvägar mot `/leagues/{kod}/
 | Session 4 | ✅ Klar | 2026-03-06 | Historik-flik, Spara säsong, deploy till GitHub Pages |
 | Session 5 | ✅ Klar | 2026-03-06 | Ny landningssida, per-liga-admin, ghost-bakdörr, API-nyckel i Firebase, buggfixar |
 | Session 6 | ✅ Klar | 2026-03-07 | Firebase Auth: login/register/createLeague/logout, members-struktur, ghost-bakdörr bevarad |
-| Session 7 | ⏳ Ej startad | – | Spelarhantering + resultat för alla + rensning av admin-panel |
-| Session 8 | ⏳ Ej startad | – | Troféer/historik/åskådare tas bort + Firebase Rules |
+| Session 7 | ✅ Klar | 2026-03-07 | Bjud in via e-post, inbjudna e-poster visas, alla kan sätta resultat, POSTPONED only admin, ta bort aktivitetslogg/spara säsong/nollställ |
+| Session 8 | ✅ Klar | 2026-03-07 | Troféer/historik/åskådare borttagna, Firebase Rules låsta (auth != null) |
 
 ---
 

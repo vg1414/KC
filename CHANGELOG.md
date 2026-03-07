@@ -1,5 +1,41 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-07 – Session 8: Rensning + Firebase Rules + Buggfixar
+
+### Borttaget
+- Troféer/säsongshistorik: `seasonHistory`, `trophyCache`, `rebuildTrophyCache()`, `getPlayerTrophyHTML()`, `nameWithTrophy()` – alla borttagna
+- Historik-flik: tab-knapp, tab-div och `renderHistory()` – alla borttagna
+- Åskådarläge (`isViewer`, `Askadare`-logik) – borttaget från renderPredictions och saveScorePrediction
+
+### Firebase Security Rules
+- `.read: true`, `.write: "auth != null"` – läsning öppen (krävs för login-vy), skrivning kräver auth
+- `.firebaserc` tillagd så Firebase vet vilket projekt som används
+
+### Buggfixar
+- Ghost kan nu radera ligor: vid ghost-login skapas/används ett Firebase Auth-konto automatiskt (`GHOST_EMAIL`) så att skrivoperationer tillåts
+- "Ladda matcher från API" och "Hämta resultat" döljs nu för vanliga ligeadmins – syns bara för ghost
+- Inbjudningsmeddelandet förtydligat: appen skickar inte e-post, admin delar länken manuellt
+
+---
+
+## 2026-03-07 – Session 7: Spelarhantering + resultat för alla + rensning
+
+### Spelarhantering (admin-panel)
+- Admin kan bjuda in spelare via e-postadress (joinMode:admin) – sparas i `invitedEmails/`
+- Inbjudna e-poster som ännu inte gått med visas i admin-panelen
+- Bjud in-sektionen dold vid joinMode:self (ansökningsflöde används istället)
+
+### Resultatinmatning öppen för alla
+- Alla inloggade spelare kan nu sätta resultat på startade matcher
+- Knappen visas inte om resultatet är satt av API (`setBy: 'API'`)
+- Knappen visas inte om matchen är POSTPONED
+- "Inställd"-knappen i modalen är bara synlig för admin/ghost
+
+### Rensning av admin-panel
+- Borttaget: Aktivitetslogg-sektion (HTML + JS)
+- Borttaget: Spara säsong till historik-sektion (HTML + JS)
+- Borttaget: Nollställ säsong-sektion (HTML + JS)
+
 ## 2026-03-07 – Session 6: Firebase Authentication
 
 ### Firebase Auth ersätter SHA-256-systemet

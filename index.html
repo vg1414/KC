@@ -1007,7 +1007,6 @@
                 <button class="app-tab active" data-tab="tippning" onclick="window.switchTab('tippning')">🎯 Tippa</button>
                 <button class="app-tab" data-tab="matcher" onclick="window.switchTab('matcher')">📅 Matcher</button>
                 <button class="app-tab" data-tab="topplista" onclick="window.switchTab('topplista')">🏆 Topplista</button>
-                <button class="app-tab" data-tab="historik" onclick="window.switchTab('historik')">📜 Historik</button>
                 <button class="app-tab" id="adminTab" data-tab="admin" style="display:none" onclick="window.switchTab('admin')">⚙️ Admin</button>
             </div>
         </div>
@@ -1066,11 +1065,6 @@
                 </div>
             </div>
 
-            <!-- Historik -->
-            <div id="tab-historik" class="tab-content" style="display:none">
-                <div id="historyContent"></div>
-            </div>
-
             <!-- Admin -->
             <div id="tab-admin" class="tab-content" style="display:none">
 
@@ -1093,7 +1087,7 @@
                 </div>
 
                 <!-- Ladda matcher -->
-                <div class="admin-section">
+                <div class="admin-section" id="adminLoadMatchesSection">
                     <div class="admin-section-header" onclick="window.toggleAdminSection(this)">
                         📥 Ladda matcher från API <span class="admin-toggle-icon">▼</span>
                     </div>
@@ -1127,7 +1121,7 @@
                 </div>
 
                 <!-- Hämta resultat -->
-                <div class="admin-section">
+                <div class="admin-section" id="adminFetchResultsSection">
                     <div class="admin-section-header" onclick="window.toggleAdminSection(this)">
                         ⚽ Hämta resultat <span class="admin-toggle-icon">▼</span>
                     </div>
@@ -1152,12 +1146,13 @@
                             <div id="pendingPlayerList"></div>
                         </div>
                         <div class="player-list" id="adminPlayerList"></div>
-                        <div class="admin-row">
+                        <div id="invitedEmailsList" style="margin-top:10px;"></div>
+                        <div id="invitePlayerSection" class="admin-row" style="margin-top:10px;display:none;">
                             <div class="admin-field">
-                                <label>Lägg till spelare</label>
-                                <input type="text" id="newPlayerInput" placeholder="Namn..." autocomplete="off">
+                                <label>Bjud in via e-post</label>
+                                <input type="email" id="newPlayerInput" placeholder="email@example.com" autocomplete="off">
                             </div>
-                            <button class="btn-admin btn-admin-primary" onclick="window.adminAddPlayer()">Lägg till</button>
+                            <button class="btn-admin btn-admin-primary" onclick="window.adminInvitePlayer()">Bjud in</button>
                         </div>
                     </div>
                 </div>
@@ -1170,6 +1165,21 @@
                     <div class="admin-section-body">
                         <div id="adminDeadlinesList"></div>
                     </div>
+                </div>
+
+                <!-- Aktivitetslogg (endast ghost-admin) -->
+                <div id="activityLogSection" style="display:none">
+                <div class="admin-section">
+                    <div class="admin-section-header" onclick="window.toggleAdminSection(this)">
+                        📋 Aktivitetslogg <span class="admin-toggle-icon">▼</span>
+                    </div>
+                    <div class="admin-section-body">
+                        <button class="btn-admin btn-admin-secondary" style="margin-bottom:10px;" onclick="window.renderActivityLog()">🔄 Uppdatera</button>
+                        <div class="activity-log-box" id="activityLogBox">
+                            <span style="color:#9ca3af;">Klicka "Uppdatera" för att visa loggen.</span>
+                        </div>
+                    </div>
+                </div>
                 </div>
 
                 <!-- API-nyckel (endast ghost-admin) -->
@@ -1191,44 +1201,6 @@
                 </div>
                 </div>
 
-                <!-- Aktivitetslogg -->
-                <div class="admin-section">
-                    <div class="admin-section-header" onclick="window.toggleAdminSection(this)">
-                        📋 Aktivitetslogg <span class="admin-toggle-icon">▼</span>
-                    </div>
-                    <div class="admin-section-body">
-                        <button class="btn-admin btn-admin-secondary" style="margin-bottom:10px;" onclick="window.renderActivityLog()">🔄 Uppdatera</button>
-                        <div class="activity-log-box" id="activityLogBox">
-                            <span style="color:#9ca3af;">Klicka "Uppdatera" för att visa loggen.</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Spara säsong till historik -->
-                <div class="admin-section">
-                    <div class="admin-section-header" onclick="window.toggleAdminSection(this)">
-                        📚 Spara säsong till historik <span class="admin-toggle-icon">▼</span>
-                    </div>
-                    <div class="admin-section-body">
-                        <div class="admin-field" style="margin-bottom:10px;">
-                            <label>Säsongsnamn</label>
-                            <input type="text" id="seasonNameInput" placeholder="T.ex. Säsong 1 – VM 2026" maxlength="80">
-                        </div>
-                        <p style="font-size:.85em;color:#6b7280;margin-bottom:12px;">Sparar nuvarande ställning till historiken. Används typiskt innan du nollställer säsongen.</p>
-                        <button class="btn-admin btn-admin-primary" style="width:100%;padding:11px;" onclick="window.adminSaveSeason()">📚 Spara säsong</button>
-                    </div>
-                </div>
-
-                <!-- Nollställ säsong -->
-                <div class="admin-section">
-                    <div class="admin-section-header" onclick="window.toggleAdminSection(this)">
-                        🔄 Nollställ säsong <span class="admin-toggle-icon">▼</span>
-                    </div>
-                    <div class="admin-section-body">
-                        <p style="font-size:.85em;color:#6b7280;margin-bottom:12px;">Raderar matcher, tippningar och deadlines. Spelare, lösenord och historik behålls.</p>
-                        <button class="btn-admin btn-admin-danger" style="width:100%;padding:11px;" onclick="window.adminResetSeason()">💣 Nollställ säsongen</button>
-                    </div>
-                </div>
 
             </div><!-- /tab-admin -->
 
@@ -1276,7 +1248,7 @@
             </div>
             <div class="result-modal-special" id="modalSpecialStatus"></div>
             <div class="result-modal-btns">
-                <button class="btn-admin btn-admin-danger" style="flex:1" onclick="window.setModalPostponed()">⚠️ Inställd</button>
+                <button id="modalPostponedBtn" class="btn-admin btn-admin-danger" style="flex:1" onclick="window.setModalPostponed()">⚠️ Inställd</button>
                 <button class="btn-admin btn-admin-secondary" style="flex:1" onclick="window.closeResultModal()">Avbryt</button>
                 <button class="btn-admin btn-admin-primary" style="flex:1" onclick="window.saveModalResult()">✅ Spara</button>
             </div>
@@ -1324,11 +1296,8 @@
         let predictions      = {};
         let exactPredictions = {};
         let deadlines        = {};
-        let seasonHistory    = [];   // behålls för trophyCache-kompatibilitet
-
         let matchMap         = {};
         let pointsCache      = {};
-        let trophyCache      = {};
         let cachedFirstMatch = null;
         let renderScheduled  = false;
         let leagueUnsubscribers = [];
@@ -1456,8 +1425,15 @@
             return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
         }
 
-        // ─── Stubs (logActivity/fetchClientIP borttagna – stubs för kompatibilitet) ──
-        async function logActivity() {}
+        // ─── Aktivitetslogg (ghost kan se per liga) ───────────────────────────────
+        async function logActivity(action, details) {
+            if (!currentLeagueCode) return;
+            try {
+                await push(ref(database, `leagues/${currentLeagueCode}/activityLog`), {
+                    action, details, user: currentUser || 'unknown', timestamp: Date.now()
+                });
+            } catch(e) {}
+        }
         async function fetchClientIP() { return 'n/a'; }
 
         // ─── Admin-hjälpfunktioner ────────────────────────────────────────────────
@@ -1519,6 +1495,8 @@
         if (_fish) _fish.addEventListener('click', handleGhostClick);
 
         // ─── Ghost-inloggning ─────────────────────────────────────────────────────
+        const GHOST_EMAIL = 'ghost.superadmin@krokenscopa-multi.internal';
+
         window.handleGhostLogin = async function() {
             const pw = (document.getElementById('ghostPw')?.value || '');
             if (!pw) return;
@@ -1526,15 +1504,31 @@
             try {
                 const snap = await get(ref(database, 'config/mh'));
                 const stored = snap.val();
-                if (stored === null) {
-                    await set(ref(database, 'config/mh'), hash);
-                    activateSession('__ghost__', '__ghost__');
-                } else if (hash === stored) {
-                    activateSession('__ghost__', '__ghost__');
-                } else {
+                const isFirstSetup = (stored === null);
+
+                if (!isFirstSetup && hash !== stored) {
                     const el = document.getElementById('ghostPw');
                     if (el) el.value = '';
+                    return;
                 }
+
+                // Logga in i Firebase Auth – krävs för att kunna skriva till databasen
+                if (isFirstSetup) {
+                    // Första gången: skapa Firebase Auth-kontot automatiskt, sedan spara hash
+                    await createUserWithEmailAndPassword(auth, GHOST_EMAIL, pw);
+                    await set(ref(database, 'config/mh'), hash);
+                } else {
+                    try {
+                        await signInWithEmailAndPassword(auth, GHOST_EMAIL, pw);
+                    } catch(authErr) {
+                        if (authErr.code === 'auth/user-not-found' || authErr.code === 'auth/invalid-credential') {
+                            // Firebase Auth-kontot finns inte än (t.ex. äldre setup) – skapa det nu
+                            await createUserWithEmailAndPassword(auth, GHOST_EMAIL, pw);
+                        }
+                    }
+                }
+
+                activateSession('__ghost__', '__ghost__');
             } catch(e) {
                 const el = document.getElementById('ghostPw');
                 if (el) el.value = '';
@@ -1604,21 +1598,6 @@
             return matchMap[matchId] || matches.find(m => m.id === matchId);
         }
 
-        function rebuildTrophyCache() {
-            trophyCache = {};
-            leaguePlayers.forEach(player => {
-                let wins = 0;
-                (seasonHistory || []).forEach(s => { if (s.winner === player) wins++; });
-                if (wins === 0) { trophyCache[player] = ''; return; }
-                const stars   = Math.floor(wins / 5);
-                const trophies = wins % 5;
-                trophyCache[player] = `<span style="color:#f0b429;font-size:.8em;" title="${wins} säsongsvinst${wins > 1 ? 'er' : ''}">` +
-                    '⭐'.repeat(stars) + '🏆'.repeat(trophies) + '</span>';
-            });
-        }
-
-        function getPlayerTrophyHTML(player) { return trophyCache[player] ?? ''; }
-
         function calculatePoints(matchId, player) {
             const match = getMatch(matchId);
             if (!match || !match.actualOutcome) return 0;
@@ -1664,12 +1643,10 @@
             requestAnimationFrame(() => {
                 renderScheduled = false;
                 rebuildMatchMap();
-                rebuildTrophyCache();
                 rebuildPointsCache();
                 renderPredictions();
                 renderMatches();
                 renderLeaderboard();
-                renderHistory();
                 if (isAdmin()) {
                     renderAdminPlayers();
                     renderAdminDeadlines();
@@ -1798,7 +1775,6 @@
             members = {}; invitedEmails = {}; pendingMembers = {};
             leaguePlayers = []; matches = [];
             predictions = {}; exactPredictions = {}; deadlines = {};
-            seasonHistory = [];
 
             const base = `leagues/${code}`;
 
@@ -2033,9 +2009,15 @@
             const adminTab = document.getElementById('adminTab');
             if (adminTab) adminTab.style.display = isAdmin() ? '' : 'none';
 
-            // Visa/dölj API-nyckel-sektionen (endast ghost)
-            const apiKeySection = document.getElementById('apiKeySection');
-            if (apiKeySection) apiKeySection.style.display = isGhost() ? '' : 'none';
+            // Visa/dölj ghost-only-sektioner
+            const apiKeySection          = document.getElementById('apiKeySection');
+            const activityLogSection     = document.getElementById('activityLogSection');
+            const loadMatchesSection     = document.getElementById('adminLoadMatchesSection');
+            const fetchResultsSection    = document.getElementById('adminFetchResultsSection');
+            if (apiKeySection)       apiKeySection.style.display       = isGhost() ? '' : 'none';
+            if (activityLogSection)  activityLogSection.style.display  = isGhost() ? '' : 'none';
+            if (loadMatchesSection)  loadMatchesSection.style.display  = isGhost() ? '' : 'none';
+            if (fetchResultsSection) fetchResultsSection.style.display = isGhost() ? '' : 'none';
 
             showView('viewApp');
             window.switchTab(isAdmin() ? 'admin' : 'tippning');
@@ -2132,8 +2114,6 @@
                             const pred  = matchPreds[player];
                             const exact = matchExact[player];
                             const label = { '1': m.homeTeam, 'X': 'Oavgjort', '2': m.awayTeam }[pred] || pred;
-                            const trophy = getPlayerTrophyHTML(player);
-                            const pName  = player + (trophy ? ' ' + trophy : '');
                             if (!pred) {
                                 predsHtml += `<div class="pred-row pred-row-waiting">❌ ${pName}: Tippade inte</div>`;
                             } else {
@@ -2145,8 +2125,6 @@
                         });
                     } else {
                         allPlayers.forEach(player => {
-                            const trophy = getPlayerTrophyHTML(player);
-                            const pName  = player + (trophy ? ' ' + trophy : '');
                             // Admin/ghost ser alltid sitt eget faktiska tips
                             if ((isAdmin() || isGhost()) && player === currentUser && matchPreds[player]) {
                                 const pred  = matchPreds[player];
@@ -2155,11 +2133,11 @@
                                 const display = exact
                                     ? `<strong>${exact.replace('-', ' – ')}</strong> <span style="color:#9ca3af;font-size:.85em;">(${label})</span>`
                                     : `<strong>${label}</strong>`;
-                                predsHtml += `<div class="pred-row" style="color:#374151;">🎯 ${pName}: ${display}</div>`;
+                                predsHtml += `<div class="pred-row" style="color:#374151;">🎯 ${player}: ${display}</div>`;
                             } else if (matchPreds[player]) {
-                                predsHtml += `<div class="pred-row pred-row-pending">✅ ${pName}: Har tippat</div>`;
+                                predsHtml += `<div class="pred-row pred-row-pending">✅ ${player}: Har tippat</div>`;
                             } else {
-                                predsHtml += `<div class="pred-row pred-row-waiting">⏳ ${pName}: Har inte tippat ännu</div>`;
+                                predsHtml += `<div class="pred-row pred-row-waiting">⏳ ${player}: Har inte tippat ännu</div>`;
                             }
                         });
                     }
@@ -2170,13 +2148,11 @@
                         const pred  = matchPreds[player];
                         const exact = matchExact[player];
                         const label = { '1': m.homeTeam, 'X': 'Oavgjort', '2': m.awayTeam }[pred] || pred;
-                        const trophy = getPlayerTrophyHTML(player);
-                        const pName  = player + (trophy ? ' ' + trophy : '');
                         if (!pred) {
-                            predsHtml += `<div class="pred-row pred-row-waiting">❌ ${pName}: Tippade inte</div>`;
+                            predsHtml += `<div class="pred-row pred-row-waiting">❌ ${player}: Tippade inte</div>`;
                         } else if (isPostponed) {
                             const exactTag = exact ? ` [${exact}]` : '';
-                            predsHtml += `<div class="pred-row pred-row-postponed">⚠️ ${pName}: ${label}${exactTag}</div>`;
+                            predsHtml += `<div class="pred-row pred-row-postponed">⚠️ ${player}: ${label}${exactTag}</div>`;
                         } else {
                             const isCorrect   = pred === m.actualOutcome;
                             const exactRight  = exact && m.actualScore && exact === m.actualScore;
@@ -2184,13 +2160,13 @@
                             const exactTag    = exact ? ` [${exact}]${exactRight ? ' 🔮+50' : ''}` : '';
                             const pts         = getCachedPoints(m.id, player);
                             const ptsBadge    = `<span class="pts-badge ${isCorrect ? 'pts-badge-correct' : 'pts-badge-wrong'}">${pts}p</span>`;
-                            predsHtml += `<div class="pred-row ${isCorrect ? 'pred-row-correct' : 'pred-row-wrong'}">${icon} ${pName}: ${label}${exactTag}${ptsBadge}</div>`;
+                            predsHtml += `<div class="pred-row ${isCorrect ? 'pred-row-correct' : 'pred-row-wrong'}">${icon} ${player}: ${label}${exactTag}${ptsBadge}</div>`;
                         }
                     });
                     predsHtml += '</div>';
                 }
 
-                const canSetResult = isAdmin() && started;
+                const canSetResult = !!currentUser && started && m.setBy !== 'API' && m.actualOutcome !== 'POSTPONED';
                 const resultBtn = canSetResult ? `<button class="result-set-btn" onclick="window.openResultModal('${m.id}')">${m.actualOutcome ? '✏️ Ändra resultat' : '📝 Sätt resultat'}</button>` : '';
 
                 return `
@@ -2246,20 +2222,13 @@
                 return;
             }
 
-            const isViewer = currentUser === 'Askadare';
-
             // Tipp-counter
             const tippCountLabel = document.getElementById('tippCountLabel');
             if (tippCountLabel) {
-                if (isViewer) {
-                    tippCountLabel.textContent = '👁 Åskådarläge – du kan se tippningarna men inte tippa själv';
-                    tippCountLabel.style.color = '#d4930a';
-                } else {
-                    const tippade = matches.filter(m => exactPredictions[m.id]?.[currentUser]).length;
-                    const allDone = tippade === matches.length;
-                    tippCountLabel.textContent = `${tippade}/${matches.length} matcher tippade`;
-                    tippCountLabel.style.color = allDone ? '#059669' : '#dc2626';
-                }
+                const tippade = matches.filter(m => exactPredictions[m.id]?.[currentUser]).length;
+                const allDone = tippade === matches.length;
+                tippCountLabel.textContent = `${tippade}/${matches.length} matcher tippade`;
+                tippCountLabel.style.color = allDone ? '#059669' : '#dc2626';
             }
 
             // Gruppera matcher per deadline-key
@@ -2294,24 +2263,19 @@
 
                 let innerHtml = '';
 
-                if (isEffLocked || isViewer) {
+                if (isEffLocked) {
                     // Visa låst kort
-                    const lockedLabel = isViewer && !isEffLocked
-                        ? '<span style="color:#d4930a;">👁 Åskådarläge</span><span class="pred-locked-chip">LÅSLÄGE</span>'
-                        : `<span>${myExact ? `Din tipp: <strong>${myExact.replace('-', ' – ')}</strong>` : 'Du tippade inte'}</span><span class="pred-locked-chip">STÄNGD</span>`;
+                    const lockedLabel = `<span>${myExact ? `Din tipp: <strong>${myExact.replace('-', ' – ')}</strong>` : 'Du tippade inte'}</span><span class="pred-locked-chip">STÄNGD</span>`;
 
                     let predsHtml = '';
-                    if (isViewer && !isEffLocked) {
-                        predsHtml = `<div style="text-align:center;color:#9ca3af;font-size:.82em;padding:8px 0;">Tippningarna visas när omgången stänger</div>`;
-                    } else if (Object.keys(matchPreds).length > 0) {
+                    if (Object.keys(matchPreds).length > 0) {
                         predsHtml = `<div class="predictions-revealed">
                             <h4>Alla tippningar:</h4>
                             ${Object.entries(matchPreds).map(([player, pred]) => {
                                 const exact  = matchExact[player];
-                                const trophy = getPlayerTrophyHTML(player);
                                 const label  = { '1': m.homeTeam, 'X': 'Oavgjort', '2': m.awayTeam }[pred] || pred;
                                 return `<div class="prediction-row">
-                                    <span><strong>${player}</strong>${trophy ? ' ' + trophy : ''}</span>
+                                    <span><strong>${player}</strong></span>
                                     <span style="font-weight:600;color:#d4930a;">
                                         ${exact ? exact.replace('-', ' – ') : pred}
                                         <span style="color:#9ca3af;font-weight:400;font-size:.85em;">(${label})</span>
@@ -2364,7 +2328,7 @@
                 }
 
                 return `
-                    <div class="pred-match${isEffLocked || isViewer ? ' locked' : ''}" data-match-id="${m.id}">
+                    <div class="pred-match${isEffLocked ? ' locked' : ''}" data-match-id="${m.id}">
                         <div class="pred-match-meta">${m.league || ''} · ${dateStr}</div>
                         ${innerHtml}
                     </div>`;
@@ -2441,13 +2405,12 @@
 
             tbody.innerHTML = scores.map((s, i) => {
                 const rankClass = ['rank-badge-1','rank-badge-2','rank-badge-3'][i] || '';
-                const trophy = getPlayerTrophyHTML(s.player);
                 const bonus = s.bonusCount > 0
                     ? `<strong style="color:#8b5cf6">${s.bonusCount}</strong>`
                     : '<span style="color:#d1d5db">0</span>';
                 return `<tr>
                     <td><span class="rank-badge ${rankClass}">${i+1}</span></td>
-                    <td><strong>${s.player}</strong>${trophy ? ' ' + trophy : ''}</td>
+                    <td><strong>${s.player}</strong></td>
                     <td><strong>${s.totalPoints}</strong></td>
                     <td>${s.correctPreds}</td>
                     <td>${bonus}</td>
@@ -2455,10 +2418,6 @@
                 </tr>`;
             }).join('');
 
-            function nameWithTrophy(player) {
-                const t = getPlayerTrophyHTML(player);
-                return player + (t ? ' ' + t : '');
-            }
             function joinNames(arr) {
                 return arr.length === 1 ? arr[0] : arr.slice(0,-1).join(', ') + ' &amp; ' + arr[arr.length-1];
             }
@@ -2481,7 +2440,7 @@
                 if (sniperCounts[0]?.soloCorrect > 0) {
                     const top = sniperCounts[0].soloCorrect;
                     const leaders = sniperCounts.filter(p => p.soloCorrect === top);
-                    document.getElementById('sniperName').innerHTML = joinNames(leaders.map(p => nameWithTrophy(p.player)));
+                    document.getElementById('sniperName').innerHTML = joinNames(leaders.map(p => p.player));
                     document.getElementById('sniperDetails').textContent = `${top} st soloträff${top > 1 ? 'ar' : ''}`;
                     sniperSection.style.display = '';
                 } else { sniperSection.style.display = 'none'; }
@@ -2502,7 +2461,7 @@
                 if (withNost.length > 0) {
                     const top = withNost[0].correctExact;
                     const leaders = withNost.filter(p => p.correctExact === top);
-                    document.getElementById('nostradamusLeader').innerHTML = joinNames(leaders.map(p => nameWithTrophy(p.player)));
+                    document.getElementById('nostradamusLeader').innerHTML = joinNames(leaders.map(p => p.player));
                     document.getElementById('nostradamusLeaderDetail').textContent = `${top} st korrekt exakt resultat`;
                     nostSection.style.display = '';
                 } else { nostSection.style.display = 'none'; }
@@ -2528,7 +2487,7 @@
                 if (withUnicorns.length > 0) {
                     const top = withUnicorns[0].unicornCount;
                     const leaders = withUnicorns.filter(p => p.unicornCount === top);
-                    document.getElementById('unicornLeader').innerHTML = joinNames(leaders.map(p => nameWithTrophy(p.player)));
+                    document.getElementById('unicornLeader').innerHTML = joinNames(leaders.map(p => p.player));
                     document.getElementById('unicornLeaderDetail').textContent = `${top} st unicorn-träff${top > 1 ? 'ar' : ''}`;
                     unicornSection.style.display = '';
                 } else { unicornSection.style.display = 'none'; }
@@ -2558,7 +2517,6 @@
 
         window.saveScorePrediction = async function(matchId) {
             if (!currentUser) { showAppMsg('Du måste vara inloggad!', 'error'); return; }
-            if (currentUser === 'Askadare') { showAppMsg('👁 Du är åskådare och kan inte tippa!', 'error'); return; }
 
             const match = getMatch(matchId);
             if (!match) return;
@@ -2886,7 +2844,9 @@
 
         // ─── Resultat-modal ───────────────────────────────────────────────────────
         window.openResultModal = function(matchId) {
-            if (!isAdmin()) return;
+            if (!currentUser) return;
+            const postponedBtn = document.getElementById('modalPostponedBtn');
+            if (postponedBtn) postponedBtn.style.display = isAdmin() ? '' : 'none';
             const match = getMatch(matchId);
             if (!match) return;
             currentModalMatchId = matchId;
@@ -2995,11 +2955,44 @@
             } else {
                 pendingSection.style.display = 'none';
             }
+
+            // Inbjudna e-poster (joinMode: admin) – visa de som ännu inte gått med
+            const inviteSection = document.getElementById('invitePlayerSection');
+            const invitedList   = document.getElementById('invitedEmailsList');
+            if (currentLeagueInfo.joinMode === 'admin') {
+                if (inviteSection) inviteSection.style.display = '';
+                const memberEmails = new Set(Object.values(members).map(m => (m.email || '').toLowerCase()));
+                const pendingEmails = Object.entries(invitedEmails || {})
+                    .map(([key]) => key.replace(/_AT_/g, '@').replace(/_DOT_/g, '.'))
+                    .filter(email => !memberEmails.has(email.toLowerCase()));
+                if (invitedList) {
+                    if (pendingEmails.length > 0) {
+                        invitedList.innerHTML = `<div style="font-size:.82em;font-weight:600;color:#6b7280;margin-bottom:6px;">⏳ Inbjudna (ej gått med)</div>` +
+                            pendingEmails.map(email => `
+                                <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:.85em;color:#9ca3af;border-bottom:1px solid #1e2535;">
+                                    <span>${email}</span>
+                                </div>`).join('');
+                    } else {
+                        invitedList.innerHTML = '';
+                    }
+                }
+            } else {
+                if (inviteSection) inviteSection.style.display = 'none';
+                if (invitedList) invitedList.innerHTML = '';
+            }
         }
 
-        window.adminAddPlayer = async function() {
-            // Session 7: ersätts av e-postinbjudan
-            showAppMsg('ℹ️ Bjud in spelare via e-post – kommer i nästa version.', 'info');
+        window.adminInvitePlayer = async function() {
+            if (!isAdmin()) return;
+            const input = document.getElementById('newPlayerInput');
+            const email = (input?.value || '').trim().toLowerCase();
+            if (!email || !email.includes('@')) { showAppMsg('❌ Ange en giltig e-postadress', 'error'); return; }
+            const encodedEmail = email.replace('@', '_AT_').replace(/\./g, '_DOT_');
+            try {
+                await set(ref(database, `leagues/${currentLeagueCode}/invitedEmails/${encodedEmail}`), true);
+                showAppMsg(`✅ ${email} tillagd i inbjudningslistan. Dela liga-länken manuellt med personen så kan de registrera sig.`, 'success');
+                if (input) input.value = '';
+            } catch (err) { showAppMsg('❌ ' + err.message, 'error'); }
         };
 
         window.adminRemovePlayer = async function(uid) {
@@ -3100,23 +3093,26 @@
             } catch (err) { showAppMsg('❌ ' + err.message, 'error'); }
         };
 
-        // ─── Aktivitetslogg ───────────────────────────────────────────────────────
-        window.renderActivityLog = function() {
+
+        // ─── Aktivitetslogg (ghost) ───────────────────────────────────────────────
+        window.renderActivityLog = async function() {
             const el = document.getElementById('activityLogBox');
             if (!el) return;
-            if (!activityLog.length) {
-                el.innerHTML = '<span style="color:#9ca3af;">Ingen aktivitet ännu.</span>';
-                return;
-            }
-            const icons = { LOGIN:'🔓', LOGOUT:'🔒', AUTO_LOGIN:'⚡', FIRST_LOGIN:'✨', PREDICT:'🎯', SET_RESULT:'📝', CLEAR_RESULT:'🗑️', AUTO_RESULT:'⚽', ADMIN_LOAD_MATCHES:'📥', ADD_PLAYER:'👤', REMOVE_PLAYER:'🗑️', APPROVE_PLAYER:'✅', REJECT_PLAYER:'❌', SET_DEADLINE:'⏰', CLEAR_DEADLINE:'🗑️', POSTPONED_MATCH:'⚠️' };
-            const colors = { LOGIN:'#059669', LOGOUT:'#6b7280', AUTO_LOGIN:'#3b82f6', FIRST_LOGIN:'#d4930a', PREDICT:'#8b5cf6', SET_RESULT:'#06b6d4', CLEAR_RESULT:'#ef4444', AUTO_RESULT:'#22c55e', ADMIN_LOAD_MATCHES:'#059669', ADD_PLAYER:'#059669', REMOVE_PLAYER:'#dc2626', APPROVE_PLAYER:'#059669', SET_DEADLINE:'#d4930a' };
-            el.innerHTML = [...activityLog].reverse().map(entry => {
-                const timeStr = new Date(entry.timestamp).toLocaleString('sv-SE', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
-                const icon = icons[entry.action] || '📌';
-                const color = colors[entry.action] || '#374151';
-                const ip = entry.ip ? ` (${entry.ip})` : '';
-                return `<div class="activity-log-entry" style="color:${color}">[${timeStr}] ${icon} <strong>${entry.user}</strong>${ip}: ${entry.details}</div>`;
-            }).join('');
+            el.innerHTML = '<span style="color:#9ca3af;">Laddar...</span>';
+            try {
+                const snap = await get(ref(database, `leagues/${currentLeagueCode}/activityLog`));
+                const data = snap.val();
+                if (!data) { el.innerHTML = '<span style="color:#9ca3af;">Ingen aktivitet ännu.</span>'; return; }
+                const entries = Array.isArray(data) ? data : Object.values(data);
+                const icons = { LOGIN:'🔓', LOGOUT:'🔒', AUTO_LOGIN:'⚡', FIRST_LOGIN:'✨', PREDICT:'🎯', SET_RESULT:'📝', CLEAR_RESULT:'🗑️', AUTO_RESULT:'⚽', ADMIN_LOAD_MATCHES:'📥', ADD_PLAYER:'👤', REMOVE_PLAYER:'🗑️', APPROVE_PLAYER:'✅', REJECT_PLAYER:'❌', SET_DEADLINE:'⏰', CLEAR_DEADLINE:'🗑️', POSTPONED_MATCH:'⚠️' };
+                const colors = { LOGIN:'#059669', LOGOUT:'#6b7280', PREDICT:'#8b5cf6', SET_RESULT:'#06b6d4', CLEAR_RESULT:'#ef4444', AUTO_RESULT:'#22c55e', ADMIN_LOAD_MATCHES:'#059669', REMOVE_PLAYER:'#dc2626', APPROVE_PLAYER:'#059669', SET_DEADLINE:'#d4930a' };
+                el.innerHTML = [...entries].reverse().map(entry => {
+                    const timeStr = new Date(entry.timestamp).toLocaleString('sv-SE', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+                    const icon  = icons[entry.action]  || '📌';
+                    const color = colors[entry.action] || '#374151';
+                    return `<div style="color:${color};padding:3px 0;font-size:.82em;">[${timeStr}] ${icon} <strong>${entry.user}</strong>: ${entry.details}</div>`;
+                }).join('');
+            } catch(e) { el.innerHTML = '<span style="color:#f87171;">Fel: ' + e.message + '</span>'; }
         };
 
         // ─── API-nyckel ───────────────────────────────────────────────────────────
@@ -3143,126 +3139,6 @@
             copyText(url, 'adminCopyUrlBtn');
         };
 
-        // ─── Historik-rendering ───────────────────────────────────────────────────
-        function renderHistory() {
-            const container = document.getElementById('historyContent');
-            if (!container) return;
-
-            if (!seasonHistory || seasonHistory.length === 0) {
-                container.innerHTML = `
-                    <div class="app-card">
-                        <div class="app-card-title">📜 Historik</div>
-                        <div class="empty-state">
-                            <div style="font-size:2em;margin-bottom:8px;">📜</div>
-                            <p>Inga sparade säsonger ännu.<br>Admin sparar en säsong via Admin-fliken.</p>
-                        </div>
-                    </div>`;
-                return;
-            }
-
-            // Visa nyaste säsongen först
-            const sorted = [...seasonHistory].reverse();
-            const cards = sorted.map(season => {
-                const dateStr = season.date
-                    ? new Date(season.date).toLocaleDateString('sv-SE', { year: 'numeric', month: 'long', day: 'numeric' })
-                    : '';
-                const standings = season.standings || [];
-                const rows = standings.map((s, i) => {
-                    const rankClass = ['rank-badge-1','rank-badge-2','rank-badge-3'][i] || '';
-                    const trophy = i === 0 ? ' 🏆' : '';
-                    return `<tr>
-                        <td><span class="rank-badge ${rankClass}">${i+1}</span></td>
-                        <td><strong>${s.player}</strong>${trophy}</td>
-                        <td><strong>${s.points}</strong></td>
-                        <td>${s.correctPreds ?? '–'}</td>
-                        <td>${s.bonusCount ?? '–'}</td>
-                    </tr>`;
-                }).join('');
-
-                return `<div class="app-card" style="margin-bottom:12px;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-                        <div class="app-card-title" style="margin-bottom:0;">${season.name || 'Säsong'}</div>
-                        ${dateStr ? `<div style="font-size:.78em;color:#9ca3af;">${dateStr}</div>` : ''}
-                    </div>
-                    <table class="leaderboard-table">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th style="text-align:left;">Spelare</th>
-                                <th>Poäng</th>
-                                <th>Rätt</th>
-                                <th>Exakta</th>
-                            </tr>
-                        </thead>
-                        <tbody>${rows || '<tr><td colspan="5" style="text-align:center;color:#9ca3af;padding:12px;">Inga spelare</td></tr>'}</tbody>
-                    </table>
-                </div>`;
-            }).join('');
-
-            container.innerHTML = cards;
-        }
-
-        // ─── Spara säsong till historik ───────────────────────────────────────────
-        window.adminSaveSeason = async function() {
-            if (!isAdmin()) return;
-
-            const nameInput = document.getElementById('seasonNameInput');
-            const name = (nameInput?.value || '').trim();
-            if (!name) { showAppMsg('❌ Ange ett säsongsnamn', 'error'); return; }
-
-            if (!leaguePlayers.length) { showAppMsg('❌ Inga spelare i ligan', 'error'); return; }
-
-            // Bygg ställning (samma logik som leaderboard)
-            const standings = leaguePlayers.map(player => {
-                let totalPoints = 0, correctPreds = 0, bonusCount = 0;
-                matches.forEach(match => {
-                    if (match.actualOutcome && match.actualOutcome !== 'POSTPONED') {
-                        totalPoints += getCachedPoints(match.id, player);
-                        if (predictions[match.id]?.[player] === match.actualOutcome) correctPreds++;
-                        if (match.actualScore && exactPredictions[match.id]?.[player] === match.actualScore) bonusCount++;
-                    }
-                });
-                return { player, points: totalPoints, correctPreds, bonusCount };
-            }).sort((a, b) => b.points !== a.points ? b.points - a.points : b.bonusCount - a.bonusCount);
-
-            const winner = standings[0]?.player || '';
-
-            const entry = {
-                name,
-                date: new Date().toISOString().split('T')[0],
-                winner,
-                standings
-            };
-
-            try {
-                const histRef = ref(database, `leagues/${currentLeagueCode}/seasonHistory`);
-                const snap = await get(histRef);
-                const existing = snap.val();
-                let arr = existing ? (Array.isArray(existing) ? existing : Object.values(existing)) : [];
-                arr.push(entry);
-                await set(histRef, arr);
-                showAppMsg(`✅ Säsongen "${name}" sparad! Vinnare: ${winner}`, 'success');
-                if (nameInput) nameInput.value = '';
-                await logActivity('ADMIN_SAVE_SEASON', `Sparade säsong: ${name}, vinnare: ${winner}`);
-            } catch (err) {
-                showAppMsg('❌ Kunde inte spara: ' + err.message, 'error');
-            }
-        };
-
-        // ─── Nollställ säsong ─────────────────────────────────────────────────────
-        window.adminResetSeason = async function() {
-            if (!isAdmin()) return;
-            if (!confirm('⚠️ Nollställ säsongen?\n\nMatcher, tippningar och deadlines raderas.\nSpelare, lösenord och historik behålls.')) return;
-            if (!confirm('⚠️ SISTA VARNINGEN! Allt ovanstående raderas permanent.')) return;
-            try {
-                await logActivity('ADMIN_RESET_SEASON', 'Nollställde säsongen');
-                await set(ref(database, `leagues/${currentLeagueCode}/matches`), []);
-                await set(ref(database, `leagues/${currentLeagueCode}/predictions`), {});
-                await set(ref(database, `leagues/${currentLeagueCode}/exactPredictions`), {});
-                await set(ref(database, `leagues/${currentLeagueCode}/deadlines`), {});
-                showAppMsg('✅ Säsongen nollställd. Ladda in nya matcher.', 'success');
-            } catch (err) { showAppMsg('❌ ' + err.message, 'error'); }
-        };
 
         // ═══════════════════════════════════════════════════════════════
         // SESSION 1 – ADMIN / LANDNINGSSIDA
