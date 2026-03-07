@@ -1,5 +1,11 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-07 – Favicon, Apple Touch Icon & README-uppdatering
+
+### Nytt
+- Lade till favicon och Apple Touch Icon (`apple-touch-icon.png`) i `<head>`
+- Uppdaterade README.md med admin-notifikation och EmailJS-info
+
 ## 2026-03-07 – E-postnotifikation vid ny liga
 
 ### Nytt

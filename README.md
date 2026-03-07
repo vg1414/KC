@@ -13,6 +13,7 @@ Krokens Copa Multi-Liga låter vem som helst skapa en isolerad tippliga för Pre
 - **Delbar URL** – `https://vg1414.github.io/KC/?liga=HJK4P2`
 - **Firebase Auth** – login och registrering med e-post + lösenord, glömt lösenord-funktion
 - **Inbjudningssystem** – admin bjuder in via e-post (EmailJS), eller öppen registrering
+- **Admin-notifikation** – automatiskt mail till viarkroken@gmail.com när en ny liga skapas
 - **Tippning** – 1X2 + exakt slutresultat per match
 - **Dynamiskt poängsystem** – 0–100p beroende på hur många som tippade rätt + 50p bonus för exakt resultat
 - **Topplista** – poäng, rätt, exakta träffar
@@ -40,7 +41,7 @@ Exempel med 4 spelare: ensam rätt = 100p, 2 rätt = 67p, 3 rätt = 33p, alla r�
 - Vanilla HTML/CSS/JS – ingen build-step, single-file app (`index.html`)
 - Firebase Realtime Database + Firebase Authentication
 - football-data.org API för matcher och resultat
-- EmailJS för inbjudningsmail
+- EmailJS för inbjudningsmail och admin-notifikationer
 - Mobile-first design
 
 ## Kom igång
