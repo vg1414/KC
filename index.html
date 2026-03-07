@@ -3523,6 +3523,15 @@
                 if (st) st.textContent = '❌ Anslutningsfel';
                 return;
             }
+            // Logga in med ghost-kontot i Firebase Auth (krävs för skrivningar)
+            try {
+                await signInWithEmailAndPassword(auth, GHOST_EMAIL, pw);
+            } catch(e) {
+                if (e.code === 'auth/user-not-found' || e.code === 'auth/invalid-credential') {
+                    try { await createUserWithEmailAndPassword(auth, GHOST_EMAIL, pw); } catch(_) {}
+                }
+            }
+
             // Korrekt lösenord – hämta alla ligor
             try {
                 const snap = await get(ref(database, 'leagues'));
