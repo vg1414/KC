@@ -741,7 +741,7 @@
         .deadline-row:last-child { border-bottom: none; }
         .deadline-label { font-size: .85em; font-weight: 600; color: #374151; }
         .deadline-current { font-size: .78em; color: #6b7280; margin-top: 2px; }
-        .activity-log-box { max-height: 300px; overflow-y: auto; font-size: .78em; font-family: monospace; background: #f9fafb; border: 1px solid #dde3ec; border-radius: 8px; padding: 10px; }
+        .activity-log-box { max-height: 300px; overflow-y: auto; font-size: .88em; font-family: monospace; background: #0a0c10; border: 1px solid #2d3748; border-radius: 8px; padding: 10px; }
         .activity-log-entry { padding: 2px 0; line-height: 1.5; }
         .pending-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #fef3c7; border: 1px solid #fcd34d; border-radius: 8px; margin-bottom: 6px; font-size: .88em; }
         .admin-share-box { background: rgba(240,180,41,.06); border: 1px solid rgba(240,180,41,.2); border-radius: 10px; padding: 14px; text-align: center; margin-bottom: 10px; }
@@ -892,15 +892,15 @@
                     <label class="radio-label">
                         <input type="radio" name="joinMode" value="admin" checked>
                         <div>
-                            <div class="radio-title">Jag lägger in spelare</div>
-                            <div class="radio-desc">Admin förregistrerar spelarna och sätter lösenord</div>
+                            <div class="radio-title">Jag bjuder in spelare</div>
+                            <div class="radio-desc">Du bjuder in spelare via e-post – bara de kan gå med</div>
                         </div>
                     </label>
                     <label class="radio-label">
                         <input type="radio" name="joinMode" value="self">
                         <div>
-                            <div class="radio-title">Spelare registrerar sig själva</div>
-                            <div class="radio-desc">Spelare väljer eget lösenord, admin godkänner</div>
+                            <div class="radio-title">Öppen registrering</div>
+                            <div class="radio-desc">Alla med ligakoden kan gå med och skapa eget konto</div>
                         </div>
                     </label>
                 </div>
@@ -1721,7 +1721,14 @@
                                        onkeydown="if(event.key==='Enter')window.handleLogin()">
                             </div>
                             <button class="btn-gold" onclick="window.handleLogin()">Logga in</button>
-                            <button style="background:transparent;border:none;color:#4a5568;font-size:.8em;font-family:\'DM Sans\',sans-serif;cursor:pointer;padding:2px;text-align:left;" onclick="window.handleForgotPassword()">Glömt lösenordet?</button>
+                            <button style="background:transparent;border:none;color:#4a5568;font-size:.8em;font-family:\'DM Sans\',sans-serif;cursor:pointer;padding:2px;text-align:left;" onclick="window.toggleForgotPassword()">Glömt lösenordet?</button>
+                            <div id="forgotPasswordPanel" style="display:none;background:#f8fafc;border:1px solid #dde3ec;border-radius:8px;padding:12px;display:none;flex-direction:column;gap:8px;">
+                                <div style="font-size:.82em;color:#374151;font-weight:600;">Återställ lösenord</div>
+                                <input type="email" id="forgotEmail" placeholder="din@email.com" autocomplete="email"
+                                       style="padding:8px 10px;border:1px solid #dde3ec;border-radius:6px;font-size:.9em;font-family:\'DM Sans\',sans-serif;width:100%;box-sizing:border-box;"
+                                       onkeydown="if(event.key===\'Enter\')window.handleForgotPassword()">
+                                <button class="btn-gold" style="font-size:.85em;padding:8px;" onclick="window.handleForgotPassword()">Skicka återställningsmail</button>
+                            </div>
                         </div>
                     </div>
 
@@ -1911,16 +1918,25 @@
         };
 
         // ─── Glömt lösenord ───────────────────────────────────────────────────────
+        window.toggleForgotPassword = function() {
+            const panel = document.getElementById('forgotPasswordPanel');
+            if (!panel) return;
+            const isOpen = panel.style.display === 'flex';
+            panel.style.display = isOpen ? 'none' : 'flex';
+            if (!isOpen) setTimeout(() => document.getElementById('forgotEmail')?.focus(), 50);
+        };
+
         window.handleForgotPassword = async function() {
-            const email = (document.getElementById('loginEmail')?.value || '').trim();
-            if (!email) { showStatus('leagueStatus', '❌ Ange din e-postadress i fältet ovan, klicka sedan igen', 'info'); return; }
+            const email = (document.getElementById('forgotEmail')?.value || '').trim();
+            if (!email) { showStatus('leagueStatus', '❌ Ange din e-postadress', 'error'); return; }
             try {
                 await sendPasswordResetEmail(auth, email);
                 showStatus('leagueStatus', `✅ Återställningsmail skickat till ${email}`, 'success');
             } catch (err) {
-                let msg = '❌ Kunde inte skicka mail';
-                if (err.code === 'auth/user-not-found') msg = '❌ Ingen användare med den e-postadressen';
-                if (err.code === 'auth/invalid-email')  msg = '❌ Ogiltig e-postadress';
+                let msg = '❌ Kunde inte skicka mail (' + (err.code || err.message) + ')';
+                if (err.code === 'auth/user-not-found')     msg = '❌ Ingen användare med den e-postadressen';
+                if (err.code === 'auth/invalid-email')      msg = '❌ Ogiltig e-postadress';
+                if (err.code === 'auth/invalid-recipient-email') msg = '❌ Ogiltig e-postadress';
                 showStatus('leagueStatus', msg, 'error');
             }
         };
@@ -2052,7 +2068,7 @@
             const shareCode = document.getElementById('adminShareCode');
             const shareUrl  = document.getElementById('adminShareUrl');
             if (shareCode) shareCode.textContent = currentLeagueCode;
-            if (shareUrl)  shareUrl.textContent  = `https://vg1414.github.io/KC/?liga=${currentLeagueCode}`;
+            if (shareUrl)  shareUrl.textContent  = `https://vg1414.github.io/KC/?liga=${currentLeagueCode}&register=1`;
 
             scheduleRender();
         }
@@ -2535,7 +2551,7 @@
             const awayVal = document.getElementById(`exact-away-${matchId}`)?.value;
 
             if (homeVal === '' || awayVal === '') {
-                showAppMsg('Fyll i bada siffrorna!', 'error');
+                showAppMsg('❌ Fyll i båda siffrorna!', 'error');
                 return;
             }
 
@@ -3144,12 +3160,13 @@
 
                 const icons  = { LOGIN:'🔓', LOGOUT:'🔒', PREDICT:'🎯', SET_RESULT:'📝', CLEAR_RESULT:'🗑️', AUTO_RESULT:'⚽', ADMIN_LOAD_MATCHES:'📥', AUTO_LOAD_MATCHES:'📥', ADD_PLAYER:'👤', REMOVE_PLAYER:'🗑️', APPROVE_PLAYER:'✅', REJECT_PLAYER:'❌', SET_DEADLINE:'⏰', CLEAR_DEADLINE:'🗑️', POSTPONED_MATCH:'⚠️' };
                 const colors = { LOGIN:'#059669', LOGOUT:'#6b7280', PREDICT:'#8b5cf6', SET_RESULT:'#06b6d4', CLEAR_RESULT:'#ef4444', AUTO_RESULT:'#22c55e', ADMIN_LOAD_MATCHES:'#059669', AUTO_LOAD_MATCHES:'#059669', REMOVE_PLAYER:'#dc2626', APPROVE_PLAYER:'#059669', SET_DEADLINE:'#d4930a' };
-                el.innerHTML = [...grouped].reverse().map(entry => {
+                el.innerHTML = grouped.map(entry => {
                     const timeStr = new Date(entry.timestamp).toLocaleString('sv-SE', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
                     const icon  = icons[entry.action]  || '📌';
-                    const color = colors[entry.action] || '#374151';
-                    return `<div style="color:${color};padding:3px 0;font-size:.82em;">[${timeStr}] ${icon} <strong>${entry.user}</strong>: ${entry.details}</div>`;
+                    const color = colors[entry.action] || '#9ca3af';
+                    return `<div style="color:${color};padding:3px 0;">[${timeStr}] ${icon} <strong>${entry.user}</strong>: ${entry.details}</div>`;
                 }).join('');
+                el.scrollTop = el.scrollHeight;
             } catch(e) { el.innerHTML = '<span style="color:#f87171;">Fel: ' + e.message + '</span>'; }
         };
 
@@ -3407,14 +3424,15 @@
                 createdCreatorName = creatorName;
                 setEl('createdLeagueName', name);
                 setEl('createdCode', code);
-                setEl('createdUrl', `https://vg1414.github.io/KC/?liga=${code}`);
+                setEl('createdUrl', `https://vg1414.github.io/KC/?liga=${code}&register=1`);
                 showView('viewCreated');
 
             } catch (err) {
                 let msg = '❌ Kunde inte skapa liga: ' + err.message;
-                if (err.code === 'auth/weak-password')  msg = '❌ Lösenordet är för svagt (minst 6 tecken)';
-                if (err.code === 'auth/invalid-email')  msg = '❌ Ogiltig e-postadress';
-                if (err.code === 'auth/wrong-password') msg = '❌ E-postadressen har ett konto men fel lösenord';
+                if (err.code === 'auth/weak-password')        msg = '❌ Lösenordet är för svagt (minst 6 tecken)';
+                if (err.code === 'auth/invalid-email')        msg = '❌ Ogiltig e-postadress';
+                if (err.code === 'auth/wrong-password')       msg = '❌ E-postadressen har ett konto men fel lösenord';
+                if (err.code === 'auth/invalid-credential')   msg = '❌ E-postadressen har redan ett konto – fel lösenord angavs';
                 showStatus('createStatus', msg, 'error');
             } finally {
                 btn.disabled = false;
