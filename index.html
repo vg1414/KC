@@ -1931,7 +1931,7 @@
             if (!email) { showStatus('leagueStatus', '❌ Ange din e-postadress', 'error'); return; }
             try {
                 await sendPasswordResetEmail(auth, email);
-                showStatus('leagueStatus', `✅ Återställningsmail skickat till ${email}`, 'success');
+                showStatus('leagueStatus', `✅ Återställningsmail skickat till ${email} – kolla även skräpposten!`, 'success');
             } catch (err) {
                 let msg = '❌ Kunde inte skicka mail (' + (err.code || err.message) + ')';
                 if (err.code === 'auth/user-not-found')     msg = '❌ Ingen användare med den e-postadressen';
