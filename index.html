@@ -1995,6 +1995,9 @@
             currentUserUID = uid;
             clearStatus('leagueStatus');
 
+            // Logga inloggning (ej ghost)
+            if (name !== '__ghost__') logActivity('LOGIN', 'Loggade in');
+
             // Uppdatera app-header
             const userBadge = document.querySelector('.app-user-badge');
             if (userBadge) userBadge.style.display = isGhost() ? 'none' : '';
@@ -3099,10 +3102,32 @@
                 const snap = await get(ref(database, `leagues/${currentLeagueCode}/activityLog`));
                 const data = snap.val();
                 if (!data) { el.innerHTML = '<span style="color:#9ca3af;">Ingen aktivitet ännu.</span>'; return; }
-                const entries = Array.isArray(data) ? data : Object.values(data);
-                const icons = { LOGIN:'🔓', LOGOUT:'🔒', AUTO_LOGIN:'⚡', FIRST_LOGIN:'✨', PREDICT:'🎯', SET_RESULT:'📝', CLEAR_RESULT:'🗑️', AUTO_RESULT:'⚽', ADMIN_LOAD_MATCHES:'📥', ADD_PLAYER:'👤', REMOVE_PLAYER:'🗑️', APPROVE_PLAYER:'✅', REJECT_PLAYER:'❌', SET_DEADLINE:'⏰', CLEAR_DEADLINE:'🗑️', POSTPONED_MATCH:'⚠️' };
-                const colors = { LOGIN:'#059669', LOGOUT:'#6b7280', PREDICT:'#8b5cf6', SET_RESULT:'#06b6d4', CLEAR_RESULT:'#ef4444', AUTO_RESULT:'#22c55e', ADMIN_LOAD_MATCHES:'#059669', REMOVE_PLAYER:'#dc2626', APPROVE_PLAYER:'#059669', SET_DEADLINE:'#d4930a' };
-                el.innerHTML = [...entries].reverse().map(entry => {
+                const raw = Array.isArray(data) ? data : Object.values(data);
+
+                // Gruppera PREDICT-poster från samma spelare inom 10 minuter
+                const BATCH_MS = 10 * 60 * 1000;
+                const sorted = [...raw].sort((a, b) => a.timestamp - b.timestamp);
+                const grouped = [];
+                for (const entry of sorted) {
+                    const last = grouped[grouped.length - 1];
+                    if (
+                        entry.action === 'PREDICT' &&
+                        last?._action === 'PREDICT' &&
+                        last?.user === entry.user &&
+                        (entry.timestamp - last._lastTs) <= BATCH_MS
+                    ) {
+                        last._count++;
+                        last._lastTs = entry.timestamp;
+                        last.timestamp = entry.timestamp;
+                        last.details = `Tippade ${last._count} matcher`;
+                    } else {
+                        grouped.push({ ...entry, _action: entry.action, _count: 1, _lastTs: entry.timestamp });
+                    }
+                }
+
+                const icons  = { LOGIN:'🔓', LOGOUT:'🔒', PREDICT:'🎯', SET_RESULT:'📝', CLEAR_RESULT:'🗑️', AUTO_RESULT:'⚽', ADMIN_LOAD_MATCHES:'📥', AUTO_LOAD_MATCHES:'📥', ADD_PLAYER:'👤', REMOVE_PLAYER:'🗑️', APPROVE_PLAYER:'✅', REJECT_PLAYER:'❌', SET_DEADLINE:'⏰', CLEAR_DEADLINE:'🗑️', POSTPONED_MATCH:'⚠️' };
+                const colors = { LOGIN:'#059669', LOGOUT:'#6b7280', PREDICT:'#8b5cf6', SET_RESULT:'#06b6d4', CLEAR_RESULT:'#ef4444', AUTO_RESULT:'#22c55e', ADMIN_LOAD_MATCHES:'#059669', AUTO_LOAD_MATCHES:'#059669', REMOVE_PLAYER:'#dc2626', APPROVE_PLAYER:'#059669', SET_DEADLINE:'#d4930a' };
+                el.innerHTML = [...grouped].reverse().map(entry => {
                     const timeStr = new Date(entry.timestamp).toLocaleString('sv-SE', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
                     const icon  = icons[entry.action]  || '📌';
                     const color = colors[entry.action] || '#374151';

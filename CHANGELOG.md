@@ -1,5 +1,14 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-07 – Aktivitetslogg: inloggningar + grupperade tipp-poster
+
+### Aktivitetslogg förbättrad
+- Inloggningar loggas nu som `LOGIN`-poster (visas som 🔓 grönt) – ej för ghost
+- PREDICT-poster från samma spelare inom 10 minuter grupperas till en enda rad, t.ex. "Tippade 8 matcher"
+- Grupperingen sker vid rendering (raw-data i Firebase oförändrad)
+
+---
+
 ## 2026-03-07 – Superadmin-panel: ligaöversikt med skapare och radering
 
 ### Superadmin-overlay uppgraderad
