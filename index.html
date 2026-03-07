@@ -1,0 +1,3661 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Krokens Copa</title>
+    <meta name="theme-color" content="#0a0c10">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        /* ── Bas – mörk "Matchnight"-bakgrund (landningssida) ── */
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0c10;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 24px 16px 60px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(240,180,41,.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(240,180,41,.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            width: 700px;
+            height: 700px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -55%);
+            background: radial-gradient(circle, rgba(240,180,41,.06) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .page-wrap {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            animation: rise .55s cubic-bezier(.22,1,.36,1) both;
+        }
+
+        @keyframes rise {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Logotyp ── */
+        .logo-block { text-align: center; padding: 20px 0 8px; }
+
+        .logo-fish {
+            display: block;
+            font-size: 2.8em;
+            margin-bottom: 6px;
+            animation: swing 4s ease-in-out infinite;
+        }
+
+        @keyframes swing {
+            0%, 100% { transform: rotate(-5deg); }
+            50%       { transform: rotate(5deg); }
+        }
+
+        .logo-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 4.2em;
+            color: #e8edf5;
+            letter-spacing: .06em;
+            line-height: 1;
+        }
+
+        .logo-title span { color: #f0b429; }
+
+        .logo-sub {
+            font-size: .82em;
+            color: #4a5568;
+            margin-top: 6px;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+
+        /* ── Kort ── */
+        .card {
+            width: 100%;
+            background: #12161f;
+            border: 1px solid #1e2535;
+            border-radius: 16px;
+            padding: 28px 26px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .card-label {
+            font-size: .7em;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+            color: #8896aa;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        /* ── Fält ── */
+        .field { display: flex; flex-direction: column; gap: 6px; }
+
+        .field label {
+            font-size: .78em;
+            font-weight: 500;
+            color: #8896aa;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+        }
+
+        .field input,
+        .field select {
+            background: #0a0c10;
+            border: 1px solid #1e2535;
+            border-radius: 10px;
+            padding: 13px 16px;
+            color: #e8edf5;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1em;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+            width: 100%;
+        }
+
+        .field input:focus,
+        .field select:focus {
+            border-color: #f0b429;
+            box-shadow: 0 0 0 3px rgba(240,180,41,.12);
+        }
+
+        .field input::placeholder { color: #2d3748; }
+
+        .field select {
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238896aa' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 40px;
+            cursor: pointer;
+        }
+
+        .field select option { background: #1a1f2e; }
+
+        .code-input {
+            font-size: 1.6em !important;
+            font-weight: 700 !important;
+            letter-spacing: 6px !important;
+            text-align: center !important;
+            text-transform: uppercase;
+            color: #f0b429 !important;
+            font-family: monospace !important;
+        }
+
+        .field-hint { font-size: .76em; color: #2d3748; margin-top: -4px; }
+
+        /* ── Knappar ── */
+        .btn-gold {
+            width: 100%;
+            padding: 14px;
+            background: #f0b429;
+            color: #0a0c10;
+            border: none;
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1em;
+            font-weight: 700;
+            letter-spacing: .04em;
+            cursor: pointer;
+            transition: transform .15s, box-shadow .15s, background .15s;
+        }
+
+        .btn-gold:hover:not(:disabled) {
+            background: #f7c84a;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(240,180,41,.28);
+        }
+
+        .btn-gold:active { transform: translateY(0); box-shadow: none; }
+
+        .btn-ghost {
+            width: 100%;
+            padding: 13px;
+            background: transparent;
+            color: #8896aa;
+            border: 1px solid #1e2535;
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: .95em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: border-color .2s, color .2s;
+        }
+
+        .btn-ghost:hover:not(:disabled) { border-color: #3a4a5c; color: #e8edf5; }
+
+        .btn-green {
+            width: 100%;
+            padding: 14px;
+            background: #16a34a;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s, box-shadow .15s;
+        }
+
+        .btn-green:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(22,163,74,.3);
+        }
+
+        button:disabled { opacity: .45; cursor: not-allowed !important; transform: none !important; }
+
+        /* ── Statusmeddelanden (mörkt tema) ── */
+        .status { padding: 11px 14px; border-radius: 9px; font-size: .88em; font-weight: 500; line-height: 1.4; }
+        .status-error   { background: rgba(220,38,38,.15);  color: #f87171; border: 1px solid rgba(220,38,38,.25); }
+        .status-success { background: rgba(22,163,74,.15);  color: #4ade80; border: 1px solid rgba(22,163,74,.25); }
+        .status-info    { background: rgba(59,130,246,.12); color: #93c5fd; border: 1px solid rgba(59,130,246,.2); }
+
+        /* ── Kryssrutor ── */
+        .check-group { display: flex; flex-direction: column; gap: 8px; }
+
+        .check-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            padding: 11px 14px;
+            border: 1px solid #1e2535;
+            border-radius: 10px;
+            color: #c9d4e3;
+            font-size: .93em;
+            transition: border-color .2s, background .2s;
+        }
+
+        .check-label:hover { border-color: #2d3748; background: rgba(240,180,41,.03); }
+
+        .check-label:has(input:checked) {
+            border-color: rgba(240,180,41,.4);
+            background: rgba(240,180,41,.06);
+            color: #f0b429;
+        }
+
+        .check-label input[type="checkbox"] { width: 17px; height: 17px; accent-color: #f0b429; flex-shrink: 0; }
+
+        /* ── Radioknappar ── */
+        .radio-group { display: flex; flex-direction: column; gap: 8px; }
+
+        .radio-label {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            cursor: pointer;
+            padding: 13px 14px;
+            border: 1px solid #1e2535;
+            border-radius: 10px;
+            color: #c9d4e3;
+            transition: border-color .2s, background .2s;
+        }
+
+        .radio-label:hover { border-color: #2d3748; background: rgba(240,180,41,.03); }
+        .radio-label:has(input:checked) { border-color: rgba(240,180,41,.4); background: rgba(240,180,41,.06); }
+        .radio-label input[type="radio"] { width: 17px; height: 17px; accent-color: #f0b429; flex-shrink: 0; margin-top: 2px; }
+        .radio-title { font-weight: 600; font-size: .93em; color: #e8edf5; }
+        .radio-desc  { font-size: .8em; color: #4a5568; margin-top: 2px; }
+        .radio-label:has(input:checked) .radio-title { color: #f0b429; }
+        .radio-label:has(input:checked) .radio-desc  { color: #8896aa; }
+
+        /* ── Delningsruta ── */
+        .share-box {
+            background: rgba(240,180,41,.06);
+            border: 1px solid rgba(240,180,41,.2);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .share-box-label { font-size: .7em; letter-spacing: .15em; text-transform: uppercase; color: #8896aa; margin-bottom: 6px; }
+
+        .share-code {
+            font-size: 3em;
+            font-weight: 800;
+            letter-spacing: 8px;
+            color: #f0b429;
+            font-family: monospace;
+            margin: 4px 0 14px;
+        }
+
+        .share-url {
+            background: #0a0c10;
+            border: 1px solid #1e2535;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: .8em;
+            color: #8896aa;
+            word-break: break-all;
+        }
+
+        /* ── Tävlingsbrickor ── */
+        .comp-badges { display: flex; gap: 7px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
+        .comp-badge { padding: 3px 11px; border-radius: 20px; font-size: .78em; font-weight: 600; }
+        .comp-badge-pl { background: rgba(59,130,246,.15);  color: #93c5fd; }
+        .comp-badge-cl { background: rgba(139,92,246,.15);  color: #c4b5fd; }
+        .comp-badge-wc { background: rgba(240,180,41,.15);  color: #f0b429; }
+
+        /* ── Liga-header (i login-vyn) ── */
+        .league-header {
+            text-align: center;
+            padding: 10px 0 18px;
+            border-bottom: 1px solid #1e2535;
+            margin-bottom: 18px;
+        }
+
+        .league-header .fish { font-size: 2em; margin-bottom: 6px; }
+
+        .league-name {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2em;
+            color: #e8edf5;
+            letter-spacing: .05em;
+        }
+
+        .league-code-badge {
+            display: inline-block;
+            background: rgba(240,180,41,.1);
+            color: #f0b429;
+            padding: 3px 14px;
+            border-radius: 20px;
+            font-size: .82em;
+            font-weight: 700;
+            margin-top: 6px;
+            letter-spacing: 4px;
+            font-family: monospace;
+            border: 1px solid rgba(240,180,41,.2);
+        }
+
+        /* ── Hittades inte ── */
+        .not-found-box { text-align: center; padding: 20px 0; }
+        .not-found-box .emoji { font-size: 2.8em; margin-bottom: 12px; }
+        .not-found-box h2 { color: #e8edf5; font-size: 1.3em; margin-bottom: 8px; }
+        .not-found-box p  { color: #4a5568; font-size: .92em; margin-bottom: 20px; line-height: 1.5; }
+
+        /* ── Laddar ── */
+        .loading-box { text-align: center; padding: 30px 0; color: #4a5568; }
+
+        .spinner {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            border: 2px solid #1e2535;
+            border-top-color: #f0b429;
+            border-radius: 50%;
+            animation: spin .75s linear infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Admin-inloggad-badge ── */
+        .admin-badge {
+            background: rgba(22,163,74,.12);
+            border: 1px solid rgba(22,163,74,.25);
+            border-radius: 9px;
+            padding: 10px 14px;
+            font-size: .85em;
+            color: #4ade80;
+            font-weight: 600;
+        }
+
+        /* ── Avdelare ── */
+        .or-divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #1e2535;
+            font-size: .8em;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            width: 100%;
+        }
+
+        .or-divider::before,
+        .or-divider::after { content: ''; flex: 1; height: 1px; background: #1e2535; }
+
+        /* ── Signatur ── */
+        .signature { position: relative; z-index: 1; text-align: center; padding-top: 16px; font-size: .7em; color: rgba(255,255,255,.15); }
+
+        /* ── Mobile tweaks (mörkt tema) ── */
+        @media (max-width: 440px) {
+            .logo-title { font-size: 3.6em; }
+            .share-code { font-size: 2.4em; letter-spacing: 6px; }
+        }
+
+        /* ════════════════════════════════════════════════════════════
+           HUVUD-APP (ljust tema efter inloggning)
+           ════════════════════════════════════════════════════════════ */
+
+        #viewApp {
+            position: fixed;
+            inset: 0;
+            background: #f0f4f8;
+            overflow-y: auto;
+            z-index: 50;
+        }
+
+        /* ── App-header (kompakt mörk) ── */
+        .app-header {
+            background: #1e2535;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 52px;
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            box-shadow: 0 2px 8px rgba(0,0,0,.2);
+        }
+
+        .app-header-left { display: flex; align-items: center; gap: 8px; }
+
+        .app-header-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.35em;
+            color: #e8edf5;
+            letter-spacing: .05em;
+            line-height: 1;
+        }
+
+        .app-header-title span { color: #f0b429; }
+
+        .app-league-chip {
+            background: rgba(240,180,41,.12);
+            color: #f0b429;
+            font-size: .72em;
+            font-weight: 600;
+            padding: 2px 10px;
+            border-radius: 12px;
+            max-width: 130px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .app-header-right { display: flex; align-items: center; gap: 10px; }
+
+        .app-user-badge { font-size: .8em; color: #8896aa; }
+
+        .app-logout-btn {
+            background: transparent;
+            border: 1px solid #2d3748;
+            color: #8896aa;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: .8em;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            transition: border-color .2s, color .2s;
+        }
+
+        .app-logout-btn:hover { border-color: #4a5568; color: #e8edf5; }
+
+        /* ── Tabs ── */
+        .app-tabs-wrap {
+            background: white;
+            border-bottom: 1px solid #dde3ec;
+            position: sticky;
+            top: 52px;
+            z-index: 15;
+        }
+
+        .app-tabs {
+            display: flex;
+            overflow-x: auto;
+            scrollbar-width: none;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .app-tabs::-webkit-scrollbar { display: none; }
+
+        .app-tab {
+            padding: 12px 18px;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: #6b7280;
+            font-family: 'DM Sans', sans-serif;
+            font-size: .88em;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: color .2s, border-color .2s;
+        }
+
+        .app-tab:hover { color: #d4930a; }
+
+        .app-tab.active { color: #d4930a; border-bottom-color: #d4930a; font-weight: 600; }
+
+        /* ── Content-area ── */
+        .app-content { max-width: 700px; margin: 0 auto; padding: 16px; padding-bottom: 48px; }
+
+        /* ── App-kort ── */
+        .app-card {
+            background: white;
+            border: 1px solid #dde3ec;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 12px;
+        }
+
+        .app-card-title { font-size: .92em; font-weight: 600; color: #1e2535; margin-bottom: 14px; }
+
+        /* ── Statusmeddelanden (ljust tema) ── */
+        .app-msg { border-radius: 8px; padding: 10px 14px; font-size: .88em; font-weight: 500; margin-bottom: 12px; }
+        .app-msg-success { background: #d1fae5; color: #065f46; }
+        .app-msg-error   { background: #fee2e2; color: #991b1b; }
+        .app-msg-info    { background: #fef3c7; color: #92400e; }
+
+        /* ── Tipp-counter ── */
+        #tippCountLabel { font-size: .88em; font-weight: 600; margin-bottom: 12px; }
+
+        /* ── Matchgrupper ── */
+        .round-group { background: white; border: 1px solid #dde3ec; border-radius: 10px; overflow: hidden; margin-bottom: 10px; }
+
+        .round-header {
+            background: #1e2535;
+            color: white;
+            padding: 11px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: .88em;
+            user-select: none;
+        }
+
+        .round-header:hover { background: #253147; }
+
+        .round-meta { font-weight: 400; color: #8896aa; margin-left: 8px; font-size: .88em; }
+
+        .round-toggle { font-size: .9em; transition: transform .25s; }
+        .round-toggle.collapsed { transform: rotate(-90deg); }
+
+        .round-body { overflow: hidden; max-height: 9000px; transition: max-height .3s ease; }
+        .round-body.collapsed { max-height: 0; }
+
+        /* ── Match-kort (Matcher-flik) ── */
+        .match-item { padding: 14px; border-bottom: 1px solid #f0f4f8; font-size: .88em; }
+        .match-item:last-child { border-bottom: none; }
+        .match-teams { font-weight: 600; color: #1e2535; margin-bottom: 3px; }
+        .match-meta  { color: #6b7280; font-size: .82em; margin-bottom: 6px; }
+
+        .pred-row           { padding: 3px 0; font-size: .84em; }
+        .pred-row-correct   { color: #059669; font-weight: 600; }
+        .pred-row-wrong     { color: #dc2626; }
+        .pred-row-pending   { color: #059669; }
+        .pred-row-waiting   { color: #9ca3af; }
+        .pred-row-postponed { color: #d97706; }
+
+        .pts-badge           { padding: 1px 6px; border-radius: 10px; font-size: .8em; font-weight: 600; margin-left: 4px; }
+        .pts-badge-correct   { background: #d1fae5; color: #065f46; }
+        .pts-badge-wrong     { background: #f3f4f6; color: #9ca3af; }
+
+        /* ── Prediction-kort (Tippa-flik) ── */
+        .pred-match { background: white; border: 1px solid #dde3ec; border-radius: 10px; padding: 16px; margin-bottom: 10px; position: relative; }
+        .pred-match.locked { background: #f9fafb; }
+
+        .pred-match-meta { text-align: center; color: #9ca3af; font-size: .8em; margin-bottom: 10px; }
+
+        .pred-card-header { text-align: center; font-size: 1.05em; font-weight: 700; color: #1e2535; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #f0f4f8; }
+        .pred-card-header-vs { color: #d4930a; }
+
+        .pred-locked-status { display: flex; justify-content: space-between; align-items: center; font-size: .82em; color: #6b7280; margin-bottom: 10px; gap: 8px; }
+        .pred-locked-chip { background: #f3f4f6; color: #9ca3af; padding: 2px 8px; border-radius: 4px; font-size: .78em; font-weight: 700; letter-spacing: .04em; flex-shrink: 0; }
+
+        .predictions-revealed { background: #f9fafb; border-radius: 8px; padding: 10px 12px; margin-top: 8px; }
+        .predictions-revealed h4 { color: #d4930a; font-size: .85em; margin-bottom: 8px; }
+
+        .prediction-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #f0f4f8; font-size: .85em; color: #374151; }
+        .prediction-row:last-child { border-bottom: none; }
+
+        /* ── Score-entry (tippning) ── */
+        .score-entry { padding: 4px 0; }
+
+        .score-entry-teams { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px; }
+
+        .score-team { font-weight: 700; font-size: .9em; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #1e2535; }
+        .score-team-home { text-align: right; }
+        .score-team-away { text-align: left; }
+
+        .score-inputs { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
+        .score-dash { font-weight: bold; color: #9ca3af; }
+
+        .score-input {
+            width: 44px;
+            padding: 7px 2px;
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: 700;
+            border: 2px solid #dde3ec;
+            border-radius: 8px;
+            flex-shrink: 0;
+            -moz-appearance: textfield;
+            font-family: 'DM Sans', sans-serif;
+            color: #1e2535;
+            transition: border-color .2s;
+            background: white;
+        }
+
+        .score-input::-webkit-outer-spin-button,
+        .score-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .score-input:focus { outline: none; border-color: #d4930a; box-shadow: 0 0 0 2px rgba(212,147,10,.15); }
+
+        .score-label { text-align: center; margin-bottom: 8px; min-height: 20px; font-size: .85em; }
+        .score-saved-msg { text-align: center; color: #d4930a; font-weight: 600; margin-top: 6px; font-size: .85em; }
+
+        .btn-save-pred {
+            display: block; width: 100%; padding: 9px;
+            background: #f0b429; color: #0a0c10;
+            border: none; border-radius: 8px;
+            font-family: 'DM Sans', sans-serif; font-size: .9em; font-weight: 700;
+            cursor: pointer; transition: background .15s, transform .1s;
+        }
+
+        .btn-save-pred:hover { background: #f7c84a; transform: translateY(-1px); }
+        .btn-save-pred:active { transform: none; }
+
+        /* ── Deadline-chips ── */
+        .deadlines-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+
+        .deadline-chip { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-radius: 8px; font-size: .82em; font-weight: 600; flex-wrap: wrap; }
+        .deadline-chip-open   { background: #d1fae5; color: #065f46; }
+        .deadline-chip-locked { background: #fee2e2; color: #991b1b; }
+
+        .deadline-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+        .deadline-chip-open   .deadline-dot { background: #059669; }
+        .deadline-chip-locked .deadline-dot { background: #dc2626; }
+
+        .deadline-countdown { margin-left: auto; font-size: 1em; font-weight: 800; }
+
+        /* ── Spara-animation ── */
+        @keyframes saveFlash {
+            0%   { background: white; box-shadow: none; }
+            25%  { background: #d1fae5; box-shadow: 0 0 0 3px #10b981; }
+            60%  { background: #d1fae5; box-shadow: 0 0 0 3px #10b981; }
+            100% { background: white; box-shadow: none; }
+        }
+
+        .pred-save-flash { animation: saveFlash .9s ease forwards; }
+
+        /* ── Tom-state ── */
+        .empty-state { text-align: center; padding: 32px 16px; color: #9ca3af; font-size: .9em; line-height: 1.5; }
+
+        /* ── Leaderboard (placeholder för Session 3) ── */
+        .leaderboard-placeholder { text-align: center; padding: 40px 16px; color: #9ca3af; }
+        .leaderboard-placeholder .big-icon { font-size: 2.5em; margin-bottom: 10px; }
+
+        @media (max-width: 440px) {
+            .app-league-chip { display: none; }
+            .app-user-badge { display: none; }
+        }
+
+        /* ── Topplista-tabell ── */
+        .leaderboard-table { width: 100%; border-collapse: collapse; font-size: .88em; }
+        .leaderboard-table th { background: #d4930a; color: white; padding: 9px 10px; text-align: center; font-weight: 600; font-size: .82em; text-transform: uppercase; letter-spacing: .05em; }
+        .leaderboard-table th:nth-child(2) { text-align: left; }
+        .leaderboard-table td { padding: 9px 10px; border-bottom: 1px solid #f0f4f8; vertical-align: middle; text-align: center; }
+        .leaderboard-table td:nth-child(2) { text-align: left; }
+        .leaderboard-table tr:last-child td { border-bottom: none; }
+        .leaderboard-table tr:hover td { background: #f9fafb; }
+        .rank-badge { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; font-weight: 700; font-size: .82em; background: #f0f4f8; color: #6b7280; }
+        .rank-badge-1 { background: #f0b429; color: #0a0c10; }
+        .rank-badge-2 { background: #e2e8f0; color: #1e2535; }
+        .rank-badge-3 { background: rgba(180,83,9,.15); color: #9a3412; }
+
+        /* ── Titel-chips (Sniper/Nostradamus/Unicorn) ── */
+        .title-chip { border-radius: 12px; padding: 13px 16px; margin-bottom: 10px; }
+        .title-chip-header { font-size: .7em; letter-spacing: .12em; text-transform: uppercase; font-weight: 600; margin-bottom: 3px; opacity: .75; }
+        .title-chip-name { font-size: 1em; font-weight: 700; }
+        .title-chip-detail { font-size: .8em; margin-top: 2px; opacity: .75; }
+        .title-chip-sniper { background: #fef3c7; color: #92400e; }
+        .title-chip-nostradamus { background: #ede9fe; color: #5b21b6; }
+        .title-chip-unicorn { background: #fce7f3; color: #9d174d; }
+
+        /* ── Admin-panel ── */
+        .admin-section { background: white; border: 1px solid #dde3ec; border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
+        .admin-section-header { background: #1e2535; color: white; padding: 12px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: .88em; user-select: none; }
+        .admin-section-header:hover { background: #253147; }
+        .admin-section-body { padding: 16px; display: none; }
+        .admin-section-body.open { display: block; }
+        .admin-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; align-items: flex-end; }
+        .admin-field { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 120px; }
+        .admin-field label { font-size: .75em; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: .05em; }
+        .admin-field input, .admin-field select { padding: 9px 12px; border: 1px solid #dde3ec; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: .9em; color: #1e2535; background: white; width: 100%; }
+        .admin-field input:focus, .admin-field select:focus { outline: none; border-color: #d4930a; }
+        .btn-admin { padding: 9px 14px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: .85em; font-weight: 600; cursor: pointer; border: none; transition: background .15s, transform .1s; white-space: nowrap; }
+        .btn-admin:hover { transform: translateY(-1px); }
+        .btn-admin:active { transform: none; }
+        .btn-admin-primary { background: #f0b429; color: #0a0c10; }
+        .btn-admin-primary:hover { background: #f7c84a; }
+        .btn-admin-secondary { background: #e2e8f0; color: #1e2535; }
+        .btn-admin-secondary:hover { background: #cbd5e1; }
+        .btn-admin-danger { background: #fee2e2; color: #991b1b; }
+        .btn-admin-danger:hover { background: #fecaca; }
+        .btn-admin-green { background: #d1fae5; color: #065f46; }
+        .btn-admin-green:hover { background: #a7f3d0; }
+        .admin-log { background: #0a0c10; color: #4ade80; font-family: monospace; font-size: .75em; padding: 12px; border-radius: 8px; max-height: 200px; overflow-y: auto; white-space: pre-wrap; margin-top: 10px; display: none; }
+        .player-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+        .player-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #f9fafb; border: 1px solid #dde3ec; border-radius: 8px; font-size: .88em; }
+        .player-item-name { font-weight: 600; color: #1e2535; }
+        .deadline-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f0f4f8; flex-wrap: wrap; }
+        .deadline-row:last-child { border-bottom: none; }
+        .deadline-label { font-size: .85em; font-weight: 600; color: #374151; }
+        .deadline-current { font-size: .78em; color: #6b7280; margin-top: 2px; }
+        .activity-log-box { max-height: 300px; overflow-y: auto; font-size: .78em; font-family: monospace; background: #f9fafb; border: 1px solid #dde3ec; border-radius: 8px; padding: 10px; }
+        .activity-log-entry { padding: 2px 0; line-height: 1.5; }
+        .pending-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #fef3c7; border: 1px solid #fcd34d; border-radius: 8px; margin-bottom: 6px; font-size: .88em; }
+        .admin-share-box { background: rgba(240,180,41,.06); border: 1px solid rgba(240,180,41,.2); border-radius: 10px; padding: 14px; text-align: center; margin-bottom: 10px; }
+        .admin-share-code { font-size: 2em; font-weight: 800; letter-spacing: 6px; color: #d4930a; font-family: monospace; }
+        .admin-share-url { font-size: .78em; color: #6b7280; word-break: break-all; margin-top: 4px; }
+        .auto-fetch-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; flex-wrap: wrap; }
+        .auto-fetch-status { font-size: .85em; font-weight: 600; }
+        .auto-fetch-on { color: #059669; }
+        .auto-fetch-off { color: #9ca3af; }
+
+        /* ── Resultat-modal ── */
+        .result-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 16px; }
+        .result-modal { background: white; border-radius: 16px; padding: 24px; width: 100%; max-width: 360px; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+        .result-modal-title { font-weight: 700; font-size: 1.05em; color: #1e2535; margin-bottom: 4px; text-align: center; }
+        .result-modal-match { text-align: center; color: #6b7280; font-size: .85em; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid #f0f4f8; }
+        .result-modal-score { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; }
+        .result-modal-team { font-weight: 600; font-size: .85em; flex: 1; color: #374151; }
+        .result-modal-team-home { text-align: right; }
+        .result-modal-team-away { text-align: left; }
+        .result-modal-input { width: 48px; padding: 8px 4px; text-align: center; font-size: 1.3em; font-weight: 700; border: 2px solid #dde3ec; border-radius: 8px; -moz-appearance: textfield; font-family: 'DM Sans', sans-serif; color: #1e2535; }
+        .result-modal-input::-webkit-outer-spin-button, .result-modal-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+        .result-modal-input:focus { outline: none; border-color: #d4930a; }
+        .result-modal-special { font-size: .82em; color: #d97706; text-align: center; min-height: 18px; margin-bottom: 12px; }
+        .result-modal-btns { display: flex; gap: 8px; }
+        .result-set-btn { display: block; width: 100%; padding: 6px 10px; margin-top: 6px; background: #f0f4f8; color: #1e2535; border: none; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: .82em; font-weight: 600; cursor: pointer; text-align: left; }
+        .result-set-btn:hover { background: #e2e8f0; }
+    </style>
+</head>
+<body>
+
+    <!-- ── Loading ── -->
+    <div id="viewLoading" class="page-wrap">
+        <div class="logo-block">
+            <span class="logo-fish">🎣</span>
+            <div class="logo-title">KROKENS <span>COPA</span></div>
+        </div>
+        <div class="card">
+            <div class="loading-box">
+                <div class="spinner"></div>
+                <p>Laddar...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Landningssida ── -->
+    <div id="viewLanding" class="page-wrap" style="display:none">
+        <div class="logo-block">
+            <span class="logo-fish" id="landingFish">🎣</span>
+            <div class="logo-title">KROKENS <span>COPA</span></div>
+        </div>
+
+        <div id="recentLeaguesSection" style="display:none;width:100%;">
+            <div class="card" style="gap:10px;">
+                <div class="card-label">🕐 Dina senaste ligor</div>
+                <div id="recentLeaguesList" style="display:flex;flex-direction:column;gap:8px;"></div>
+            </div>
+            <div class="or-divider">eller ange kod</div>
+        </div>
+
+        <div class="card">
+            <div class="card-label">🎣 Gå med i en liga</div>
+            <div id="landingStatus"></div>
+            <div class="field">
+                <input type="text" class="code-input" id="codeInput"
+                       placeholder="HJK4P2" maxlength="6"
+                       autocomplete="off" spellcheck="false"
+                       onkeydown="if(event.key==='Enter')window.goToLeague()">
+            </div>
+            <button class="btn-gold" id="goBtn" onclick="window.goToLeague()">Gå till liga &rarr;</button>
+        </div>
+
+        <div class="or-divider">eller</div>
+
+        <div class="card">
+            <div class="card-label">➕ Skapa ny liga</div>
+            <button class="btn-gold" onclick="window.showCreateForm()">Skapa liga &rarr;</button>
+        </div>
+    </div>
+
+    <!-- ── Skapa ny liga ── -->
+    <div id="viewCreate" class="page-wrap" style="display:none">
+        <div class="logo-block">
+            <span class="logo-fish">🎣</span>
+            <div class="logo-title">KROKENS <span>COPA</span></div>
+        </div>
+
+        <div class="card">
+            <div class="card-label">Skapa ny liga</div>
+            <div id="createStatus"></div>
+
+            <div class="field">
+                <label>Ditt visningsnamn i ligan</label>
+                <input type="text" id="creatorName" placeholder="T.ex. Anna" maxlength="40" autocomplete="off">
+            </div>
+
+            <div class="field">
+                <label>Din e-post</label>
+                <input type="email" id="creatorEmail" placeholder="din@email.com" autocomplete="email">
+            </div>
+
+            <div class="field">
+                <label>Välj lösenord</label>
+                <input type="password" id="creatorPassword" placeholder="••••••••">
+                <span class="field-hint">Du använder detta för att logga in som admin.</span>
+            </div>
+
+            <div class="field">
+                <label>Liganamn</label>
+                <input type="text" id="leagueName" placeholder="T.ex. VM 2026" maxlength="60">
+            </div>
+
+            <div class="field">
+                <label>Tävlingar (minst en)</label>
+                <div class="check-group">
+                    <label class="check-label"><input type="checkbox" id="compPL" onchange="window.updateCreateRounds()"> ⚽ Premier League</label>
+                    <label class="check-label"><input type="checkbox" id="compCL" onchange="window.updateCreateRounds()"> 🏆 Champions League</label>
+                    <label class="check-label"><input type="checkbox" id="compWC" onchange="window.updateCreateRounds()"> 🌍 VM (Världsmästerskapet)</label>
+                </div>
+            </div>
+
+            <div class="field" id="createRoundsSection" style="display:none">
+                <label>Antal omgångar att hämta</label>
+                <span class="field-hint" style="margin-top:2px;">Matcherna hämtas automatiskt när du loggar in som admin första gången.</span>
+                <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
+                    <div id="createPlRoundsWrap" style="display:none;align-items:center;gap:10px;display:none;">
+                        <label style="font-size:.82em;color:#8896aa;width:160px;">⚽ Premier League</label>
+                        <input type="number" id="createPlRounds" value="2" min="1" max="10"
+                            style="background:#0a0c10;border:1px solid #1e2535;border-radius:10px;padding:10px 14px;color:#e8edf5;font-family:'DM Sans',sans-serif;font-size:1em;width:80px;outline:none;">
+                    </div>
+                    <div id="createClRoundsWrap" style="display:none;align-items:center;gap:10px;">
+                        <label style="font-size:.82em;color:#8896aa;width:160px;">🏆 Champions League</label>
+                        <input type="number" id="createClRounds" value="2" min="1" max="10"
+                            style="background:#0a0c10;border:1px solid #1e2535;border-radius:10px;padding:10px 14px;color:#e8edf5;font-family:'DM Sans',sans-serif;font-size:1em;width:80px;outline:none;">
+                    </div>
+                    <div id="createWcRoundsWrap" style="display:none;align-items:center;gap:10px;">
+                        <label style="font-size:.82em;color:#8896aa;width:160px;">🌍 VM</label>
+                        <input type="number" id="createWcRounds" value="2" min="1" max="10"
+                            style="background:#0a0c10;border:1px solid #1e2535;border-radius:10px;padding:10px 14px;color:#e8edf5;font-family:'DM Sans',sans-serif;font-size:1em;width:80px;outline:none;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Spelregistrering</label>
+                <div class="radio-group">
+                    <label class="radio-label">
+                        <input type="radio" name="joinMode" value="admin" checked>
+                        <div>
+                            <div class="radio-title">Jag lägger in spelare</div>
+                            <div class="radio-desc">Admin förregistrerar spelarna och sätter lösenord</div>
+                        </div>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="joinMode" value="self">
+                        <div>
+                            <div class="radio-title">Spelare registrerar sig själva</div>
+                            <div class="radio-desc">Spelare väljer eget lösenord, admin godkänner</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <button class="btn-gold" onclick="window.createLeague()" id="createBtn">🎣 Skapa liga</button>
+            <button class="btn-ghost" onclick="window.showLanding()">← Avbryt</button>
+        </div>
+    </div>
+
+    <!-- ── Liga skapad ── -->
+    <div id="viewCreated" class="page-wrap" style="display:none">
+        <div class="logo-block">
+            <span class="logo-fish">🎣</span>
+            <div class="logo-title">KROKENS <span>COPA</span></div>
+        </div>
+
+        <div class="card">
+            <div style="text-align:center;padding:4px 0 8px;">
+                <div style="font-size:2.5em;margin-bottom:8px;">🎉</div>
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:1.8em;color:#4ade80;letter-spacing:.05em;">Ligan är skapad!</div>
+                <div id="createdLeagueName" style="color:#8896aa;font-size:.88em;margin-top:4px;"></div>
+            </div>
+
+            <div class="share-box">
+                <div class="share-box-label">Ligakod</div>
+                <div class="share-code" id="createdCode"></div>
+                <div class="share-url" id="createdUrl"></div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:8px;">
+                <button class="btn-gold" id="copyCodeBtn" onclick="window.copyCode()">📋 Kopiera kod</button>
+                <button class="btn-ghost" id="copyUrlBtn" onclick="window.copyUrl()">🔗 Kopiera länk</button>
+            </div>
+
+            <div style="border-top:1px solid #1e2535;padding-top:16px;">
+                <button class="btn-gold" onclick="window.goToCreatedLeague()">Gå till ligan &rarr;</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Liga hittades inte ── -->
+    <div id="viewNotFound" class="page-wrap" style="display:none">
+        <div class="logo-block">
+            <span class="logo-fish">🎣</span>
+            <div class="logo-title">KROKENS <span>COPA</span></div>
+        </div>
+
+        <div class="card">
+            <div class="not-found-box">
+                <div class="emoji">🔍</div>
+                <h2>Ligan hittades inte</h2>
+                <p id="notFoundMsg">Koden du angav finns inte.</p>
+                <button class="btn-gold" onclick="window.showLanding()">← Tillbaka</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Login-vy (liga hittad) ── -->
+    <div id="viewLeague" class="page-wrap" style="display:none">
+        <div class="logo-block">
+            <span class="logo-fish" id="viewLeagueFish" style="cursor:default;">🎣</span>
+            <div class="logo-title" style="cursor:pointer;" onclick="window.showLanding()">KROKENS <span>COPA</span></div>
+        </div>
+
+        <div class="card">
+            <div class="league-header">
+                <div class="fish">🏆</div>
+                <div class="league-name" id="leagueNameDisplay"></div>
+                <div class="league-code-badge" id="leagueCodeDisplay"></div>
+                <div class="comp-badges" id="leagueCompBadges"></div>
+            </div>
+
+            <div style="background:rgba(240,180,41,.08);border:1px solid rgba(240,180,41,.2);border-radius:10px;padding:10px 13px;font-size:.8em;color:#c9a227;line-height:1.5;">
+                📌 <strong>Kom ihåg ligakoden!</strong> Du behöver den för att komma tillbaka till ligan. Bokmärk den här sidan i webbläsaren så hittar du alltid tillbaka.
+            </div>
+
+            <div id="leagueStatus"></div>
+
+            <!-- Login-formulär injiceras av JS baserat på joinMode -->
+            <div id="loginFormContainer"></div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         HUVUD-APP (visas efter inloggning, täcker hela skärmen)
+         ═══════════════════════════════════════════════════════════════ -->
+    <div id="viewApp" style="display:none">
+
+        <!-- Kompakt mörk header -->
+        <div class="app-header">
+            <div class="app-header-left">
+                <span style="font-size:1.2em;cursor:pointer;" onclick="window.showLanding()">🎣</span>
+                <span class="app-header-title" style="cursor:pointer;" onclick="window.showLanding()">Krokens<span>Copa</span></span>
+                <span class="app-league-chip" id="appLeagueName"></span>
+            </div>
+            <div class="app-header-right">
+                <span class="app-user-badge">👤 <span id="appUserName"></span></span>
+                <button class="app-logout-btn" onclick="window.handleLogout()">Logga ut</button>
+            </div>
+        </div>
+
+        <!-- Tab-bar -->
+        <div class="app-tabs-wrap">
+            <div class="app-tabs">
+                <button class="app-tab active" data-tab="tippning" onclick="window.switchTab('tippning')">🎯 Tippa</button>
+                <button class="app-tab" data-tab="matcher" onclick="window.switchTab('matcher')">📅 Matcher</button>
+                <button class="app-tab" data-tab="topplista" onclick="window.switchTab('topplista')">🏆 Topplista</button>
+                <button class="app-tab" data-tab="historik" onclick="window.switchTab('historik')">📜 Historik</button>
+                <button class="app-tab" id="adminTab" data-tab="admin" style="display:none" onclick="window.switchTab('admin')">⚙️ Admin</button>
+            </div>
+        </div>
+
+        <!-- Tab-innehåll -->
+        <div class="app-content">
+
+            <!-- Tippa -->
+            <div id="tab-tippning" class="tab-content">
+                <div id="appStatus"></div>
+                <p id="tippCountLabel"></p>
+                <div id="predictionsList"></div>
+            </div>
+
+            <!-- Matcher -->
+            <div id="tab-matcher" class="tab-content" style="display:none">
+                <div id="matchesList"></div>
+            </div>
+
+            <!-- Topplista -->
+            <div id="tab-topplista" class="tab-content" style="display:none">
+                <div id="sniperSection" style="display:none" class="title-chip title-chip-sniper">
+                    <div class="title-chip-header">🎯 Ligans Sniper</div>
+                    <div class="title-chip-name" id="sniperName"></div>
+                    <div class="title-chip-detail" id="sniperDetails"></div>
+                </div>
+                <div id="nostradamusSection" style="display:none" class="title-chip title-chip-nostradamus">
+                    <div class="title-chip-header">🔮 Ligans Nostradamus</div>
+                    <div class="title-chip-name" id="nostradamusLeader"></div>
+                    <div class="title-chip-detail" id="nostradamusLeaderDetail"></div>
+                </div>
+                <div id="unicornSection" style="display:none" class="title-chip title-chip-unicorn">
+                    <div class="title-chip-header">🦄 Ligans Unicorn</div>
+                    <div class="title-chip-name" id="unicornLeader"></div>
+                    <div class="title-chip-detail" id="unicornLeaderDetail"></div>
+                </div>
+                <div class="app-card">
+                    <div class="app-card-title">🏆 Topplista</div>
+                    <div style="overflow-x:auto;">
+                        <table class="leaderboard-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Spelare</th>
+                                    <th>Poäng</th>
+                                    <th>Rätt</th>
+                                    <th>🔮</th>
+                                    <th>Snitt</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leaderboardBody">
+                                <tr><td colspan="6" style="text-align:center;color:#9ca3af;padding:24px;">Laddar...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Historik -->
+            <div id="tab-historik" class="tab-content" style="display:none">
+                <div id="historyContent"></div>
+            </div>
+
+            <!-- Admin -->
+            <div id="tab-admin" class="tab-content" style="display:none">
+
+                <!-- Ligainfo -->
+                <div class="admin-section">
+                    <div class="admin-section-header" onclick="window.toggleAdminSection(this)">
+                        🎣 Ligainfo &amp; Delning <span class="admin-toggle-icon">▼</span>
+                    </div>
+                    <div class="admin-section-body open">
+                        <div class="admin-share-box">
+                            <div style="font-size:.7em;letter-spacing:.12em;text-transform:uppercase;color:#8896aa;margin-bottom:4px;">Ligakod</div>
+                            <div class="admin-share-code" id="adminShareCode"></div>
+                            <div class="admin-share-url" id="adminShareUrl"></div>
+                        </div>
+                        <div style="display:flex;gap:8px;">
+                            <button class="btn-admin btn-admin-primary" style="flex:1" id="adminCopyCodeBtn" onclick="window.adminCopyCode()">📋 Kopiera kod</button>
+                            <button class="btn-admin btn-admin-secondary" style="flex:1" id="adminCopyUrlBtn" onclick="window.adminCopyUrl()">🔗 Kopiera länk</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ladda matcher -->
+                <div class="admin-section">
+                    <div class="admin-section-header" onclick="window.toggleAdminSection(this)">
+                        📥 Ladda matcher från API <span class="admin-toggle-icon">▼</span>
+                    </div>
+                    <div class="admin-section-body">
+                        <div class="admin-row">
+                            <div class="admin-field">
+                                <label>Tävling</label>
+                                <select id="adminCompSelect" onchange="window.updateCompFields()">
+                                    <option value="PL">⚽ Premier League</option>
+                                    <option value="CL">🏆 Champions League</option>
+                                    <option value="WC">🌍 VM</option>
+                                    <option value="BOTH">PL + CL</option>
+                                </select>
+                            </div>
+                            <div class="admin-field" id="plRoundsWrap">
+                                <label>PL-omgångar</label>
+                                <input type="number" id="adminPlRounds" value="2" min="1" max="10">
+                            </div>
+                            <div class="admin-field" id="clRoundsWrap" style="display:none">
+                                <label>CL-omgångar</label>
+                                <input type="number" id="adminClRounds" value="2" min="1" max="10">
+                            </div>
+                            <div class="admin-field" id="wmRoundsWrap" style="display:none">
+                                <label>VM-omgångar</label>
+                                <input type="number" id="adminWmRounds" value="2" min="1" max="10">
+                            </div>
+                        </div>
+                        <button class="btn-admin btn-admin-primary" onclick="window.adminLoadMatches()">📥 Hämta och spara matcher</button>
+                        <div class="admin-log" id="adminLoadLog"></div>
+                    </div>
+                </div>
+
+                <!-- Hämta resultat -->
+                <div class="admin-section">
+                    <div class="admin-section-header" onclick="window.toggleAdminSection(this)">
+                        ⚽ Hämta resultat <span class="admin-toggle-icon">▼</span>
+                    </div>
+                    <div class="admin-section-body">
+                        <div class="auto-fetch-row">
+                            <span class="auto-fetch-status auto-fetch-on" id="autoFetchStatus">✅ Auto (var 15 min)</span>
+                            <button class="btn-admin btn-admin-secondary" onclick="window.manualFetchResults()">🔄 Hämta nu</button>
+                        </div>
+                        <div style="font-size:.78em;color:#6b7280;margin-bottom:8px;" id="lastFetchStatus">Senast: –</div>
+                        <div class="admin-log" id="fetchLog"></div>
+                    </div>
+                </div>
+
+                <!-- Spelare -->
+                <div class="admin-section">
+                    <div class="admin-section-header" onclick="window.toggleAdminSection(this)">
+                        👥 Spelare <span class="admin-toggle-icon">▼</span>
+                    </div>
+                    <div class="admin-section-body">
+                        <div id="pendingPlayersSection" style="display:none;margin-bottom:14px;">
+                            <div style="font-size:.82em;font-weight:600;color:#92400e;margin-bottom:6px;">⏳ Väntande ansökningar</div>
+                            <div id="pendingPlayerList"></div>
+                        </div>
+                        <div class="player-list" id="adminPlayerList"></div>
+                        <div class="admin-row">
+                            <div class="admin-field">
+                                <label>Lägg till spelare</label>
+                                <input type="text" id="newPlayerInput" placeholder="Namn..." autocomplete="off">
+                            </div>
+                            <button class="btn-admin btn-admin-primary" onclick="window.adminAddPlayer()">Lägg till</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Deadlines -->
+                <div class="admin-section">
+                    <div class="admin-section-header" onclick="window.toggleAdminSection(this)">
+                        ⏰ Spelstopp (Deadlines) <span class="admin-toggle-icon">▼</span>
+                    </div>
+                    <div class="admin-section-body">
+                        <div id="adminDeadlinesList"></div>
+                    </div>
+                </div>
+
+                <!-- API-nyckel (endast ghost-admin) -->
+                <div id="apiKeySection" style="display:none">
+                <div class="admin-section">
+                    <div class="admin-section-header" onclick="window.toggleAdminSection(this)">
+                        🔑 API-nyckel <span class="admin-toggle-icon">▼</span>
+                    </div>
+                    <div class="admin-section-body">
+                        <div class="admin-row">
+                            <div class="admin-field">
+                                <label>football-data.org API-nyckel</label>
+                                <input type="password" id="apiKeyInput" placeholder="••••••••••••••••">
+                            </div>
+                            <button class="btn-admin btn-admin-primary" onclick="window.adminSaveApiKey()">Spara</button>
+                        </div>
+                        <div style="font-size:.78em;color:#6b7280;" id="apiKeyStatus"></div>
+                    </div>
+                </div>
+                </div>
+
+                <!-- Aktivitetslogg -->
+                <div class="admin-section">
+                    <div class="admin-section-header" onclick="window.toggleAdminSection(this)">
+                        📋 Aktivitetslogg <span class="admin-toggle-icon">▼</span>
+                    </div>
+                    <div class="admin-section-body">
+                        <button class="btn-admin btn-admin-secondary" style="margin-bottom:10px;" onclick="window.renderActivityLog()">🔄 Uppdatera</button>
+                        <div class="activity-log-box" id="activityLogBox">
+                            <span style="color:#9ca3af;">Klicka "Uppdatera" för att visa loggen.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Spara säsong till historik -->
+                <div class="admin-section">
+                    <div class="admin-section-header" onclick="window.toggleAdminSection(this)">
+                        📚 Spara säsong till historik <span class="admin-toggle-icon">▼</span>
+                    </div>
+                    <div class="admin-section-body">
+                        <div class="admin-field" style="margin-bottom:10px;">
+                            <label>Säsongsnamn</label>
+                            <input type="text" id="seasonNameInput" placeholder="T.ex. Säsong 1 – VM 2026" maxlength="80">
+                        </div>
+                        <p style="font-size:.85em;color:#6b7280;margin-bottom:12px;">Sparar nuvarande ställning till historiken. Används typiskt innan du nollställer säsongen.</p>
+                        <button class="btn-admin btn-admin-primary" style="width:100%;padding:11px;" onclick="window.adminSaveSeason()">📚 Spara säsong</button>
+                    </div>
+                </div>
+
+                <!-- Nollställ säsong -->
+                <div class="admin-section">
+                    <div class="admin-section-header" onclick="window.toggleAdminSection(this)">
+                        🔄 Nollställ säsong <span class="admin-toggle-icon">▼</span>
+                    </div>
+                    <div class="admin-section-body">
+                        <p style="font-size:.85em;color:#6b7280;margin-bottom:12px;">Raderar matcher, tippningar och deadlines. Spelare, lösenord och historik behålls.</p>
+                        <button class="btn-admin btn-admin-danger" style="width:100%;padding:11px;" onclick="window.adminResetSeason()">💣 Nollställ säsongen</button>
+                    </div>
+                </div>
+
+            </div><!-- /tab-admin -->
+
+        </div><!-- /app-content -->
+    </div><!-- /viewApp -->
+
+    <!-- ── Superadmin-overlay (från landningssidan) ── -->
+    <div id="superAdminOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:none;align-items:center;justify-content:center;padding:24px;">
+        <div style="background:#12161f;border:1px solid #1e2535;border-radius:16px;padding:28px 26px;width:100%;max-width:380px;display:flex;flex-direction:column;gap:14px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.6em;color:#f0b429;letter-spacing:.06em;text-align:center;">SUPERADMIN</div>
+            <!-- Steg 1: lösenord -->
+            <div id="saStep1">
+                <div style="display:flex;gap:8px;">
+                    <input type="password" id="saPw" placeholder="•" autocomplete="off"
+                        style="background:#0a0c10;border:1px solid #1e2535;border-radius:10px;padding:13px 16px;color:#e8edf5;font-family:'DM Sans',sans-serif;font-size:1em;flex:1;outline:none;"
+                        onkeydown="if(event.key==='Enter')window.handleSuperAdminLogin()">
+                    <button onclick="window.handleSuperAdminLogin()" style="background:#1e2535;border:1px solid #1e2535;border-radius:10px;color:#8896aa;padding:0 18px;font-size:1.1em;cursor:pointer;">→</button>
+                </div>
+                <div id="saStatus" style="font-size:.82em;color:#f87171;margin-top:6px;min-height:18px;"></div>
+            </div>
+            <!-- Steg 2: välj liga -->
+            <div id="saStep2" style="display:none;flex-direction:column;gap:12px;">
+                <div style="font-size:.78em;font-weight:500;color:#8896aa;letter-spacing:.06em;text-transform:uppercase;">Välj liga</div>
+                <select id="saLeagueSelect" style="background:#0a0c10;border:1px solid #1e2535;border-radius:10px;padding:13px 16px;color:#e8edf5;font-family:'DM Sans',sans-serif;font-size:1em;outline:none;width:100;cursor:pointer;">
+                    <option value="">Laddar ligor...</option>
+                </select>
+                <button onclick="window.superAdminGoToLeague()" style="background:#f0b429;color:#0a0c10;border:none;border-radius:10px;padding:14px;font-family:'DM Sans',sans-serif;font-size:1em;font-weight:700;cursor:pointer;width:100%;">Gå till liga →</button>
+                <button onclick="window.superAdminDeleteLeague()" style="background:transparent;color:#f87171;border:1px solid rgba(248,113,113,.35);border-radius:10px;padding:11px;font-family:'DM Sans',sans-serif;font-size:.9em;font-weight:600;cursor:pointer;width:100%;">🗑 Radera vald liga</button>
+            </div>
+            <button onclick="window.closeSuperAdminOverlay()" style="background:transparent;color:#4a5568;border:none;font-size:.85em;cursor:pointer;padding:4px;">Avbryt</button>
+        </div>
+    </div>
+
+    <!-- ── Resultat-modal (admin) ── -->
+    <div id="resultModal" style="display:none" class="result-modal-overlay" onclick="if(event.target===this)window.closeResultModal()">
+        <div class="result-modal">
+            <div class="result-modal-title">Sätt resultat</div>
+            <div class="result-modal-match" id="modalMatchInfo"></div>
+            <div class="result-modal-score">
+                <span class="result-modal-team result-modal-team-home" id="modalScoreHome"></span>
+                <input type="number" min="0" max="99" id="modalHomeScore" class="result-modal-input" placeholder="?">
+                <span style="font-weight:bold;color:#9ca3af;">–</span>
+                <input type="number" min="0" max="99" id="modalAwayScore" class="result-modal-input" placeholder="?">
+                <span class="result-modal-team result-modal-team-away" id="modalScoreAway"></span>
+            </div>
+            <div class="result-modal-special" id="modalSpecialStatus"></div>
+            <div class="result-modal-btns">
+                <button class="btn-admin btn-admin-danger" style="flex:1" onclick="window.setModalPostponed()">⚠️ Inställd</button>
+                <button class="btn-admin btn-admin-secondary" style="flex:1" onclick="window.closeResultModal()">Avbryt</button>
+                <button class="btn-admin btn-admin-primary" style="flex:1" onclick="window.saveModalResult()">✅ Spara</button>
+            </div>
+            <button class="result-set-btn" onclick="window.clearModalResult()">🗑️ Rensa resultat</button>
+        </div>
+    </div>
+
+    <div class="signature">Made by: David Hefner</div>
+
+    <script type="module">
+        import { initializeApp }                            from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, set, get, onValue, push } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB-bBX07bnuMMfEJhsrSppMOmlHRUZQbWk",
+            authDomain: "krokenscopa-multi.firebaseapp.com",
+            databaseURL: "https://krokenscopa-multi-default-rtdb.firebaseio.com",
+            projectId: "krokenscopa-multi",
+            storageBucket: "krokenscopa-multi.firebasestorage.app",
+            messagingSenderId: "229733900548",
+            appId: "1:229733900548:web:3ba7951e00291678377051"
+        };
+
+        const CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+        // ─── State ────────────────────────────────────────────────────────────────
+        let database, auth;
+        let currentAuthUser  = null; // Firebase Auth user object
+        let currentUserUID   = null; // Firebase Auth UID
+        let createdLeagueCode = '';
+        let createdCreatorName = '';
+
+        // ─── Liga-state ───────────────────────────────────────────────────────────
+        let currentLeagueCode = '';
+        let currentLeagueInfo = {};
+        let currentUser       = null; // visningsnamn
+
+        let members          = {};   // { uid: { name, email, joinedAt } }
+        let invitedEmails    = {};   // { encodedEmail: true }
+        let pendingMembers   = {};   // { uid: { name, email, requestedAt } }
+        let leaguePlayers    = [];   // byggs från members
+
+        let matches          = [];
+        let predictions      = {};
+        let exactPredictions = {};
+        let deadlines        = {};
+        let seasonHistory    = [];   // behålls för trophyCache-kompatibilitet
+
+        let matchMap         = {};
+        let pointsCache      = {};
+        let trophyCache      = {};
+        let cachedFirstMatch = null;
+        let renderScheduled  = false;
+        let leagueUnsubscribers = [];
+
+        let plApiKey         = '';
+        let autoFetchInterval = null;
+        let currentModalMatchId = null;
+
+        // ─── Vy-lista (måste deklareras innan try-blocket anropar routeFromUrl) ──
+        const ALL_VIEWS = ['viewLoading','viewLanding','viewCreate','viewCreated','viewNotFound','viewLeague','viewApp'];
+
+        // ─── Firebase init ────────────────────────────────────────────────────────
+        try {
+            const app = initializeApp(firebaseConfig);
+            database = getDatabase(app);
+            auth     = getAuth(app);
+
+            let authInitialized = false;
+            onAuthStateChanged(auth, user => {
+                if (!authInitialized) {
+                    authInitialized  = true;
+                    currentAuthUser  = user;
+                    currentUserUID   = user?.uid || null;
+                    routeFromUrl();
+                } else {
+                    currentAuthUser = user;
+                    currentUserUID  = user?.uid || null;
+                }
+            });
+
+        } catch (err) {
+            console.error('Firebase-fel:', err);
+            setEl('notFoundMsg', 'Firebase-fel: ' + err.message);
+            showView('viewNotFound');
+        }
+
+        // ─── URL-routing ──────────────────────────────────────────────────────────
+        async function routeFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            const raw    = params.get('liga');
+
+            if (!raw) { renderRecentLeagues(); showView('viewLanding'); return; }
+
+            const code = raw.toUpperCase();
+            showView('viewLoading');
+
+            try {
+                const snap = await get(ref(database, `leagues/${code}`));
+                if (!snap.exists()) {
+                    setEl('notFoundMsg', `Ligan "${code}" hittades inte.`);
+                    showView('viewNotFound');
+                    return;
+                }
+                const data = snap.val();
+
+                // Om redan autentiserad – kolla om användaren är member i ligan
+                if (currentAuthUser) {
+                    const memberSnap = await get(ref(database, `leagues/${code}/members/${currentAuthUser.uid}`));
+                    if (memberSnap.exists()) {
+                        const member = memberSnap.val();
+                        setupLeagueView(code, data);
+                        activateSession(member.name, currentAuthUser.uid);
+                        return;
+                    }
+                }
+
+                setupLeagueView(code, data);
+            } catch (err) {
+                setEl('notFoundMsg', 'Kunde inte ansluta till databasen.');
+                showView('viewNotFound');
+            }
+        }
+
+        // ─── Vy-hantering ────────────────────────────────────────────────────────
+        function showView(id) {
+            ALL_VIEWS.forEach(v => {
+                const el = document.getElementById(v);
+                if (el) el.style.display = v === id ? '' : 'none';
+            });
+        }
+
+        // ─── Hjälp-funktioner ─────────────────────────────────────────────────────
+        function showStatus(containerId, msg, type) {
+            const el = document.getElementById(containerId);
+            if (!el) return;
+            el.innerHTML = '';
+            const div = document.createElement('div');
+            div.className = `status status-${type}`;
+            div.textContent = msg;
+            el.appendChild(div);
+        }
+
+        function showAppMsg(msg, type) {
+            const el = document.getElementById('appStatus');
+            if (!el) return;
+            el.innerHTML = '';
+            if (!msg) return;
+            const div = document.createElement('div');
+            div.className = `app-msg app-msg-${type}`;
+            div.textContent = msg;
+            el.appendChild(div);
+            if (type !== 'error') setTimeout(() => { el.innerHTML = ''; }, 4000);
+        }
+
+        function clearStatus(id) {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = '';
+        }
+
+        function setEl(id, text) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = text;
+        }
+
+        // ─── Namnvalidering ───────────────────────────────────────────────────────
+        function validateName(name) {
+            if (!name || name.length < 2) return 'Namnet måste ha minst 2 tecken';
+            if (/[.#$[\]]/.test(name)) return 'Namnet får inte innehålla . # $ [ ]';
+            return null;
+        }
+
+        // ─── SHA-256 (bevaras för ghost/superadmin) ───────────────────────────────
+        async function hashPassword(pw) {
+            const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+            return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+        }
+
+        // ─── Stubs (logActivity/fetchClientIP borttagna – stubs för kompatibilitet) ──
+        async function logActivity() {}
+        async function fetchClientIP() { return 'n/a'; }
+
+        // ─── Admin-hjälpfunktioner ────────────────────────────────────────────────
+        function isGhost() { return currentUser === '__ghost__'; }
+
+        function isAdmin() {
+            return isGhost() || !!(currentUserUID && currentUserUID === currentLeagueInfo.adminUID);
+        }
+
+        // ─── Ghost-trigger (klicksekvens) ─────────────────────────────────────────
+        let ghostClicks = 0;
+        let ghostTimer  = null;
+
+        function ghostTriggerFired() {
+            if (document.getElementById('ghostWrap')) return;
+            const container = document.getElementById('loginFormContainer');
+            if (!container) return;
+            const wrap = document.createElement('div');
+            wrap.id = 'ghostWrap';
+            wrap.style.cssText = 'margin-top:8px;';
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex;gap:8px;';
+            const inp = document.createElement('input');
+            inp.type = 'password';
+            inp.id   = 'ghostPw';
+            inp.autocomplete = 'off';
+            inp.placeholder  = '•';
+            inp.style.cssText = 'background:#0a0c10;border:1px solid #1e2535;border-radius:10px;padding:13px 16px;color:#e8edf5;font-family:\'DM Sans\',sans-serif;font-size:1em;flex:1;outline:none;';
+            inp.addEventListener('keydown', e => { if (e.key === 'Enter') window.handleGhostLogin(); });
+            const btn = document.createElement('button');
+            btn.textContent = '→';
+            btn.style.cssText = 'background:#1e2535;border:1px solid #1e2535;border-radius:10px;color:#8896aa;padding:0 18px;font-size:1.1em;cursor:pointer;flex-shrink:0;';
+            btn.addEventListener('click', () => window.handleGhostLogin());
+            row.appendChild(inp);
+            row.appendChild(btn);
+            wrap.appendChild(row);
+            container.appendChild(wrap);
+            setTimeout(() => { inp.focus(); wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 50);
+        }
+
+        function handleGhostClick() {
+            ghostClicks++;
+            clearTimeout(ghostTimer);
+            ghostTimer = setTimeout(() => { ghostClicks = 0; }, 4000);
+            if (ghostClicks >= 5) {
+                ghostClicks = 0;
+                clearTimeout(ghostTimer);
+                ghostTriggerFired();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const fish = document.getElementById('viewLeagueFish');
+            if (fish) fish.addEventListener('click', handleGhostClick);
+        });
+
+        // Backup: bind direkt om DOM redan är klar
+        const _fish = document.getElementById('viewLeagueFish');
+        if (_fish) _fish.addEventListener('click', handleGhostClick);
+
+        // ─── Ghost-inloggning ─────────────────────────────────────────────────────
+        window.handleGhostLogin = async function() {
+            const pw = (document.getElementById('ghostPw')?.value || '');
+            if (!pw) return;
+            const hash = await hashPassword(pw);
+            try {
+                const snap = await get(ref(database, 'config/mh'));
+                const stored = snap.val();
+                if (stored === null) {
+                    await set(ref(database, 'config/mh'), hash);
+                    activateSession('__ghost__', '__ghost__');
+                } else if (hash === stored) {
+                    activateSession('__ghost__', '__ghost__');
+                } else {
+                    const el = document.getElementById('ghostPw');
+                    if (el) el.value = '';
+                }
+            } catch(e) {
+                const el = document.getElementById('ghostPw');
+                if (el) el.value = '';
+            }
+        };
+
+
+        // ─── Datum-hjälpare ───────────────────────────────────────────────────────
+        function formatDateTime(dateStr) {
+            return new Date(dateStr).toLocaleString('sv-SE', {
+                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+        }
+
+        function formatCountdown(deadlineStr) {
+            const diff = new Date(deadlineStr) - new Date();
+            if (diff <= 0) return null;
+            const d = Math.floor(diff / 86400000);
+            const h = Math.floor((diff % 86400000) / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            if (d > 0) return `${d}d ${h}h ${m}m kvar`;
+            if (h > 0) return `${h}h ${m}m kvar`;
+            return `${m}m kvar`;
+        }
+
+        function updateCountdownSpans() {
+            document.querySelectorAll('[data-countdown]').forEach(el => {
+                const text = formatCountdown(el.dataset.countdown);
+                if (text) {
+                    el.textContent = text;
+                } else {
+                    scheduleRender();
+                }
+            });
+        }
+
+        setInterval(updateCountdownSpans, 60000);
+
+        // ─── Match-hjälpare ───────────────────────────────────────────────────────
+        function isMatchStarted(dateStr) { return new Date() >= new Date(dateStr); }
+
+        function getDeadlineKey(match) {
+            const comp = match.competition || (
+                match.id && match.id.startsWith('pl_') ? 'PL' :
+                match.id && match.id.startsWith('wc_') ? 'WC' : 'CL'
+            );
+            if (comp === 'PL') return 'PL';
+            if (comp === 'WC') return 'WC';
+            return match.stage ? `CL_${match.stage}` : 'CL';
+        }
+
+        function isMatchLocked(match) {
+            const key = getDeadlineKey(match);
+            const deadline = deadlines[key];
+            if (!deadline) return false;
+            return new Date() >= new Date(deadline);
+        }
+
+        // ─── Cache-rebuild ────────────────────────────────────────────────────────
+        function rebuildMatchMap() {
+            matchMap = {};
+            matches.forEach(m => { matchMap[m.id] = m; });
+            cachedFirstMatch = null;
+        }
+
+        function getMatch(matchId) {
+            return matchMap[matchId] || matches.find(m => m.id === matchId);
+        }
+
+        function rebuildTrophyCache() {
+            trophyCache = {};
+            leaguePlayers.forEach(player => {
+                let wins = 0;
+                (seasonHistory || []).forEach(s => { if (s.winner === player) wins++; });
+                if (wins === 0) { trophyCache[player] = ''; return; }
+                const stars   = Math.floor(wins / 5);
+                const trophies = wins % 5;
+                trophyCache[player] = `<span style="color:#f0b429;font-size:.8em;" title="${wins} säsongsvinst${wins > 1 ? 'er' : ''}">` +
+                    '⭐'.repeat(stars) + '🏆'.repeat(trophies) + '</span>';
+            });
+        }
+
+        function getPlayerTrophyHTML(player) { return trophyCache[player] ?? ''; }
+
+        function calculatePoints(matchId, player) {
+            const match = getMatch(matchId);
+            if (!match || !match.actualOutcome) return 0;
+            if (match.actualOutcome === 'POSTPONED') return 0;
+
+            let pts = 0;
+            const playerPred = predictions[matchId]?.[player];
+            if (playerPred && playerPred === match.actualOutcome) {
+                const sameCount   = Object.values(predictions[matchId] || {}).filter(p => p === playerPred).length;
+                const totalPlayers = leaguePlayers.length;
+                if (sameCount < totalPlayers && totalPlayers > 1) {
+                    pts = Math.round(100 * (totalPlayers - sameCount) / (totalPlayers - 1));
+                }
+            }
+
+            if (match.actualScore && exactPredictions[matchId]?.[player]) {
+                if (exactPredictions[matchId][player] === match.actualScore) pts += 50;
+            }
+
+            return pts;
+        }
+
+        function rebuildPointsCache() {
+            pointsCache = {};
+            matches.forEach(match => {
+                if (!match.actualOutcome) return;
+                pointsCache[match.id] = {};
+                leaguePlayers.forEach(player => {
+                    pointsCache[match.id][player] = calculatePoints(match.id, player);
+                });
+            });
+        }
+
+        function getCachedPoints(matchId, player) {
+            return pointsCache[matchId]?.[player] ?? 0;
+        }
+
+        // ─── Render-pipeline ──────────────────────────────────────────────────────
+        function scheduleRender() {
+            if (!currentUser) return;
+            if (renderScheduled) return;
+            renderScheduled = true;
+            requestAnimationFrame(() => {
+                renderScheduled = false;
+                rebuildMatchMap();
+                rebuildTrophyCache();
+                rebuildPointsCache();
+                renderPredictions();
+                renderMatches();
+                renderLeaderboard();
+                renderHistory();
+                if (isAdmin()) {
+                    renderAdminPlayers();
+                    renderAdminDeadlines();
+                }
+            });
+        }
+
+        // ─── Tab-hantering ────────────────────────────────────────────────────────
+        window.switchTab = function(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.app-tab').forEach(el => el.classList.remove('active'));
+            const tab = document.getElementById('tab-' + tabName);
+            if (tab) tab.style.display = '';
+            const btn = document.querySelector(`.app-tab[data-tab="${tabName}"]`);
+            if (btn) btn.classList.add('active');
+        };
+
+        // ─── Liga-vy & listeners ──────────────────────────────────────────────────
+        function setupLeagueView(code, data) {
+            currentLeagueCode = code;
+            currentLeagueInfo = data.info || {};
+            saveRecentLeague(code, currentLeagueInfo.name);
+
+            // Fyll liga-header i login-vyn
+            setEl('leagueNameDisplay', currentLeagueInfo.name || 'Okänd liga');
+            setEl('leagueCodeDisplay', code);
+
+            const badgesEl = document.getElementById('leagueCompBadges');
+            if (badgesEl) {
+                badgesEl.innerHTML = '';
+                const labels = { PL: '⚽ PL', CL: '🏆 CL', WC: '🌍 VM' };
+                (currentLeagueInfo.competitions || []).forEach(comp => {
+                    const span = document.createElement('span');
+                    span.className = `comp-badge comp-badge-${comp.toLowerCase()}`;
+                    span.textContent = labels[comp] || comp;
+                    badgesEl.appendChild(span);
+                });
+            }
+
+            // Rendera login-formulär
+            const container = document.getElementById('loginFormContainer');
+            if (container) {
+                container.innerHTML = buildLoginForm();
+            }
+
+            showView('viewLeague');
+            setupLeagueListeners(code);
+        }
+
+        function buildLoginForm() {
+            const isSelf = currentLeagueInfo.joinMode === 'self';
+            const tabStyle = 'flex:1;padding:10px;background:transparent;border:none;border-bottom:2px solid transparent;font-family:\'DM Sans\',sans-serif;font-size:.9em;font-weight:600;cursor:pointer;transition:color .2s,border-color .2s;';
+            return `
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                    <div style="display:flex;border-bottom:1px solid #1e2535;margin-bottom:4px;">
+                        <button id="tabLogin" style="${tabStyle}color:#f0b429;border-bottom-color:#f0b429;" onclick="window.switchAuthTab('login')">Logga in</button>
+                        <button id="tabRegister" style="${tabStyle}color:#4a5568;" onclick="window.switchAuthTab('register')">Registrera dig</button>
+                    </div>
+
+                    <div id="authLoginForm">
+                        <div style="display:flex;flex-direction:column;gap:12px;">
+                            <div class="field">
+                                <label>E-post</label>
+                                <input type="email" id="loginEmail" placeholder="din@email.com" autocomplete="email"
+                                       onkeydown="if(event.key==='Enter')window.handleLogin()">
+                            </div>
+                            <div class="field">
+                                <label>Lösenord</label>
+                                <input type="password" id="loginPassword" placeholder="••••••••"
+                                       onkeydown="if(event.key==='Enter')window.handleLogin()">
+                            </div>
+                            <button class="btn-gold" onclick="window.handleLogin()">Logga in</button>
+                            <button style="background:transparent;border:none;color:#4a5568;font-size:.8em;font-family:\'DM Sans\',sans-serif;cursor:pointer;padding:2px;text-align:left;" onclick="window.handleForgotPassword()">Glömt lösenordet?</button>
+                        </div>
+                    </div>
+
+                    <div id="authRegisterForm" style="display:none">
+                        <div style="display:flex;flex-direction:column;gap:12px;">
+                            ${isSelf ? `<div class="field">
+                                <label>Ditt visningsnamn i ligan</label>
+                                <input type="text" id="registerName" placeholder="T.ex. Anna" maxlength="40" autocomplete="off">
+                            </div>` : ''}
+                            <div class="field">
+                                <label>E-post</label>
+                                <input type="email" id="registerEmail" placeholder="din@email.com" autocomplete="email">
+                            </div>
+                            <div class="field">
+                                <label>Välj lösenord</label>
+                                <input type="password" id="registerPassword" placeholder="••••••••"
+                                       onkeydown="if(event.key==='Enter')window.handleRegister()">
+                            </div>
+                            ${!isSelf ? '<div style="font-size:.78em;color:#4a5568;">Du maste vara inbjuden av admin for att kunna ga med.</div>' : ''}
+                            <button class="btn-gold" onclick="window.handleRegister()">${isSelf ? 'Skicka ansökan' : 'Registrera dig'}</button>
+                        </div>
+                    </div>
+
+                    <button class="btn-ghost" onclick="window.showLanding()">← Tillbaka</button>
+                </div>`;
+        }
+
+        window.switchAuthTab = function(tab) {
+            const loginForm  = document.getElementById('authLoginForm');
+            const regForm    = document.getElementById('authRegisterForm');
+            const tabLogin   = document.getElementById('tabLogin');
+            const tabReg     = document.getElementById('tabRegister');
+            if (!loginForm || !regForm) return;
+            if (tab === 'login') {
+                loginForm.style.display = '';
+                regForm.style.display   = 'none';
+                if (tabLogin) { tabLogin.style.color = '#f0b429'; tabLogin.style.borderBottomColor = '#f0b429'; }
+                if (tabReg)   { tabReg.style.color   = '#4a5568'; tabReg.style.borderBottomColor   = 'transparent'; }
+            } else {
+                loginForm.style.display = 'none';
+                regForm.style.display   = '';
+                if (tabLogin) { tabLogin.style.color = '#4a5568'; tabLogin.style.borderBottomColor = 'transparent'; }
+                if (tabReg)   { tabReg.style.color   = '#f0b429'; tabReg.style.borderBottomColor   = '#f0b429'; }
+            }
+            clearStatus('leagueStatus');
+        };
+
+        function setupLeagueListeners(code) {
+            leagueUnsubscribers.forEach(u => u());
+            leagueUnsubscribers = [];
+
+            // Återställ state
+            members = {}; invitedEmails = {}; pendingMembers = {};
+            leaguePlayers = []; matches = [];
+            predictions = {}; exactPredictions = {}; deadlines = {};
+            seasonHistory = [];
+
+            const base = `leagues/${code}`;
+
+            leagueUnsubscribers.push(
+                onValue(ref(database, `${base}/members`), snap => {
+                    members = snap.val() || {};
+                    leaguePlayers = Object.values(members).map(m => m.name);
+                    if (currentUser) scheduleRender();
+                })
+            );
+
+            leagueUnsubscribers.push(
+                onValue(ref(database, `${base}/invitedEmails`), snap => {
+                    invitedEmails = snap.val() || {};
+                })
+            );
+
+            leagueUnsubscribers.push(
+                onValue(ref(database, `${base}/matches`), snap => {
+                    const data = snap.val();
+                    matches = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+                    cachedFirstMatch = null;
+                    if (currentUser) scheduleRender();
+                })
+            );
+
+            leagueUnsubscribers.push(
+                onValue(ref(database, `${base}/predictions`), snap => {
+                    predictions = snap.val() || {};
+                    if (currentUser) scheduleRender();
+                })
+            );
+
+            leagueUnsubscribers.push(
+                onValue(ref(database, `${base}/exactPredictions`), snap => {
+                    exactPredictions = snap.val() || {};
+                    if (currentUser) scheduleRender();
+                })
+            );
+
+            leagueUnsubscribers.push(
+                onValue(ref(database, `${base}/deadlines`), snap => {
+                    deadlines = snap.val() || {};
+                    if (currentUser) scheduleRender();
+                })
+            );
+
+            leagueUnsubscribers.push(
+                onValue(ref(database, `${base}/pendingMembers`), snap => {
+                    pendingMembers = snap.val() || {};
+                    if (isAdmin()) renderAdminPlayers();
+                })
+            );
+        }
+
+
+        // ─── Login (Firebase Auth) ────────────────────────────────────────────────
+        window.handleLogin = async function() {
+            const email    = (document.getElementById('loginEmail')?.value || '').trim();
+            const password = document.getElementById('loginPassword')?.value || '';
+
+            if (!email)    { showStatus('leagueStatus', '❌ Ange din e-postadress', 'error'); return; }
+            if (!password) { showStatus('leagueStatus', '❌ Ange ditt lösenord', 'error'); return; }
+
+            const btn = document.getElementById('authLoginForm')?.querySelector('.btn-gold');
+            if (btn) { btn.disabled = true; btn.textContent = '⏳ Loggar in...'; }
+
+            try {
+                const userCred = await signInWithEmailAndPassword(auth, email, password);
+                const user     = userCred.user;
+
+                const memberSnap = await get(ref(database, `leagues/${currentLeagueCode}/members/${user.uid}`));
+                if (memberSnap.exists()) {
+                    activateSession(memberSnap.val().name, user.uid);
+                } else {
+                    // Firebase-konto finns men inte med i denna liga – välj visningsnamn
+                    showNameSelectionForm(user);
+                }
+            } catch (err) {
+                let msg = '❌ Fel vid inloggning';
+                if (['auth/user-not-found','auth/wrong-password','auth/invalid-credential'].includes(err.code)) msg = '❌ Fel e-post eller lösenord';
+                else if (err.code === 'auth/too-many-requests') msg = '❌ For manga forsok – vanta en stund';
+                else if (err.code === 'auth/invalid-email')     msg = '❌ Ogiltig e-postadress';
+                showStatus('leagueStatus', msg, 'error');
+            } finally {
+                if (btn) { btn.disabled = false; btn.textContent = 'Logga in'; }
+            }
+        };
+
+        // ─── Registrering (Firebase Auth) ────────────────────────────────────────
+        window.handleRegister = async function() {
+            const joinMode = currentLeagueInfo.joinMode || 'admin';
+            const email    = (document.getElementById('registerEmail')?.value || '').trim();
+            const password = document.getElementById('registerPassword')?.value || '';
+            const name     = joinMode === 'self' ? (document.getElementById('registerName')?.value || '').trim() : '';
+
+            if (!email)    { showStatus('leagueStatus', '❌ Ange din e-postadress', 'error'); return; }
+            if (!password) { showStatus('leagueStatus', '❌ Valj ett losenord', 'error'); return; }
+            if (joinMode === 'self') {
+                const nameErr = validateName(name);
+                if (nameErr) { showStatus('leagueStatus', '❌ ' + nameErr, 'error'); return; }
+            }
+
+            const btn = document.getElementById('authRegisterForm')?.querySelector('.btn-gold');
+            if (btn) { btn.disabled = true; }
+
+            try {
+                let user;
+                try {
+                    user = (await createUserWithEmailAndPassword(auth, email, password)).user;
+                } catch (e) {
+                    if (e.code === 'auth/email-already-in-use') {
+                        showStatus('leagueStatus', '❌ Den e-postadressen har redan ett konto. Prova att logga in.', 'error');
+                        return;
+                    }
+                    throw e;
+                }
+
+                if (joinMode === 'self') {
+                    await handleJoinLeague(name, user);
+                } else {
+                    showNameSelectionForm(user);
+                }
+            } catch (err) {
+                let msg = '❌ Fel: ' + err.message;
+                if (err.code === 'auth/weak-password') msg = '❌ Losenordet ar for svagt (minst 6 tecken)';
+                if (err.code === 'auth/invalid-email') msg = '❌ Ogiltig e-postadress';
+                showStatus('leagueStatus', msg, 'error');
+            } finally {
+                if (btn) { btn.disabled = false; }
+            }
+        };
+
+        // ─── Glömt lösenord ───────────────────────────────────────────────────────
+        window.handleForgotPassword = async function() {
+            const email = (document.getElementById('loginEmail')?.value || '').trim();
+            if (!email) { showStatus('leagueStatus', '❌ Ange din e-postadress i fältet ovan, klicka sedan igen', 'info'); return; }
+            try {
+                await sendPasswordResetEmail(auth, email);
+                showStatus('leagueStatus', `✅ Återställningsmail skickat till ${email}`, 'success');
+            } catch (err) {
+                let msg = '❌ Kunde inte skicka mail';
+                if (err.code === 'auth/user-not-found') msg = '❌ Ingen användare med den e-postadressen';
+                if (err.code === 'auth/invalid-email')  msg = '❌ Ogiltig e-postadress';
+                showStatus('leagueStatus', msg, 'error');
+            }
+        };
+
+        // ─── Visa namnvals-formulär (inloggad men ej member) ─────────────────────
+        function showNameSelectionForm(user) {
+            const container = document.getElementById('loginFormContainer');
+            if (!container) return;
+            container.innerHTML = `
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                    <div style="text-align:center;padding:8px 0;">
+                        <div style="font-size:1.5em;margin-bottom:6px;">👋</div>
+                        <div style="color:#e8edf5;font-weight:600;">Välj ditt visningsnamn</div>
+                        <div style="color:#4a5568;font-size:.82em;margin-top:4px;">${user.email}</div>
+                    </div>
+                    <div class="field">
+                        <label>Ditt visningsnamn i ligan</label>
+                        <input type="text" id="joinNameInput" placeholder="T.ex. Anna" maxlength="40" autocomplete="off"
+                               onkeydown="if(event.key==='Enter')window.handleJoinLeague()">
+                    </div>
+                    <button class="btn-gold" onclick="window.handleJoinLeague()">Gå med i ligan 🎣</button>
+                    <button class="btn-ghost" onclick="window.handleLogout()">← Logga ut</button>
+                </div>`;
+        }
+
+        // ─── Gå med i liga (efter auth, välj visningsnamn) ───────────────────────
+        window.handleJoinLeague = async function(nameParam, userParam) {
+            const user = userParam || currentAuthUser;
+            if (!user) { showStatus('leagueStatus', '❌ Inte inloggad', 'error'); return; }
+
+            const name = nameParam || (document.getElementById('joinNameInput')?.value || '').trim();
+            const nameErr = validateName(name);
+            if (nameErr) { showStatus('leagueStatus', '❌ ' + nameErr, 'error'); return; }
+
+            const joinMode     = currentLeagueInfo.joinMode || 'admin';
+            const email        = user.email || '';
+            const encodedEmail = email.replace('@', '_AT_').replace(/\./g, '_DOT_');
+
+            try {
+                if (joinMode === 'admin') {
+                    const invSnap = await get(ref(database, `leagues/${currentLeagueCode}/invitedEmails/${encodedEmail}`));
+                    if (!invSnap.exists()) {
+                        showStatus('leagueStatus', '❌ Din e-postadress är inte inbjuden. Kontakta admin.', 'error');
+                        return;
+                    }
+                    await set(ref(database, `leagues/${currentLeagueCode}/members/${user.uid}`), {
+                        name, email, joinedAt: Date.now()
+                    });
+                    activateSession(name, user.uid);
+                } else {
+                    const existingNames = Object.values(members).map(m => m.name);
+                    if (existingNames.includes(name)) {
+                        showStatus('leagueStatus', `❌ Namnet "${name}" är redan taget`, 'error');
+                        return;
+                    }
+                    await set(ref(database, `leagues/${currentLeagueCode}/pendingMembers/${user.uid}`), {
+                        name, email, requestedAt: Date.now()
+                    });
+                    const container = document.getElementById('loginFormContainer');
+                    if (container) {
+                        container.innerHTML = `
+                            <div style="text-align:center;padding:16px 0;display:flex;flex-direction:column;gap:12px;">
+                                <div style="font-size:2em;">⏳</div>
+                                <div style="color:#e8edf5;font-weight:600;">Ansökan skickad!</div>
+                                <div style="color:#4a5568;font-size:.85em;line-height:1.5;">Väntar på att admin godkänner dig.</div>
+                                <button class="btn-ghost" onclick="window.handleLogout()">← Logga ut</button>
+                            </div>`;
+                    }
+                }
+            } catch (err) {
+                showStatus('leagueStatus', '❌ Fel: ' + err.message, 'error');
+            }
+        };
+
+        // ─── Aktivera session ─────────────────────────────────────────────────────
+        function activateSession(name, uid) {
+            currentUser    = name;
+            currentUserUID = uid;
+            clearStatus('leagueStatus');
+
+            // Uppdatera app-header
+            const userBadge = document.querySelector('.app-user-badge');
+            if (userBadge) userBadge.style.display = isGhost() ? 'none' : '';
+            if (!isGhost()) setEl('appUserName', name);
+            setEl('appLeagueName', currentLeagueInfo.name || 'Krokens Copa');
+
+            // Visa/dölj admin-fliken
+            const adminTab = document.getElementById('adminTab');
+            if (adminTab) adminTab.style.display = isAdmin() ? '' : 'none';
+
+            // Visa/dölj API-nyckel-sektionen (endast ghost)
+            const apiKeySection = document.getElementById('apiKeySection');
+            if (apiKeySection) apiKeySection.style.display = isGhost() ? '' : 'none';
+
+            showView('viewApp');
+            window.switchTab(isAdmin() ? 'admin' : 'tippning');
+
+            // Hämta resultat direkt vid inloggning (alla användare)
+            fetchResults();
+
+            // Auto-starta resultathämtning (intervall) för admins
+            if (isAdmin()) {
+                if (autoFetchInterval) clearInterval(autoFetchInterval);
+                autoFetchInterval = setInterval(fetchResults, 15 * 60 * 1000);
+                const statusEl = document.getElementById('autoFetchStatus');
+                if (statusEl) { statusEl.textContent = '✅ Auto (var 15 min)'; statusEl.className = 'auto-fetch-status auto-fetch-on'; }
+            }
+
+            // Auto-ladda matcher om ligan är ny och defaultRounds är satta
+            if (isAdmin() && currentLeagueInfo.defaultRounds) {
+                setTimeout(async () => {
+                    if (matches.length === 0) {
+                        showAppMsg('📥 Hämtar matcher automatiskt...', 'info');
+                        await window.autoLoadDefaultMatches();
+                    }
+                }, 1500);
+            }
+
+            // Fyll admin-ligainfo
+            const shareCode = document.getElementById('adminShareCode');
+            const shareUrl  = document.getElementById('adminShareUrl');
+            if (shareCode) shareCode.textContent = currentLeagueCode;
+            if (shareUrl)  shareUrl.textContent  = `https://vg1414.github.io/KC/?liga=${currentLeagueCode}`;
+
+            scheduleRender();
+        }
+
+        // ─── Logout ───────────────────────────────────────────────────────────────
+        window.handleLogout = async function() {
+            try {
+                if (currentAuthUser && !isGhost()) await signOut(auth);
+            } catch(e) {}
+            currentUser     = null;
+            currentUserUID  = null;
+            currentAuthUser = null;
+            showView('viewLeague');
+        };
+
+        // ─── RENDER: Matcher (Matcher-flik) ───────────────────────────────────────
+        function renderMatches() {
+            const list = document.getElementById('matchesList');
+            if (!list) return;
+
+            if (!matches || matches.length === 0) {
+                list.innerHTML = `<div class="empty-state">
+                    <div style="font-size:2em;margin-bottom:10px;">📅</div>
+                    <p>${isAdmin() ? 'Inga matcher inladdade ännu. Ladda in matcher via admin-panelen.' : 'Admin har inte laddat in några matcher ännu.'}</p>
+                </div>`;
+                return;
+            }
+
+            // Gruppera per omgång
+            const roundGroups = {};
+            const roundOrder  = [];
+            matches.forEach(m => {
+                const key = m.league || 'Okänd omgång';
+                if (!roundGroups[key]) { roundGroups[key] = []; roundOrder.push(key); }
+                roundGroups[key].push(m);
+            });
+
+            function renderMatchCard(m) {
+                const dateStr     = formatDateTime(m.date);
+                const started     = isMatchStarted(m.date);
+                const locked      = isMatchLocked(m);
+                const scoreStr    = m.actualScore ? ` (${m.actualScore})` : '';
+                const outcomeText = {
+                    '1': `✅ ${m.homeTeam} vann${scoreStr}`,
+                    'X': `✅ Oavgjort${scoreStr}`,
+                    '2': `✅ ${m.awayTeam} vann${scoreStr}`,
+                    'POSTPONED': '⚠️ Match inställd – alla får 0 poäng'
+                };
+                const status = m.actualOutcome ? (outcomeText[m.actualOutcome] || m.actualOutcome) :
+                               (started ? '⏳ Väntar på resultat...' : '📅 Ej startad');
+
+                const matchPreds     = predictions[m.id] || {};
+                const matchExact     = exactPredictions[m.id] || {};
+                const isPostponed    = m.actualOutcome === 'POSTPONED';
+
+                // Visa alla i spelarlistam + alla som faktiskt tippat (t.ex. admin)
+                const allPlayers = [...new Set([...leaguePlayers, ...Object.keys(matchPreds)])];
+
+                let predsHtml = '';
+                if (!m.actualOutcome) {
+                    predsHtml = '<div style="margin-top:8px;">';
+                    if (locked || started) {
+                        allPlayers.forEach(player => {
+                            const pred  = matchPreds[player];
+                            const exact = matchExact[player];
+                            const label = { '1': m.homeTeam, 'X': 'Oavgjort', '2': m.awayTeam }[pred] || pred;
+                            const trophy = getPlayerTrophyHTML(player);
+                            const pName  = player + (trophy ? ' ' + trophy : '');
+                            if (!pred) {
+                                predsHtml += `<div class="pred-row pred-row-waiting">❌ ${pName}: Tippade inte</div>`;
+                            } else {
+                                const display = exact
+                                    ? `<strong>${exact.replace('-', ' – ')}</strong> <span style="color:#9ca3af;font-size:.85em;">(${label})</span>`
+                                    : `<strong>${label}</strong>`;
+                                predsHtml += `<div class="pred-row" style="color:#374151;">🎯 ${pName}: ${display}</div>`;
+                            }
+                        });
+                    } else {
+                        allPlayers.forEach(player => {
+                            const trophy = getPlayerTrophyHTML(player);
+                            const pName  = player + (trophy ? ' ' + trophy : '');
+                            // Admin/ghost ser alltid sitt eget faktiska tips
+                            if ((isAdmin() || isGhost()) && player === currentUser && matchPreds[player]) {
+                                const pred  = matchPreds[player];
+                                const exact = matchExact[player];
+                                const label = { '1': m.homeTeam, 'X': 'Oavgjort', '2': m.awayTeam }[pred] || pred;
+                                const display = exact
+                                    ? `<strong>${exact.replace('-', ' – ')}</strong> <span style="color:#9ca3af;font-size:.85em;">(${label})</span>`
+                                    : `<strong>${label}</strong>`;
+                                predsHtml += `<div class="pred-row" style="color:#374151;">🎯 ${pName}: ${display}</div>`;
+                            } else if (matchPreds[player]) {
+                                predsHtml += `<div class="pred-row pred-row-pending">✅ ${pName}: Har tippat</div>`;
+                            } else {
+                                predsHtml += `<div class="pred-row pred-row-waiting">⏳ ${pName}: Har inte tippat ännu</div>`;
+                            }
+                        });
+                    }
+                    predsHtml += '</div>';
+                } else {
+                    predsHtml = `<div style="margin-top:8px;">`;
+                    allPlayers.forEach(player => {
+                        const pred  = matchPreds[player];
+                        const exact = matchExact[player];
+                        const label = { '1': m.homeTeam, 'X': 'Oavgjort', '2': m.awayTeam }[pred] || pred;
+                        const trophy = getPlayerTrophyHTML(player);
+                        const pName  = player + (trophy ? ' ' + trophy : '');
+                        if (!pred) {
+                            predsHtml += `<div class="pred-row pred-row-waiting">❌ ${pName}: Tippade inte</div>`;
+                        } else if (isPostponed) {
+                            const exactTag = exact ? ` [${exact}]` : '';
+                            predsHtml += `<div class="pred-row pred-row-postponed">⚠️ ${pName}: ${label}${exactTag}</div>`;
+                        } else {
+                            const isCorrect   = pred === m.actualOutcome;
+                            const exactRight  = exact && m.actualScore && exact === m.actualScore;
+                            const icon        = isCorrect ? '✅' : '❌';
+                            const exactTag    = exact ? ` [${exact}]${exactRight ? ' 🔮+50' : ''}` : '';
+                            const pts         = getCachedPoints(m.id, player);
+                            const ptsBadge    = `<span class="pts-badge ${isCorrect ? 'pts-badge-correct' : 'pts-badge-wrong'}">${pts}p</span>`;
+                            predsHtml += `<div class="pred-row ${isCorrect ? 'pred-row-correct' : 'pred-row-wrong'}">${icon} ${pName}: ${label}${exactTag}${ptsBadge}</div>`;
+                        }
+                    });
+                    predsHtml += '</div>';
+                }
+
+                const canSetResult = isAdmin() && started;
+                const resultBtn = canSetResult ? `<button class="result-set-btn" onclick="window.openResultModal('${m.id}')">${m.actualOutcome ? '✏️ Ändra resultat' : '📝 Sätt resultat'}</button>` : '';
+
+                return `
+                    <div class="match-item">
+                        <div class="match-teams">${m.homeTeam} vs ${m.awayTeam}</div>
+                        <div class="match-meta">${dateStr} · ${status}</div>
+                        ${predsHtml}
+                        ${resultBtn}
+                    </div>`;
+            }
+
+            list.innerHTML = roundOrder.map((roundName, idx) => {
+                const rMatches   = roundGroups[roundName];
+                const played     = rMatches.filter(m => m.actualOutcome).length;
+                const meta       = played === rMatches.length ? `${rMatches.length} matcher · Klar` :
+                                   played > 0 ? `${rMatches.length} matcher · ${played}/${rMatches.length} spelade` :
+                                   `${rMatches.length} matcher`;
+                const isCollapsed = idx > 0;
+                return `
+                    <div class="round-group">
+                        <div class="round-header" onclick="window.toggleRound(this)">
+                            <span>⚽ ${roundName}<span class="round-meta">${meta}</span></span>
+                            <span class="round-toggle${isCollapsed ? ' collapsed' : ''}">▼</span>
+                        </div>
+                        <div class="round-body${isCollapsed ? ' collapsed' : ''}">
+                            ${rMatches.map(m => renderMatchCard(m)).join('')}
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        window.toggleRound = function(headerEl) {
+            const body   = headerEl.nextElementSibling;
+            const toggle = headerEl.querySelector('.round-toggle');
+            body.classList.toggle('collapsed');
+            toggle.classList.toggle('collapsed');
+        };
+
+        // ─── RENDER: Tippning (Tippa-flik) ───────────────────────────────────────
+        function renderPredictions() {
+            const list = document.getElementById('predictionsList');
+            if (!list) return;
+
+            if (!currentUser) {
+                list.innerHTML = '<div class="empty-state">Logga in för att tippa.</div>';
+                return;
+            }
+
+            if (!matches || matches.length === 0) {
+                list.innerHTML = '<div class="empty-state"><div style="font-size:2em;margin-bottom:10px;">🎯</div><p>Inga matcher inladdade ännu. Admin laddar in matcher via admin-panelen.</p></div>';
+                const lbl = document.getElementById('tippCountLabel');
+                if (lbl) lbl.textContent = '';
+                return;
+            }
+
+            const isViewer = currentUser === 'Askadare';
+
+            // Tipp-counter
+            const tippCountLabel = document.getElementById('tippCountLabel');
+            if (tippCountLabel) {
+                if (isViewer) {
+                    tippCountLabel.textContent = '👁 Åskådarläge – du kan se tippningarna men inte tippa själv';
+                    tippCountLabel.style.color = '#d4930a';
+                } else {
+                    const tippade = matches.filter(m => exactPredictions[m.id]?.[currentUser]).length;
+                    const allDone = tippade === matches.length;
+                    tippCountLabel.textContent = `${tippade}/${matches.length} matcher tippade`;
+                    tippCountLabel.style.color = allDone ? '#059669' : '#dc2626';
+                }
+            }
+
+            // Gruppera matcher per deadline-key
+            const groups     = {};
+            const groupOrder = [];
+            matches.forEach(m => {
+                const key = getDeadlineKey(m);
+                if (!groups[key]) { groups[key] = []; groupOrder.push(key); }
+                groups[key].push(m);
+            });
+
+            const DEADLINE_LABELS = {
+                'PL': 'Premier League',
+                'CL': 'Champions League',
+                'WC': 'VM',
+                'CL_LEAGUE_PHASE': 'CL – Ligafas',
+                'CL_KNOCKOUT_ROUND_PLAY_OFF': 'CL – Playoff',
+                'CL_ROUND_OF_16': 'CL – Åttondelsfinaler',
+                'CL_QUARTER_FINALS': 'CL – Kvartsfinaler',
+                'CL_SEMI_FINALS': 'CL – Semifinaler',
+                'CL_FINAL': 'CL – Final'
+            };
+
+            function renderPredCard(m, locked) {
+                const myPred        = predictions[m.id]?.[currentUser];
+                const myExact       = exactPredictions[m.id]?.[currentUser];
+                const started       = isMatchStarted(m.date);
+                const dateStr       = formatDateTime(m.date);
+                const matchPreds    = predictions[m.id] || {};
+                const matchExact    = exactPredictions[m.id] || {};
+                const isEffLocked   = locked || started;
+
+                let innerHtml = '';
+
+                if (isEffLocked || isViewer) {
+                    // Visa låst kort
+                    const lockedLabel = isViewer && !isEffLocked
+                        ? '<span style="color:#d4930a;">👁 Åskådarläge</span><span class="pred-locked-chip">LÅSLÄGE</span>'
+                        : `<span>${myExact ? `Din tipp: <strong>${myExact.replace('-', ' – ')}</strong>` : 'Du tippade inte'}</span><span class="pred-locked-chip">STÄNGD</span>`;
+
+                    let predsHtml = '';
+                    if (isViewer && !isEffLocked) {
+                        predsHtml = `<div style="text-align:center;color:#9ca3af;font-size:.82em;padding:8px 0;">Tippningarna visas när omgången stänger</div>`;
+                    } else if (Object.keys(matchPreds).length > 0) {
+                        predsHtml = `<div class="predictions-revealed">
+                            <h4>Alla tippningar:</h4>
+                            ${Object.entries(matchPreds).map(([player, pred]) => {
+                                const exact  = matchExact[player];
+                                const trophy = getPlayerTrophyHTML(player);
+                                const label  = { '1': m.homeTeam, 'X': 'Oavgjort', '2': m.awayTeam }[pred] || pred;
+                                return `<div class="prediction-row">
+                                    <span><strong>${player}</strong>${trophy ? ' ' + trophy : ''}</span>
+                                    <span style="font-weight:600;color:#d4930a;">
+                                        ${exact ? exact.replace('-', ' – ') : pred}
+                                        <span style="color:#9ca3af;font-weight:400;font-size:.85em;">(${label})</span>
+                                    </span>
+                                </div>`;
+                            }).join('')}
+                        </div>`;
+                    }
+
+                    innerHtml = `
+                        <div class="pred-card-header">
+                            ${m.homeTeam} <span class="pred-card-header-vs">vs</span> ${m.awayTeam}
+                        </div>
+                        <div class="pred-locked-status">${lockedLabel}</div>
+                        ${predsHtml}`;
+                } else {
+                    // Visa tipp-inputs
+                    const homeVal = myExact ? myExact.split('-')[0] : '';
+                    const awayVal = myExact ? myExact.split('-')[1] : '';
+                    let labelHtml = myExact
+                        ? (() => {
+                            const [h, a] = myExact.split('-').map(Number);
+                            const text   = h > a ? `1 – ${m.homeTeam} vinner` : h < a ? `2 – ${m.awayTeam} vinner` : 'X – Oavgjort';
+                            const color  = h > a ? '#059669' : h < a ? '#dc2626' : '#d97706';
+                            return `<span style="color:${color};font-weight:600;">${text}</span>`;
+                        })()
+                        : '<span style="color:#9ca3af;">Ange resultatet du tror på</span>';
+
+                    innerHtml = `
+                        <div class="score-entry">
+                            <div class="score-entry-teams">
+                                <span class="score-team score-team-home">${m.homeTeam}</span>
+                                <div class="score-inputs">
+                                    <input type="number" min="0" max="99" id="exact-home-${m.id}"
+                                        value="${homeVal}"
+                                        oninput="window.updateScorePrediction('${m.id}')"
+                                        class="score-input" placeholder="?">
+                                    <span class="score-dash">–</span>
+                                    <input type="number" min="0" max="99" id="exact-away-${m.id}"
+                                        value="${awayVal}"
+                                        oninput="window.updateScorePrediction('${m.id}')"
+                                        class="score-input" placeholder="?">
+                                </div>
+                                <span class="score-team score-team-away">${m.awayTeam}</span>
+                            </div>
+                            <div id="prediction-label-${m.id}" class="score-label">${labelHtml}</div>
+                            <button class="btn-save-pred" onclick="window.saveScorePrediction('${m.id}')">Spara tips</button>
+                            ${myExact ? `<div class="score-saved-msg">✓ Sparat: ${myExact.replace('-', ' – ')}</div>` : ''}
+                        </div>`;
+                }
+
+                return `
+                    <div class="pred-match${isEffLocked || isViewer ? ' locked' : ''}" data-match-id="${m.id}">
+                        <div class="pred-match-meta">${m.league || ''} · ${dateStr}</div>
+                        ${innerHtml}
+                    </div>`;
+            }
+
+            // Bygg deadline-chips och matcher
+            let html = '';
+
+            // Visa deadline-chips
+            const banners = [];
+            groupOrder.forEach(key => {
+                const deadline = deadlines[key];
+                const isLocked = deadline && new Date() >= new Date(deadline);
+                const label    = DEADLINE_LABELS[key] || key;
+                if (isLocked) {
+                    const lockedStr = new Date(deadline).toLocaleString('sv-SE', {
+                        weekday: 'long', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                    });
+                    banners.push(`<div class="deadline-chip deadline-chip-locked">
+                        <span class="deadline-dot"></span>
+                        <span>Stangd · ${label} · Stangde ${lockedStr}</span>
+                    </div>`);
+                } else if (deadline) {
+                    const deadlineStr = new Date(deadline).toLocaleString('sv-SE', {
+                        weekday: 'long', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                    });
+                    const countdown = formatCountdown(deadline);
+                    banners.push(`<div class="deadline-chip deadline-chip-open">
+                        <span class="deadline-dot"></span>
+                        <span>Oppen · ${label} · Tippa klart innan ${deadlineStr}</span>
+                        ${countdown ? `<span class="deadline-countdown" data-countdown="${deadline}">${countdown}</span>` : ''}
+                    </div>`);
+                }
+            });
+
+            if (banners.length > 0) {
+                html += `<div class="deadlines-row">${banners.join('')}</div>`;
+            }
+
+            // Sortera alla matcher kronologiskt
+            const sorted = [...matches].sort((a, b) => new Date(a.date) - new Date(b.date));
+            html += sorted.map(m => renderPredCard(m, isMatchLocked(m))).join('');
+
+            list.innerHTML = html;
+        }
+
+        // ─── RENDER: Topplista ────────────────────────────────────────────────────
+        function renderLeaderboard() {
+            const tbody = document.getElementById('leaderboardBody');
+            if (!tbody) return;
+
+            if (!leaguePlayers.length) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#9ca3af;padding:24px;">Inga spelare i ligan ännu.</td></tr>';
+                ['sniperSection','nostradamusSection','unicornSection'].forEach(id => {
+                    const el = document.getElementById(id); if (el) el.style.display = 'none';
+                });
+                return;
+            }
+
+            // Standings
+            const scores = leaguePlayers.map(player => {
+                let totalPoints = 0, correctPreds = 0, bonusCount = 0, finishedMatches = 0;
+                matches.forEach(match => {
+                    if (match.actualOutcome && match.actualOutcome !== 'POSTPONED') {
+                        finishedMatches++;
+                        const pts = getCachedPoints(match.id, player);
+                        totalPoints += pts;
+                        if (predictions[match.id]?.[player] === match.actualOutcome) correctPreds++;
+                        if (match.actualScore && exactPredictions[match.id]?.[player] === match.actualScore) bonusCount++;
+                    }
+                });
+                return { player, totalPoints, correctPreds, bonusCount, average: finishedMatches > 0 ? (totalPoints / finishedMatches).toFixed(1) : '0.0' };
+            }).sort((a, b) => b.totalPoints !== a.totalPoints ? b.totalPoints - a.totalPoints : b.bonusCount - a.bonusCount);
+
+            tbody.innerHTML = scores.map((s, i) => {
+                const rankClass = ['rank-badge-1','rank-badge-2','rank-badge-3'][i] || '';
+                const trophy = getPlayerTrophyHTML(s.player);
+                const bonus = s.bonusCount > 0
+                    ? `<strong style="color:#8b5cf6">${s.bonusCount}</strong>`
+                    : '<span style="color:#d1d5db">0</span>';
+                return `<tr>
+                    <td><span class="rank-badge ${rankClass}">${i+1}</span></td>
+                    <td><strong>${s.player}</strong>${trophy ? ' ' + trophy : ''}</td>
+                    <td><strong>${s.totalPoints}</strong></td>
+                    <td>${s.correctPreds}</td>
+                    <td>${bonus}</td>
+                    <td>${s.average}</td>
+                </tr>`;
+            }).join('');
+
+            function nameWithTrophy(player) {
+                const t = getPlayerTrophyHTML(player);
+                return player + (t ? ' ' + t : '');
+            }
+            function joinNames(arr) {
+                return arr.length === 1 ? arr[0] : arr.slice(0,-1).join(', ') + ' &amp; ' + arr[arr.length-1];
+            }
+
+            // Sniper: ensam rätt på 1X2
+            const sniperCounts = leaguePlayers.map(player => {
+                let soloCorrect = 0;
+                matches.forEach(match => {
+                    if (!match.actualOutcome || match.actualOutcome === 'POSTPONED') return;
+                    const pred = predictions[match.id]?.[player];
+                    if (!pred || pred !== match.actualOutcome) return;
+                    const correctCount = Object.values(predictions[match.id] || {}).filter(p => p === match.actualOutcome).length;
+                    if (correctCount === 1) soloCorrect++;
+                });
+                return { player, soloCorrect };
+            }).sort((a, b) => b.soloCorrect - a.soloCorrect);
+
+            const sniperSection = document.getElementById('sniperSection');
+            if (sniperSection) {
+                if (sniperCounts[0]?.soloCorrect > 0) {
+                    const top = sniperCounts[0].soloCorrect;
+                    const leaders = sniperCounts.filter(p => p.soloCorrect === top);
+                    document.getElementById('sniperName').innerHTML = joinNames(leaders.map(p => nameWithTrophy(p.player)));
+                    document.getElementById('sniperDetails').textContent = `${top} st soloträff${top > 1 ? 'ar' : ''}`;
+                    sniperSection.style.display = '';
+                } else { sniperSection.style.display = 'none'; }
+            }
+
+            // Nostradamus: flest korrekta exakta resultat
+            const nostCounts = leaguePlayers.map(player => {
+                let correctExact = 0;
+                matches.forEach(match => {
+                    if (match.actualScore && exactPredictions[match.id]?.[player] === match.actualScore) correctExact++;
+                });
+                return { player, correctExact };
+            }).sort((a, b) => b.correctExact - a.correctExact);
+
+            const nostSection = document.getElementById('nostradamusSection');
+            if (nostSection) {
+                const withNost = nostCounts.filter(p => p.correctExact > 0);
+                if (withNost.length > 0) {
+                    const top = withNost[0].correctExact;
+                    const leaders = withNost.filter(p => p.correctExact === top);
+                    document.getElementById('nostradamusLeader').innerHTML = joinNames(leaders.map(p => nameWithTrophy(p.player)));
+                    document.getElementById('nostradamusLeaderDetail').textContent = `${top} st korrekt exakt resultat`;
+                    nostSection.style.display = '';
+                } else { nostSection.style.display = 'none'; }
+            }
+
+            // Unicorn: ensam rätt 1X2 + korrekt exakt
+            const unicornCounts = leaguePlayers.map(player => {
+                let unicornCount = 0;
+                matches.forEach(match => {
+                    if (!match.actualOutcome || match.actualOutcome === 'POSTPONED' || !match.actualScore) return;
+                    if (exactPredictions[match.id]?.[player] !== match.actualScore) return;
+                    const pred = predictions[match.id]?.[player];
+                    if (!pred || pred !== match.actualOutcome) return;
+                    const correctCount = Object.values(predictions[match.id] || {}).filter(p => p === match.actualOutcome).length;
+                    if (correctCount === 1) unicornCount++;
+                });
+                return { player, unicornCount };
+            }).sort((a, b) => b.unicornCount - a.unicornCount);
+
+            const unicornSection = document.getElementById('unicornSection');
+            if (unicornSection) {
+                const withUnicorns = unicornCounts.filter(p => p.unicornCount > 0);
+                if (withUnicorns.length > 0) {
+                    const top = withUnicorns[0].unicornCount;
+                    const leaders = withUnicorns.filter(p => p.unicornCount === top);
+                    document.getElementById('unicornLeader').innerHTML = joinNames(leaders.map(p => nameWithTrophy(p.player)));
+                    document.getElementById('unicornLeaderDetail').textContent = `${top} st unicorn-träff${top > 1 ? 'ar' : ''}`;
+                    unicornSection.style.display = '';
+                } else { unicornSection.style.display = 'none'; }
+            }
+        }
+
+        // ─── Tippnings-funktioner ─────────────────────────────────────────────────
+        window.updateScorePrediction = function(matchId) {
+            const homeVal = document.getElementById(`exact-home-${matchId}`)?.value;
+            const awayVal = document.getElementById(`exact-away-${matchId}`)?.value;
+            const label   = document.getElementById(`prediction-label-${matchId}`);
+            const match   = getMatch(matchId);
+            if (!label || !match) return;
+
+            if (homeVal === '' || awayVal === '') {
+                label.innerHTML = '<span style="color:#9ca3af;">Ange resultatet du tror på</span>';
+                return;
+            }
+
+            const h = parseInt(homeVal), a = parseInt(awayVal);
+            let text, color;
+            if (h > a)      { text = `1 – ${match.homeTeam} vinner`; color = '#059669'; }
+            else if (h < a) { text = `2 – ${match.awayTeam} vinner`; color = '#dc2626'; }
+            else            { text = 'X – Oavgjort'; color = '#d97706'; }
+            label.innerHTML = `<span style="color:${color};font-weight:600;">${text}</span>`;
+        };
+
+        window.saveScorePrediction = async function(matchId) {
+            if (!currentUser) { showAppMsg('Du måste vara inloggad!', 'error'); return; }
+            if (currentUser === 'Askadare') { showAppMsg('👁 Du är åskådare och kan inte tippa!', 'error'); return; }
+
+            const match = getMatch(matchId);
+            if (!match) return;
+
+            if (isMatchLocked(match) || isMatchStarted(match.date)) {
+                showAppMsg('Tippningen är stängd för denna match.', 'error');
+                return;
+            }
+
+            const homeVal = document.getElementById(`exact-home-${matchId}`)?.value;
+            const awayVal = document.getElementById(`exact-away-${matchId}`)?.value;
+
+            if (homeVal === '' || awayVal === '') {
+                showAppMsg('Fyll i bada siffrorna!', 'error');
+                return;
+            }
+
+            const h = parseInt(homeVal), a = parseInt(awayVal);
+            if (isNaN(h) || isNaN(a) || h < 0 || a < 0) {
+                showAppMsg('Ogiltiga siffror.', 'error');
+                return;
+            }
+
+            const outcome  = h > a ? '1' : h < a ? '2' : 'X';
+            const scoreStr = `${h}-${a}`;
+
+            try {
+                // Uppdatera lokal state direkt (snabbare UI)
+                if (!predictions[matchId])      predictions[matchId] = {};
+                if (!exactPredictions[matchId]) exactPredictions[matchId] = {};
+                predictions[matchId][currentUser]      = outcome;
+                exactPredictions[matchId][currentUser] = scoreStr;
+
+                // Skriv per spelare (undviker race conditions)
+                await set(ref(database, `leagues/${currentLeagueCode}/predictions/${matchId}/${currentUser}`), outcome);
+                await set(ref(database, `leagues/${currentLeagueCode}/exactPredictions/${matchId}/${currentUser}`), scoreStr);
+
+                await logActivity('PREDICT', `Tippade på ${match.homeTeam} vs ${match.awayTeam}`);
+
+                renderPredictions();
+                renderMatches();
+
+                // Flash-animation
+                requestAnimationFrame(() => {
+                    const card = document.querySelector(`[data-match-id="${matchId}"]`);
+                    if (card) {
+                        card.classList.remove('pred-save-flash');
+                        void card.offsetWidth;
+                        card.classList.add('pred-save-flash');
+                    }
+                });
+
+                showAppMsg(`✅ Tipp sparat: ${match.homeTeam} ${h}–${a} ${match.awayTeam}`, 'success');
+
+            } catch (err) {
+                console.error('Save error:', err);
+                showAppMsg('❌ Fel: ' + err.message, 'error');
+            }
+        };
+
+        // ═══════════════════════════════════════════════════════════════
+        // ADMIN-FUNKTIONER (Session 3)
+        // ═══════════════════════════════════════════════════════════════
+
+        window.toggleAdminSection = function(el) {
+            const body = el.nextElementSibling;
+            const icon = el.querySelector('.admin-toggle-icon');
+            body.classList.toggle('open');
+            if (icon) icon.textContent = body.classList.contains('open') ? '▲' : '▼';
+        };
+
+        // ─── CL-fasetiketter ─────────────────────────────────────────────────────
+        const CL_STAGE_LABELS = {
+            'LEAGUE_PHASE': 'Ligafas', 'KNOCKOUT_ROUND_PLAY_OFF': 'Playoff',
+            'GROUP_STAGE': 'Gruppspel', 'ROUND_OF_16': 'Åttondel',
+            'QUARTER_FINALS': 'Kvartsfinal', 'SEMI_FINALS': 'Semifinal', 'FINAL': 'Final'
+        };
+
+        function adminLog(msg) {
+            const el = document.getElementById('adminLoadLog');
+            if (!el) return;
+            el.style.display = 'block';
+            el.textContent += `[${new Date().toLocaleTimeString('sv-SE')}] ${msg}\n`;
+            el.scrollTop = el.scrollHeight;
+        }
+
+        function fetchLog(msg) {
+            const el = document.getElementById('fetchLog');
+            if (!el) return;
+            el.style.display = 'block';
+            el.textContent += `[${new Date().toLocaleTimeString('sv-SE')}] ${msg}\n`;
+            el.scrollTop = el.scrollHeight;
+        }
+
+        // ─── Hjälpfunktion: hämta matcher för en tävling ─────────────────────────
+        async function fetchCompetitionMatches(code, rounds) {
+            const apiUrl = `https://api.football-data.org/v4/competitions/${code}/matches?status=SCHEDULED,TIMED`;
+            const url = 'https://corsproxy.io/?' + encodeURIComponent(apiUrl);
+            adminLog(`🔗 Hämtar ${code}...`);
+
+            const response = await fetch(url, { headers: { 'X-Auth-Token': plApiKey } });
+            if (!response.ok) throw new Error(`${code} API svarade ${response.status}`);
+
+            const data = await response.json();
+            const allMatches = data.matches || [];
+            adminLog(`📊 ${code}: ${allMatches.length} kommande matcher`);
+
+            const matchesByRound = {};
+            const stageBasedCompetition = code !== 'PL';
+            allMatches.forEach(m => {
+                const roundKey = stageBasedCompetition ? `${m.stage}_${m.matchday || 1}` : String(m.matchday);
+                if (!matchesByRound[roundKey]) matchesByRound[roundKey] = [];
+                matchesByRound[roundKey].push(m);
+            });
+
+            let roundKeys = Object.keys(matchesByRound);
+            if (code === 'PL') {
+                roundKeys.sort((a, b) => Number(a) - Number(b));
+            } else {
+                roundKeys.sort((a, b) => new Date(matchesByRound[a][0].utcDate) - new Date(matchesByRound[b][0].utcDate));
+            }
+            roundKeys = roundKeys.slice(0, rounds);
+
+            const converted = [], labels = [];
+            roundKeys.forEach(roundKey => {
+                const roundMatches = matchesByRound[roundKey];
+                const first = roundMatches[0];
+                const leagueName = { PL: 'Premier League', CL: 'Champions League', WC: 'VM' }[code] || code;
+                const roundLabel = code === 'PL'
+                    ? `Premier League - Omgång ${roundKey}`
+                    : `${leagueName} - ${CL_STAGE_LABELS[first.stage] || first.stage}${first.matchday > 1 ? ' (Returmatch)' : ''}`;
+                labels.push(roundLabel);
+
+                roundMatches.forEach((m, idx) => {
+                    const utcDate = new Date(m.utcDate);
+                    const opts = { timeZone: 'Europe/Stockholm', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false };
+                    const dp = {};
+                    new Intl.DateTimeFormat('sv-SE', opts).formatToParts(utcDate).forEach(p => { dp[p.type] = p.value; });
+                    converted.push({
+                        id: `${code.toLowerCase()}_${roundKey}_${idx}`,
+                        homeTeam: m.homeTeam.shortName || m.homeTeam.name,
+                        awayTeam: m.awayTeam.shortName || m.awayTeam.name,
+                        league: roundLabel,
+                        date: `${dp.year}-${dp.month}-${dp.day}T${dp.hour}:${dp.minute}`,
+                        actualOutcome: null, actualScore: null,
+                        apiMatchId: m.id, competition: code, stage: m.stage || null
+                    });
+                });
+            });
+            return { converted, labels };
+        }
+
+        // ─── Ladda matcher ────────────────────────────────────────────────────────
+        window.adminLoadMatches = async function() {
+            if (!isAdmin()) return;
+            if (!plApiKey) {
+                try { const s = await get(ref(database, 'config/apikey')); plApiKey = s.val() || ''; } catch(e) {}
+            }
+            if (!plApiKey) { showAppMsg('❌ Ingen API-nyckel sparad. Kontakta ligeansvarig.', 'error'); return; }
+
+            const competition = document.getElementById('adminCompSelect')?.value || 'PL';
+            const plRounds = parseInt(document.getElementById('adminPlRounds')?.value || 2);
+            const clRounds = parseInt(document.getElementById('adminClRounds')?.value || 2);
+            const wmRounds = parseInt(document.getElementById('adminWmRounds')?.value || 2);
+            const compNames = { PL: 'Premier League', CL: 'Champions League', WC: 'VM', BOTH: 'PL + CL' };
+
+            if (!confirm(`Hämta matcher från ${compNames[competition]}?\n\nNya matcher läggs till. Befintliga resultat bevaras.`)) return;
+
+            const logEl = document.getElementById('adminLoadLog');
+            if (logEl) logEl.textContent = '';
+
+            adminLog(`📥 Hämtar från ${compNames[competition]}...`);
+
+            try {
+                let matchesToLoad = [], roundLabels = [];
+                if (competition === 'BOTH') {
+                    const [pl, cl] = await Promise.all([
+                        fetchCompetitionMatches('PL', plRounds),
+                        fetchCompetitionMatches('CL', clRounds)
+                    ]);
+                    matchesToLoad = [...pl.converted, ...cl.converted];
+                    roundLabels   = [...pl.labels, ...cl.labels];
+                    matchesToLoad.sort((a, b) => new Date(a.date) - new Date(b.date));
+                } else {
+                    const rounds = { PL: plRounds, CL: clRounds, WC: wmRounds }[competition] || 2;
+                    const result = await fetchCompetitionMatches(competition, rounds);
+                    matchesToLoad = result.converted;
+                    roundLabels   = result.labels;
+                }
+
+                if (matchesToLoad.length === 0) { adminLog('⚠️ Inga matcher hittades.'); return; }
+
+                // Bevara befintliga resultat vid merge
+                const existingMap = {};
+                matches.forEach(m => { existingMap[m.id] = m; });
+                const merged = matchesToLoad.map(m => {
+                    const ex = existingMap[m.id];
+                    return ex ? { ...m, actualOutcome: ex.actualOutcome, actualScore: ex.actualScore, setBy: ex.setBy, setAt: ex.setAt } : m;
+                });
+                // Behåll matcher som inte ingår i den nya laddningen
+                matches.forEach(m => { if (!matchesToLoad.find(nm => nm.id === m.id)) merged.push(m); });
+                merged.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                adminLog(`✅ Konverterade ${matchesToLoad.length} matcher`);
+                await set(ref(database, `leagues/${currentLeagueCode}/matches`), merged);
+                await logActivity('ADMIN_LOAD_MATCHES', `Laddade ${matchesToLoad.length} matcher (${roundLabels.join(', ')})`);
+                adminLog(`✅ KLART! ${merged.length} matcher totalt i Firebase.`);
+                showAppMsg(`✅ ${matchesToLoad.length} matcher laddade!`, 'success');
+            } catch (error) {
+                adminLog(`❌ FEL: ${error.message}`);
+                showAppMsg('❌ Kunde inte hämta: ' + error.message, 'error');
+            }
+        };
+
+        // ─── Hämta resultat (auto) ────────────────────────────────────────────────
+        async function fetchResults() {
+            if (!plApiKey) {
+                try { const s = await get(ref(database, 'config/apikey')); plApiKey = s.val() || ''; } catch(e) {}
+            }
+            if (!plApiKey) return;
+            const now = new Date();
+            const pendingMatches = matches.filter(match => {
+                if (match.setBy === 'API') return false;
+                if (match.actualOutcome === 'POSTPONED') return false;
+                if (!isMatchStarted(match.date)) return false;
+                return (now - new Date(match.date)) / 3600000 >= 100/60;
+            });
+
+            if (pendingMatches.length === 0) {
+                fetchLog('ℹ️ Inga matcher att kolla just nu');
+                return;
+            }
+
+            fetchLog(`⚽ Kollar ${pendingMatches.length} matcher...`);
+            let foundResults = 0;
+
+            const groups = {};
+            pendingMatches.forEach(match => {
+                const matchDate = match.date.split('T')[0];
+                const comp = match.competition || (match.id?.startsWith('cl_') ? 'CL' : match.id?.startsWith('wc_') ? 'WC' : 'PL');
+                const key = `${comp}_${matchDate}`;
+                if (!groups[key]) groups[key] = { comp, matchDate, matches: [] };
+                groups[key].matches.push(match);
+            });
+
+            const matchesCopy = [...matches];
+
+            for (const key of Object.keys(groups)) {
+                const group = groups[key];
+                try {
+                    const apiUrl = `https://api.football-data.org/v4/competitions/${group.comp}/matches?dateFrom=${group.matchDate}&dateTo=${group.matchDate}`;
+                    const url = 'https://corsproxy.io/?' + encodeURIComponent(apiUrl);
+                    const response = await fetch(url, { headers: { 'X-Auth-Token': plApiKey } });
+
+                    if (response.status === 429) { fetchLog('⚠️ Rate limit – väntar 60s...'); await new Promise(r => setTimeout(r, 60000)); continue; }
+                    if (!response.ok) { fetchLog(`⚠️ API ${response.status} för ${group.comp} ${group.matchDate}`); continue; }
+
+                    const data = await response.json();
+                    const games = data.matches || [];
+
+                    for (const match of group.matches) {
+                        const game = games.find(g => {
+                            const ah = (g.homeTeam?.shortName || g.homeTeam?.name || '').toLowerCase();
+                            const aa = (g.awayTeam?.shortName || g.awayTeam?.name || '').toLowerCase();
+                            const oh = match.homeTeam.toLowerCase(), oa = match.awayTeam.toLowerCase();
+                            return (ah.includes(oh) || oh.includes(ah)) && (aa.includes(oa) || oa.includes(aa));
+                        });
+                        if (!game || game.status !== 'FINISHED') continue;
+                        const hg = game.score?.fullTime?.home, ag = game.score?.fullTime?.away;
+                        if (hg == null || ag == null) continue;
+
+                        const outcome = hg > ag ? '1' : hg < ag ? '2' : 'X';
+                        const idx = matchesCopy.findIndex(m => m.id === match.id);
+                        if (idx >= 0) {
+                            matchesCopy[idx] = { ...matchesCopy[idx], actualOutcome: outcome, actualScore: `${hg}-${ag}`, setBy: 'API', setAt: new Date().toISOString() };
+                            fetchLog(`✅ ${match.homeTeam} ${hg}-${ag} ${match.awayTeam}`);
+                            await logActivity('AUTO_RESULT', `API: ${match.homeTeam} ${hg}-${ag} ${match.awayTeam}`);
+                            foundResults++;
+                        }
+                    }
+
+                    const keys = Object.keys(groups);
+                    if (keys.indexOf(key) < keys.length - 1) await new Promise(r => setTimeout(r, 6000));
+                } catch (err) {
+                    fetchLog(`❌ ${group.comp} ${group.matchDate}: ${err.message}`);
+                }
+            }
+
+            if (foundResults > 0) {
+                await set(ref(database, `leagues/${currentLeagueCode}/matches`), matchesCopy);
+            }
+            fetchLog(`✅ Klar! ${foundResults} nya resultat`);
+            const lastEl = document.getElementById('lastFetchStatus');
+            if (lastEl) lastEl.textContent = `Senast: ${new Date().toLocaleTimeString('sv-SE')}`;
+        }
+
+        window.manualFetchResults = async function() {
+            if (!isAdmin()) return;
+            const logEl = document.getElementById('fetchLog');
+            if (logEl) { logEl.textContent = ''; logEl.style.display = 'block'; }
+            await fetchResults();
+        };
+
+        window.toggleAutoFetch = function() {
+            if (autoFetchInterval) {
+                clearInterval(autoFetchInterval);
+                autoFetchInterval = null;
+                showAppMsg('⏹ Auto-hämtning stoppad', 'info');
+            } else {
+                autoFetchInterval = setInterval(fetchResults, 15 * 60 * 1000);
+                fetchResults();
+                showAppMsg('✅ Auto-hämtning startad (var 15:e minut)', 'success');
+            }
+            const statusEl = document.getElementById('autoFetchStatus');
+            const btnEl    = document.getElementById('autoFetchBtn');
+            if (statusEl) {
+                statusEl.textContent  = autoFetchInterval ? '✅ Aktiv' : '⏹ Inaktiv';
+                statusEl.className    = `auto-fetch-status ${autoFetchInterval ? 'auto-fetch-on' : 'auto-fetch-off'}`;
+            }
+            if (btnEl) {
+                btnEl.textContent = autoFetchInterval ? '⏹ Stoppa' : '▶ Starta auto-hämtning';
+                btnEl.className   = `btn-admin ${autoFetchInterval ? 'btn-admin-danger' : 'btn-admin-green'}`;
+            }
+        };
+
+        // ─── Resultat-modal ───────────────────────────────────────────────────────
+        window.openResultModal = function(matchId) {
+            if (!isAdmin()) return;
+            const match = getMatch(matchId);
+            if (!match) return;
+            currentModalMatchId = matchId;
+            document.getElementById('modalMatchInfo').textContent = `${match.homeTeam} vs ${match.awayTeam}`;
+            document.getElementById('modalScoreHome').textContent = match.homeTeam;
+            document.getElementById('modalScoreAway').textContent = match.awayTeam;
+            if (match.actualScore && match.actualOutcome !== 'POSTPONED') {
+                const parts = match.actualScore.split('-');
+                document.getElementById('modalHomeScore').value = parts[0] || '';
+                document.getElementById('modalAwayScore').value = parts[1] || '';
+            } else {
+                document.getElementById('modalHomeScore').value = '';
+                document.getElementById('modalAwayScore').value = '';
+            }
+            document.getElementById('modalSpecialStatus').textContent = '';
+            document.getElementById('resultModal').style.display = 'flex';
+        };
+
+        window.closeResultModal = function() {
+            document.getElementById('resultModal').style.display = 'none';
+            currentModalMatchId = null;
+        };
+
+        window.setModalPostponed = function() {
+            document.getElementById('modalSpecialStatus').textContent = '⚠️ Markeras som inställd vid sparning';
+            document.getElementById('modalHomeScore').value = 'POSTPONED';
+        };
+
+        window.clearModalResult = function() {
+            document.getElementById('modalSpecialStatus').textContent = '🗑️ Resultatet rensas vid sparning';
+            document.getElementById('modalHomeScore').value = 'CLEAR';
+        };
+
+        window.saveModalResult = async function() {
+            if (!currentModalMatchId) return;
+            const match = getMatch(currentModalMatchId);
+            if (!match) return;
+            const homeVal = document.getElementById('modalHomeScore').value;
+            const awayVal = document.getElementById('modalAwayScore').value;
+            const matchesCopy = matches.map(m => ({ ...m }));
+            const idx = matchesCopy.findIndex(m => m.id === currentModalMatchId);
+            if (idx < 0) return;
+            try {
+                if (homeVal === 'POSTPONED') {
+                    matchesCopy[idx] = { ...matchesCopy[idx], actualOutcome: 'POSTPONED', actualScore: null, setBy: currentUser, setAt: new Date().toISOString() };
+                    await set(ref(database, `leagues/${currentLeagueCode}/matches`), matchesCopy);
+                    await logActivity('SET_RESULT', `Inställd: ${match.homeTeam} vs ${match.awayTeam}`);
+                    showAppMsg('⚠️ Match markerad som inställd', 'info');
+                } else if (homeVal === 'CLEAR') {
+                    matchesCopy[idx] = { ...matchesCopy[idx], actualOutcome: null, actualScore: null, setBy: null, setAt: null };
+                    await set(ref(database, `leagues/${currentLeagueCode}/matches`), matchesCopy);
+                    await logActivity('CLEAR_RESULT', `Rensade: ${match.homeTeam} vs ${match.awayTeam}`);
+                    showAppMsg('🗑️ Resultat rensat', 'info');
+                } else {
+                    if (homeVal === '' || awayVal === '') { showAppMsg('❌ Ange båda siffrorna', 'error'); return; }
+                    const h = parseInt(homeVal), a = parseInt(awayVal);
+                    if (isNaN(h) || isNaN(a) || h < 0 || a < 0) { showAppMsg('❌ Ogiltiga siffror', 'error'); return; }
+                    const outcome = h > a ? '1' : h < a ? '2' : 'X';
+                    matchesCopy[idx] = { ...matchesCopy[idx], actualOutcome: outcome, actualScore: `${h}-${a}`, setBy: currentUser, setAt: new Date().toISOString() };
+                    await set(ref(database, `leagues/${currentLeagueCode}/matches`), matchesCopy);
+                    await logActivity('SET_RESULT', `Resultat: ${match.homeTeam} ${h}-${a} ${match.awayTeam}`);
+                    showAppMsg(`✅ ${match.homeTeam} ${h}–${a} ${match.awayTeam}`, 'success');
+                }
+                window.closeResultModal();
+            } catch (err) { showAppMsg('❌ Fel: ' + err.message, 'error'); }
+        };
+
+        // ─── Spelare ──────────────────────────────────────────────────────────────
+        function renderAdminPlayers() {
+            const list = document.getElementById('adminPlayerList');
+            if (!list) return;
+            const memberEntries = Object.entries(members);
+            if (!memberEntries.length) {
+                list.innerHTML = '<div style="color:#9ca3af;font-size:.85em;padding:4px 0;">Inga spelare ännu.</div>';
+            } else {
+                list.innerHTML = memberEntries.map(([uid, member]) => `
+                    <div class="player-item">
+                        <div>
+                            <span class="player-item-name">${member.name}</span>
+                            <span style="color:#6b7280;font-size:.78em;margin-left:6px;">${member.email || ''}</span>
+                        </div>
+                        ${uid !== currentLeagueInfo.adminUID
+                            ? `<button class="btn-admin btn-admin-danger" style="padding:5px 10px;font-size:.78em;" onclick="window.adminRemovePlayer('${uid}')">Ta bort</button>`
+                            : '<span style="font-size:.78em;color:#d4930a;font-weight:600;">Admin</span>'}
+                    </div>`).join('');
+            }
+
+            // Väntande ansökningar (joinMode: self)
+            const pendingSection = document.getElementById('pendingPlayersSection');
+            const pendingList    = document.getElementById('pendingPlayerList');
+            if (!pendingSection || !pendingList) return;
+            const pendingEntries = Object.entries(pendingMembers || {});
+            if (currentLeagueInfo.joinMode === 'self' && pendingEntries.length > 0) {
+                pendingSection.style.display = '';
+                pendingList.innerHTML = pendingEntries.map(([uid, p]) => `
+                    <div class="pending-item">
+                        <div>
+                            <span style="font-weight:600;">${p.name}</span>
+                            <span style="color:#92400e;font-size:.78em;margin-left:6px;">${p.email || ''}</span>
+                        </div>
+                        <div style="display:flex;gap:6px;">
+                            <button class="btn-admin btn-admin-green" style="padding:5px 10px;font-size:.78em;" onclick="window.adminApprovePending('${uid}')">✅ Godkänn</button>
+                            <button class="btn-admin btn-admin-danger" style="padding:5px 10px;font-size:.78em;" onclick="window.adminRejectPending('${uid}')">❌ Neka</button>
+                        </div>
+                    </div>`).join('');
+            } else {
+                pendingSection.style.display = 'none';
+            }
+        }
+
+        window.adminAddPlayer = async function() {
+            // Session 7: ersätts av e-postinbjudan
+            showAppMsg('ℹ️ Bjud in spelare via e-post – kommer i nästa version.', 'info');
+        };
+
+        window.adminRemovePlayer = async function(uid) {
+            if (!isAdmin()) return;
+            const member = members[uid];
+            if (!member) return;
+            if (uid === currentLeagueInfo.adminUID) { showAppMsg('❌ Kan inte ta bort admin', 'error'); return; }
+            if (!confirm(`Ta bort ${member.name}?`)) return;
+            try {
+                await set(ref(database, `leagues/${currentLeagueCode}/members/${uid}`), null);
+                showAppMsg(`✅ ${member.name} borttagen`, 'success');
+            } catch (err) { showAppMsg('❌ ' + err.message, 'error'); }
+        };
+
+        window.adminApprovePending = async function(uid) {
+            if (!isAdmin()) return;
+            const pending = pendingMembers[uid];
+            if (!pending) return;
+            try {
+                await set(ref(database, `leagues/${currentLeagueCode}/members/${uid}`), {
+                    name: pending.name, email: pending.email || '', joinedAt: Date.now()
+                });
+                await set(ref(database, `leagues/${currentLeagueCode}/pendingMembers/${uid}`), null);
+                showAppMsg(`✅ ${pending.name} godkänd och tillagd`, 'success');
+            } catch (err) { showAppMsg('❌ ' + err.message, 'error'); }
+        };
+
+        window.adminRejectPending = async function(uid) {
+            if (!isAdmin()) return;
+            const pending = pendingMembers[uid];
+            const name = pending?.name || uid;
+            if (!confirm(`Neka ansökan från ${name}?`)) return;
+            try {
+                await set(ref(database, `leagues/${currentLeagueCode}/pendingMembers/${uid}`), null);
+                showAppMsg(`✅ Ansökan från ${name} nekad`, 'info');
+            } catch (err) { showAppMsg('❌ ' + err.message, 'error'); }
+        };
+
+        // ─── Deadlines ────────────────────────────────────────────────────────────
+        const ALL_DEADLINE_KEYS = ['PL','CL_LEAGUE_PHASE','CL_KNOCKOUT_ROUND_PLAY_OFF','CL_ROUND_OF_16','CL_QUARTER_FINALS','CL_SEMI_FINALS','CL_FINAL','WC'];
+        const DEADLINE_LABELS_FULL = {
+            'PL': 'Premier League', 'CL_LEAGUE_PHASE': 'CL – Ligafas',
+            'CL_KNOCKOUT_ROUND_PLAY_OFF': 'CL – Playoff', 'CL_ROUND_OF_16': 'CL – Åttondelsfinaler',
+            'CL_QUARTER_FINALS': 'CL – Kvartsfinaler', 'CL_SEMI_FINALS': 'CL – Semifinaler',
+            'CL_FINAL': 'CL – Final', 'WC': 'VM'
+        };
+
+        function renderAdminDeadlines() {
+            const el = document.getElementById('adminDeadlinesList');
+            if (!el) return;
+            const comps = currentLeagueInfo.competitions || [];
+            const relevantKeys = ALL_DEADLINE_KEYS.filter(k => {
+                if (k === 'PL') return comps.includes('PL');
+                if (k === 'WC') return comps.includes('WC');
+                return comps.includes('CL');
+            });
+            el.innerHTML = relevantKeys.map(key => {
+                const deadline = deadlines[key];
+                const label = DEADLINE_LABELS_FULL[key] || key;
+                const isLocked = deadline && new Date() >= new Date(deadline);
+                const currentStr = deadline
+                    ? new Date(deadline).toLocaleString('sv-SE', { weekday:'short', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })
+                    : 'Ej satt';
+                return `<div class="deadline-row">
+                    <div>
+                        <div class="deadline-label">${label}</div>
+                        <div class="deadline-current" style="color:${isLocked ? '#dc2626' : deadline ? '#059669' : '#9ca3af'}">
+                            ${deadline ? (isLocked ? '🔒 Stängd: ' : '🟢 Öppen: ') + currentStr : '⚪ Ej satt'}
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+                        <input type="datetime-local" id="deadline-input-${key}" style="font-size:.78em;padding:5px 8px;border:1px solid #dde3ec;border-radius:6px;" value="${deadline || ''}">
+                        <button class="btn-admin btn-admin-primary" style="padding:6px 10px;font-size:.78em;" onclick="window.adminSaveDeadline('${key}')">Spara</button>
+                        ${deadline ? `<button class="btn-admin btn-admin-danger" style="padding:6px 10px;font-size:.78em;" onclick="window.adminClearDeadline('${key}')">Rensa</button>` : ''}
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        window.adminSaveDeadline = async function(key) {
+            if (!isAdmin()) return;
+            const val = document.getElementById(`deadline-input-${key}`)?.value;
+            if (!val) { showAppMsg('❌ Välj datum och tid', 'error'); return; }
+            try {
+                await set(ref(database, `leagues/${currentLeagueCode}/deadlines/${key}`), val);
+                await logActivity('SET_DEADLINE', `Spelstopp: ${DEADLINE_LABELS_FULL[key] || key} → ${val}`);
+                showAppMsg(`✅ Spelstopp sparat för ${DEADLINE_LABELS_FULL[key] || key}`, 'success');
+            } catch (err) { showAppMsg('❌ ' + err.message, 'error'); }
+        };
+
+        window.adminClearDeadline = async function(key) {
+            if (!isAdmin()) return;
+            if (!confirm(`Ta bort spelstopp för ${DEADLINE_LABELS_FULL[key] || key}?`)) return;
+            try {
+                await set(ref(database, `leagues/${currentLeagueCode}/deadlines/${key}`), null);
+                await logActivity('CLEAR_DEADLINE', `Spelstopp borttaget: ${DEADLINE_LABELS_FULL[key] || key}`);
+                showAppMsg('✅ Spelstopp borttaget', 'success');
+            } catch (err) { showAppMsg('❌ ' + err.message, 'error'); }
+        };
+
+        // ─── Aktivitetslogg ───────────────────────────────────────────────────────
+        window.renderActivityLog = function() {
+            const el = document.getElementById('activityLogBox');
+            if (!el) return;
+            if (!activityLog.length) {
+                el.innerHTML = '<span style="color:#9ca3af;">Ingen aktivitet ännu.</span>';
+                return;
+            }
+            const icons = { LOGIN:'🔓', LOGOUT:'🔒', AUTO_LOGIN:'⚡', FIRST_LOGIN:'✨', PREDICT:'🎯', SET_RESULT:'📝', CLEAR_RESULT:'🗑️', AUTO_RESULT:'⚽', ADMIN_LOAD_MATCHES:'📥', ADD_PLAYER:'👤', REMOVE_PLAYER:'🗑️', APPROVE_PLAYER:'✅', REJECT_PLAYER:'❌', SET_DEADLINE:'⏰', CLEAR_DEADLINE:'🗑️', POSTPONED_MATCH:'⚠️' };
+            const colors = { LOGIN:'#059669', LOGOUT:'#6b7280', AUTO_LOGIN:'#3b82f6', FIRST_LOGIN:'#d4930a', PREDICT:'#8b5cf6', SET_RESULT:'#06b6d4', CLEAR_RESULT:'#ef4444', AUTO_RESULT:'#22c55e', ADMIN_LOAD_MATCHES:'#059669', ADD_PLAYER:'#059669', REMOVE_PLAYER:'#dc2626', APPROVE_PLAYER:'#059669', SET_DEADLINE:'#d4930a' };
+            el.innerHTML = [...activityLog].reverse().map(entry => {
+                const timeStr = new Date(entry.timestamp).toLocaleString('sv-SE', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+                const icon = icons[entry.action] || '📌';
+                const color = colors[entry.action] || '#374151';
+                const ip = entry.ip ? ` (${entry.ip})` : '';
+                return `<div class="activity-log-entry" style="color:${color}">[${timeStr}] ${icon} <strong>${entry.user}</strong>${ip}: ${entry.details}</div>`;
+            }).join('');
+        };
+
+        // ─── API-nyckel ───────────────────────────────────────────────────────────
+        window.adminSaveApiKey = async function() {
+            if (!isGhost()) return;
+            const val = (document.getElementById('apiKeyInput')?.value || '').trim();
+            if (!val) { showAppMsg('❌ Ange en API-nyckel', 'error'); return; }
+            try {
+                await set(ref(database, 'config/apikey'), val);
+                plApiKey = val;
+                showAppMsg('✅ API-nyckel sparad', 'success');
+                const statusEl = document.getElementById('apiKeyStatus');
+                if (statusEl) statusEl.textContent = '✅ API-nyckel sparad';
+            } catch(err) { showAppMsg('❌ ' + err.message, 'error'); }
+        };
+
+        // ─── Ligainfo kopieringsknapp (admin) ─────────────────────────────────────
+        window.adminCopyCode = function() {
+            const code = document.getElementById('adminShareCode')?.textContent || '';
+            copyText(code, 'adminCopyCodeBtn');
+        };
+        window.adminCopyUrl = function() {
+            const url = document.getElementById('adminShareUrl')?.textContent || '';
+            copyText(url, 'adminCopyUrlBtn');
+        };
+
+        // ─── Historik-rendering ───────────────────────────────────────────────────
+        function renderHistory() {
+            const container = document.getElementById('historyContent');
+            if (!container) return;
+
+            if (!seasonHistory || seasonHistory.length === 0) {
+                container.innerHTML = `
+                    <div class="app-card">
+                        <div class="app-card-title">📜 Historik</div>
+                        <div class="empty-state">
+                            <div style="font-size:2em;margin-bottom:8px;">📜</div>
+                            <p>Inga sparade säsonger ännu.<br>Admin sparar en säsong via Admin-fliken.</p>
+                        </div>
+                    </div>`;
+                return;
+            }
+
+            // Visa nyaste säsongen först
+            const sorted = [...seasonHistory].reverse();
+            const cards = sorted.map(season => {
+                const dateStr = season.date
+                    ? new Date(season.date).toLocaleDateString('sv-SE', { year: 'numeric', month: 'long', day: 'numeric' })
+                    : '';
+                const standings = season.standings || [];
+                const rows = standings.map((s, i) => {
+                    const rankClass = ['rank-badge-1','rank-badge-2','rank-badge-3'][i] || '';
+                    const trophy = i === 0 ? ' 🏆' : '';
+                    return `<tr>
+                        <td><span class="rank-badge ${rankClass}">${i+1}</span></td>
+                        <td><strong>${s.player}</strong>${trophy}</td>
+                        <td><strong>${s.points}</strong></td>
+                        <td>${s.correctPreds ?? '–'}</td>
+                        <td>${s.bonusCount ?? '–'}</td>
+                    </tr>`;
+                }).join('');
+
+                return `<div class="app-card" style="margin-bottom:12px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+                        <div class="app-card-title" style="margin-bottom:0;">${season.name || 'Säsong'}</div>
+                        ${dateStr ? `<div style="font-size:.78em;color:#9ca3af;">${dateStr}</div>` : ''}
+                    </div>
+                    <table class="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th style="text-align:left;">Spelare</th>
+                                <th>Poäng</th>
+                                <th>Rätt</th>
+                                <th>Exakta</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows || '<tr><td colspan="5" style="text-align:center;color:#9ca3af;padding:12px;">Inga spelare</td></tr>'}</tbody>
+                    </table>
+                </div>`;
+            }).join('');
+
+            container.innerHTML = cards;
+        }
+
+        // ─── Spara säsong till historik ───────────────────────────────────────────
+        window.adminSaveSeason = async function() {
+            if (!isAdmin()) return;
+
+            const nameInput = document.getElementById('seasonNameInput');
+            const name = (nameInput?.value || '').trim();
+            if (!name) { showAppMsg('❌ Ange ett säsongsnamn', 'error'); return; }
+
+            if (!leaguePlayers.length) { showAppMsg('❌ Inga spelare i ligan', 'error'); return; }
+
+            // Bygg ställning (samma logik som leaderboard)
+            const standings = leaguePlayers.map(player => {
+                let totalPoints = 0, correctPreds = 0, bonusCount = 0;
+                matches.forEach(match => {
+                    if (match.actualOutcome && match.actualOutcome !== 'POSTPONED') {
+                        totalPoints += getCachedPoints(match.id, player);
+                        if (predictions[match.id]?.[player] === match.actualOutcome) correctPreds++;
+                        if (match.actualScore && exactPredictions[match.id]?.[player] === match.actualScore) bonusCount++;
+                    }
+                });
+                return { player, points: totalPoints, correctPreds, bonusCount };
+            }).sort((a, b) => b.points !== a.points ? b.points - a.points : b.bonusCount - a.bonusCount);
+
+            const winner = standings[0]?.player || '';
+
+            const entry = {
+                name,
+                date: new Date().toISOString().split('T')[0],
+                winner,
+                standings
+            };
+
+            try {
+                const histRef = ref(database, `leagues/${currentLeagueCode}/seasonHistory`);
+                const snap = await get(histRef);
+                const existing = snap.val();
+                let arr = existing ? (Array.isArray(existing) ? existing : Object.values(existing)) : [];
+                arr.push(entry);
+                await set(histRef, arr);
+                showAppMsg(`✅ Säsongen "${name}" sparad! Vinnare: ${winner}`, 'success');
+                if (nameInput) nameInput.value = '';
+                await logActivity('ADMIN_SAVE_SEASON', `Sparade säsong: ${name}, vinnare: ${winner}`);
+            } catch (err) {
+                showAppMsg('❌ Kunde inte spara: ' + err.message, 'error');
+            }
+        };
+
+        // ─── Nollställ säsong ─────────────────────────────────────────────────────
+        window.adminResetSeason = async function() {
+            if (!isAdmin()) return;
+            if (!confirm('⚠️ Nollställ säsongen?\n\nMatcher, tippningar och deadlines raderas.\nSpelare, lösenord och historik behålls.')) return;
+            if (!confirm('⚠️ SISTA VARNINGEN! Allt ovanstående raderas permanent.')) return;
+            try {
+                await logActivity('ADMIN_RESET_SEASON', 'Nollställde säsongen');
+                await set(ref(database, `leagues/${currentLeagueCode}/matches`), []);
+                await set(ref(database, `leagues/${currentLeagueCode}/predictions`), {});
+                await set(ref(database, `leagues/${currentLeagueCode}/exactPredictions`), {});
+                await set(ref(database, `leagues/${currentLeagueCode}/deadlines`), {});
+                showAppMsg('✅ Säsongen nollställd. Ladda in nya matcher.', 'success');
+            } catch (err) { showAppMsg('❌ ' + err.message, 'error'); }
+        };
+
+        // ═══════════════════════════════════════════════════════════════
+        // SESSION 1 – ADMIN / LANDNINGSSIDA
+        // ═══════════════════════════════════════════════════════════════
+
+        // ─── Ligakod-generering ───────────────────────────────────────────────────
+        function randomCode() {
+            return Array.from({length:6}, () => CHARS[Math.floor(Math.random()*CHARS.length)]).join('');
+        }
+
+        async function codeExists(code) {
+            return (await get(ref(database, `leagues/${code}/info`))).exists();
+        }
+
+        async function generateUniqueCode() {
+            for (let i = 0; i < 20; i++) {
+                const c = randomCode();
+                if (!await codeExists(c)) return c;
+            }
+            throw new Error('Kunde inte generera unik kod');
+        }
+
+
+        // ─── Navigering ───────────────────────────────────────────────────────────
+        window.goToLeague = function() {
+            const code = document.getElementById('codeInput').value.trim().toUpperCase();
+            if (!code) { showStatus('landingStatus', '❌ Ange en ligakod', 'error'); return; }
+            if (code.length !== 6) { showStatus('landingStatus', '❌ Koden måste vara 6 tecken', 'error'); return; }
+            clearStatus('landingStatus');
+            document.getElementById('goBtn').disabled = true;
+            window.location.href = `?liga=${code}`;
+        };
+
+        // ─── Skapa-formulär: visa/dölj omgångsinputs ─────────────────────────────
+        // ─── Senaste ligor (localStorage) ────────────────────────────────────────
+        function saveRecentLeague(code, name) {
+            try {
+                let recent = JSON.parse(localStorage.getItem('kc_recent_leagues') || '[]');
+                recent = recent.filter(r => r.code !== code);
+                recent.unshift({ code, name: name || code, visitedAt: Date.now() });
+                recent = recent.slice(0, 5);
+                localStorage.setItem('kc_recent_leagues', JSON.stringify(recent));
+            } catch(e) {}
+        }
+
+        function renderRecentLeagues() {
+            try {
+                const recent = JSON.parse(localStorage.getItem('kc_recent_leagues') || '[]');
+                const section = document.getElementById('recentLeaguesSection');
+                const list    = document.getElementById('recentLeaguesList');
+                if (!section || !list) return;
+                if (recent.length === 0) { section.style.display = 'none'; return; }
+                section.style.display = '';
+                list.innerHTML = recent.map(r => `
+                    <button onclick="window.location.href='?liga=${r.code}'"
+                        style="width:100%;display:flex;justify-content:space-between;align-items:center;
+                               background:#0a0c10;border:1px solid #1e2535;border-radius:10px;
+                               padding:12px 16px;color:#e8edf5;font-family:'DM Sans',sans-serif;
+                               font-size:.95em;cursor:pointer;text-align:left;transition:border-color .2s;"
+                        onmouseover="this.style.borderColor='#f0b429'"
+                        onmouseout="this.style.borderColor='#1e2535'">
+                        <span>${r.name}</span>
+                        <span style="font-family:monospace;font-size:.85em;color:#f0b429;letter-spacing:3px;">${r.code}</span>
+                    </button>`).join('');
+            } catch(e) {}
+        }
+
+        window.updateCreateRounds = function() {
+            const pl = document.getElementById('compPL')?.checked;
+            const cl = document.getElementById('compCL')?.checked;
+            const wc = document.getElementById('compWC')?.checked;
+            const anyChecked = pl || cl || wc;
+            const section = document.getElementById('createRoundsSection');
+            if (section) section.style.display = anyChecked ? '' : 'none';
+            const plW = document.getElementById('createPlRoundsWrap');
+            const clW = document.getElementById('createClRoundsWrap');
+            const wcW = document.getElementById('createWcRoundsWrap');
+            if (plW) plW.style.display = pl ? 'flex' : 'none';
+            if (clW) clW.style.display = cl ? 'flex' : 'none';
+            if (wcW) wcW.style.display = wc ? 'flex' : 'none';
+        };
+
+        // ─── Auto-ladda matcher (ny liga med defaultRounds) ───────────────────────
+        window.autoLoadDefaultMatches = async function() {
+            if (!isAdmin()) return;
+            const rounds = currentLeagueInfo.defaultRounds || {};
+            const comps  = currentLeagueInfo.competitions || [];
+            if (!plApiKey) {
+                try { const s = await get(ref(database, 'config/apikey')); plApiKey = s.val() || ''; } catch(e) {}
+            }
+            if (!plApiKey) { showAppMsg('⚠️ Ingen API-nyckel – matcher kunde inte hämtas.', 'error'); return; }
+
+            try {
+                let allMatches = [], allLabels = [];
+                for (const comp of comps) {
+                    const r = rounds[comp] || 2;
+                    const result = await fetchCompetitionMatches(comp, r);
+                    allMatches = [...allMatches, ...result.converted];
+                    allLabels  = [...allLabels,  ...result.labels];
+                }
+                if (allMatches.length === 0) { showAppMsg('⚠️ Inga matcher hittades via API.', 'error'); return; }
+                allMatches.sort((a, b) => new Date(a.date) - new Date(b.date));
+                await set(ref(database, `leagues/${currentLeagueCode}/matches`), allMatches);
+                await logActivity('AUTO_LOAD_MATCHES', `Auto-laddade ${allMatches.length} matcher (${allLabels.join(', ')})`);
+                showAppMsg(`✅ ${allMatches.length} matcher laddade automatiskt!`, 'success');
+            } catch(e) {
+                showAppMsg('❌ Kunde inte hämta matcher automatiskt: ' + e.message, 'error');
+            }
+        };
+
+        // ─── Superadmin: radera liga ──────────────────────────────────────────────
+        window.superAdminDeleteLeague = async function() {
+            if (!saAuthenticated) return;
+            const select = document.getElementById('saLeagueSelect');
+            const code = select?.value;
+            if (!code) return;
+            const leagueName = select.options[select.selectedIndex]?.text || code;
+            if (!confirm(`Är du säker på att du vill radera ligan:\n"${leagueName}"?\n\nAll data raderas permanent!`)) return;
+            try {
+                await set(ref(database, `leagues/${code}`), null);
+                // Ta bort ur dropdown
+                select.remove(select.selectedIndex);
+                const statusEl = document.getElementById('saStatus');
+                if (statusEl) { statusEl.style.color = '#4ade80'; statusEl.textContent = `✅ Liga ${code} raderad.`; }
+                document.getElementById('saStep1').style.display = '';
+                document.getElementById('saStep2').style.display = 'none';
+                saAuthenticated = false;
+            } catch(e) {
+                alert('Kunde inte radera ligan: ' + e.message);
+            }
+        };
+
+        window.updateCompFields = function() {
+            const comp = document.getElementById('adminCompSelect')?.value || 'PL';
+            const plWrap = document.getElementById('plRoundsWrap');
+            const clWrap = document.getElementById('clRoundsWrap');
+            const wmWrap = document.getElementById('wmRoundsWrap');
+            if (plWrap) plWrap.style.display = (comp === 'PL' || comp === 'BOTH') ? '' : 'none';
+            if (clWrap) clWrap.style.display = (comp === 'CL' || comp === 'BOTH') ? '' : 'none';
+            if (wmWrap) wmWrap.style.display = (comp === 'WC') ? '' : 'none';
+        };
+
+        window.showLanding = function() {
+            currentUser       = null;
+            currentUserUID    = null;
+            currentLeagueCode = '';
+            currentLeagueInfo = {};
+            members           = {};
+            invitedEmails     = {};
+            pendingMembers    = {};
+            leaguePlayers     = [];
+            matches           = [];
+            predictions       = {};
+            exactPredictions  = {};
+            deadlines         = {};
+            leagueUnsubscribers.forEach(u => u());
+            leagueUnsubscribers = [];
+
+            history.pushState({}, '', window.location.pathname);
+            clearStatus('landingStatus');
+            renderRecentLeagues();
+            showView('viewLanding');
+        };
+
+        window.showCreateForm = function() {
+            clearStatus('createStatus');
+            showView('viewCreate');
+        };
+
+        // ─── Skapa liga (Firebase Auth) ──────────────────────────────────────────
+        window.createLeague = async function() {
+            const creatorName     = document.getElementById('creatorName').value.trim();
+            const creatorEmail    = (document.getElementById('creatorEmail')?.value || '').trim();
+            const creatorPassword = document.getElementById('creatorPassword').value;
+            const name            = document.getElementById('leagueName').value.trim();
+
+            const creatorNameErr = validateName(creatorName);
+            if (creatorNameErr) { showStatus('createStatus', '❌ ' + creatorNameErr, 'error'); return; }
+            if (!creatorEmail)    { showStatus('createStatus', '❌ Ange din e-postadress', 'error'); return; }
+            if (!creatorPassword) { showStatus('createStatus', '❌ Välj ett lösenord', 'error'); return; }
+            if (!name)            { showStatus('createStatus', '❌ Ange ett liganamn', 'error'); return; }
+
+            const comps = [];
+            if (document.getElementById('compPL').checked) comps.push('PL');
+            if (document.getElementById('compCL').checked) comps.push('CL');
+            if (document.getElementById('compWC').checked) comps.push('WC');
+
+            if (comps.length === 0) { showStatus('createStatus', '❌ Välj minst en tävling', 'error'); return; }
+
+            const defaultRounds = {};
+            if (comps.includes('PL')) defaultRounds.PL = parseInt(document.getElementById('createPlRounds')?.value || 2);
+            if (comps.includes('CL')) defaultRounds.CL = parseInt(document.getElementById('createClRounds')?.value || 2);
+            if (comps.includes('WC')) defaultRounds.WC = parseInt(document.getElementById('createWcRounds')?.value || 2);
+
+            const joinMode = document.querySelector('input[name="joinMode"]:checked').value;
+            const btn = document.getElementById('createBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Skapar liga...';
+            clearStatus('createStatus');
+
+            try {
+                // Skapa eller logga in Firebase-konto
+                let user;
+                try {
+                    user = (await createUserWithEmailAndPassword(auth, creatorEmail, creatorPassword)).user;
+                } catch (e) {
+                    if (e.code === 'auth/email-already-in-use') {
+                        user = (await signInWithEmailAndPassword(auth, creatorEmail, creatorPassword)).user;
+                    } else { throw e; }
+                }
+
+                const code = await generateUniqueCode();
+
+                await set(ref(database, `leagues/${code}`), {
+                    info: {
+                        name, createdAt: Date.now(), createdBy: creatorName,
+                        joinMode, competitions: comps, status: 'active',
+                        adminUID: user.uid, defaultRounds
+                    },
+                    members: {
+                        [user.uid]: { name: creatorName, email: creatorEmail, joinedAt: Date.now() }
+                    },
+                    matches: [],
+                    predictions: {}, exactPredictions: {}
+                });
+
+                createdLeagueCode  = code;
+                createdCreatorName = creatorName;
+                setEl('createdLeagueName', name);
+                setEl('createdCode', code);
+                setEl('createdUrl', `https://vg1414.github.io/KC/?liga=${code}`);
+                showView('viewCreated');
+
+            } catch (err) {
+                let msg = '❌ Kunde inte skapa liga: ' + err.message;
+                if (err.code === 'auth/weak-password')  msg = '❌ Lösenordet är för svagt (minst 6 tecken)';
+                if (err.code === 'auth/invalid-email')  msg = '❌ Ogiltig e-postadress';
+                if (err.code === 'auth/wrong-password') msg = '❌ E-postadressen har ett konto men fel lösenord';
+                showStatus('createStatus', msg, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🎣 Skapa liga';
+            }
+        };
+
+        // ─── Kopiera ──────────────────────────────────────────────────────────────
+        async function copyText(text, btnId) {
+            try {
+                await navigator.clipboard.writeText(text);
+                const btn  = document.getElementById(btnId);
+                const orig = btn.textContent;
+                btn.textContent = '✅ Kopierad!';
+                setTimeout(() => { btn.textContent = orig; }, 2200);
+            } catch {
+                prompt('Kopiera:', text);
+            }
+        }
+
+        window.copyCode = () => copyText(document.getElementById('createdCode').textContent, 'copyCodeBtn');
+        window.copyUrl  = () => copyText(document.getElementById('createdUrl').textContent,  'copyUrlBtn');
+
+        window.goToCreatedLeague = () => { window.location.href = `?liga=${createdLeagueCode}`; };
+
+        // ─── Superadmin från landningssidan ──────────────────────────────────────
+        let saClicks = 0;
+        let saTimer  = null;
+        let saAuthenticated = false;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const lf = document.getElementById('landingFish');
+            if (lf) lf.addEventListener('click', () => {
+                saClicks++;
+                clearTimeout(saTimer);
+                saTimer = setTimeout(() => { saClicks = 0; }, 4000);
+                if (saClicks >= 5) {
+                    saClicks = 0;
+                    clearTimeout(saTimer);
+                    window.openSuperAdminOverlay();
+                }
+            });
+        });
+
+        window.openSuperAdminOverlay = function() {
+            saAuthenticated = false;
+            const overlay = document.getElementById('superAdminOverlay');
+            const step1   = document.getElementById('saStep1');
+            const step2   = document.getElementById('saStep2');
+            const pw      = document.getElementById('saPw');
+            const status  = document.getElementById('saStatus');
+            if (!overlay) return;
+            step1.style.display = '';
+            step2.style.display = 'none';
+            if (pw) pw.value = '';
+            if (status) status.textContent = '';
+            overlay.style.display = 'flex';
+            setTimeout(() => { if (pw) pw.focus(); }, 80);
+        };
+
+        window.closeSuperAdminOverlay = function() {
+            const overlay = document.getElementById('superAdminOverlay');
+            if (overlay) overlay.style.display = 'none';
+            saAuthenticated = false;
+        };
+
+        window.handleSuperAdminLogin = async function() {
+            const pw = (document.getElementById('saPw')?.value || '');
+            if (!pw) return;
+            const hash = await hashPassword(pw);
+            try {
+                const snap = await get(ref(database, 'config/mh'));
+                const stored = snap.val();
+                if (stored === null) {
+                    await set(ref(database, 'config/mh'), hash);
+                    saAuthenticated = true;
+                } else if (hash === stored) {
+                    saAuthenticated = true;
+                } else {
+                    const el = document.getElementById('saPw');
+                    if (el) el.value = '';
+                    const st = document.getElementById('saStatus');
+                    if (st) st.textContent = '❌ Fel lösenord';
+                    return;
+                }
+            } catch(e) {
+                const st = document.getElementById('saStatus');
+                if (st) st.textContent = '❌ Anslutningsfel';
+                return;
+            }
+            // Korrekt lösenord – hämta alla ligor
+            try {
+                const snap = await get(ref(database, 'leagues'));
+                const all = snap.val() || {};
+                const select = document.getElementById('saLeagueSelect');
+                if (select) {
+                    select.innerHTML = '';
+                    const codes = Object.keys(all);
+                    if (codes.length === 0) {
+                        const opt = document.createElement('option');
+                        opt.value = '';
+                        opt.textContent = 'Inga ligor hittades';
+                        select.appendChild(opt);
+                    } else {
+                        codes.forEach(code => {
+                            const opt = document.createElement('option');
+                            opt.value = code;
+                            const info = all[code]?.info || {};
+                            const name = info.name || code;
+                            const createdAt = info.createdAt
+                                ? new Date(info.createdAt).toLocaleString('sv-SE', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                                : '';
+                            opt.textContent = `${code} – ${name}${createdAt ? ` [${createdAt}]` : ''}`;
+                            select.appendChild(opt);
+                        });
+                    }
+                }
+                // Visa steg 2
+                document.getElementById('saStep1').style.display = 'none';
+                document.getElementById('saStep2').style.display = 'flex';
+            } catch(e) {
+                const st = document.getElementById('saStatus');
+                if (st) st.textContent = '❌ Kunde inte hämta ligor';
+            }
+        };
+
+        window.superAdminGoToLeague = async function() {
+            if (!saAuthenticated) return;
+            const select = document.getElementById('saLeagueSelect');
+            const code = select?.value;
+            if (!code) return;
+            window.closeSuperAdminOverlay();
+            showView('viewLoading');
+            try {
+                const snap = await get(ref(database, `leagues/${code}`));
+                if (!snap.exists()) { showView('viewLanding'); return; }
+                setupLeagueView(code, snap.val());
+                // Kort fördröjning så listeners hinner registreras
+                setTimeout(() => { activateSession('__ghost__', '__ghost__'); }, 300);
+            } catch(e) {
+                showView('viewLanding');
+            }
+        };
+
+        // ─── Tangentbords-handlers ────────────────────────────────────────────────
+        document.getElementById('codeInput').addEventListener('keydown', e => {
+            if (e.key === 'Enter') window.goToLeague();
+        });
+
+
+        document.getElementById('codeInput').addEventListener('input', e => {
+            const c = e.target.value.toUpperCase().replace(/[^A-Z2-9]/g, '');
+            if (e.target.value !== c) e.target.value = c;
+        });
+
+    </script>
+</body>
+</html>
