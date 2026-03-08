@@ -21,3 +21,8 @@
 [x] det blir problematiskt för folk att logga in då folk inte kommer komma ihåg sina ligakoder. hur ska vi lösa detta?
 [x] glömt lösenord fungerar inte som den ska. ❌ Ange din e-postadress i fältet ovan, klicka sedan igen - finns inget fält ovan.
 [x] svart bakgrund i aktivitetslogg och senaste längst ner. större typsnitt också så det blir läsbart.
+[] Ligor raderas 1mån efter sista matchen
+[] Föräldralösa Firebase Auth-konton – användare som skapat konto men aldrig gått med i en liga syns inte i superadmin-listan. Behöver lösas, t.ex. via Firebase Admin SDK eller en cleanup-funktion i superadmin som listar Auth-konton utan ligamedlemskap.
+[] Gör så man inte kan ha samma namn i en liga
+[] Komma ihåg ligakoden kanske inte behövs? Vad tycker du?
+[] Alla kan se sin egen tippning under matcher. När spelstopp passerat visas allas tippningar under matcher. När spelstopp passerat döljs tippa-fliken. Dead-line verkar inte synas under tippa.

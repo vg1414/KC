@@ -1,5 +1,13 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-08 – Godkännande-systemet borttaget; Automatisk sparning av tips; Poänglogik uppdaterad
+
+### Ändringar
+- **Godkännande-systemet**: Borttaget helt. Nya spelare registreras direkt till ligan (ingen väntande status eller admin-godkännande)
+- **Tippnings-sparning**: Sparande är nu helt automatiskt. Varje gång man fyller i/ändrar resultatet sparas det direkt till Firebase. Inga "Spara tips"-knappar längre, och resultatetiketten ("1 – Liverpool vinner") är borttagen från korten
+- **Poäng-logik**: Rättad och förtydligad. Poängberäkning följer: `100 × (N−k)/(N−1)` där N=totalt antal spelare och k=antal som gissade samma. Exempel (4 spelare): 1 rätt→100p, 2 rätt→67p, 3 rätt→33p, 4 rätt→0p
+- **Bonus för exakt resultat**: +50p för rätt exakt slutresultat (kombineras med 1X2-poängen)
+
 ## 2026-03-08 – Design 4: Tippa-korten och bakgrund (Session 12)
 
 ### Ändringar

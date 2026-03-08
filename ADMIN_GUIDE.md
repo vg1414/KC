@@ -169,6 +169,39 @@ Hur: I inloggningsformuläret, välj **"Åskådare"** i listan och klicka "Logga
 
 ---
 
+## Poängsystemet
+
+Poängen räknas automatiskt när resultaten är inlagda. Här förklaras hur det fungerar:
+
+### 1X2-poäng
+**Från 0–100 poäng** beroende på hur många andra som gissade samma resultat:
+
+- **Ensam rätt** (bara du gissade rätt) = **100 poäng**
+- **2 av 4 gissar rätt** = **67 poäng**
+- **3 av 4 gissar rätt** = **33 poäng**
+- **Alla gissar rätt** = **0 poäng** (ingen skill)
+
+Formeln: `100 × (N−k)/(N−1)` där N = totalt antal spelare, k = antal som gissade samma.
+
+### Bonus för exakt resultat 🔮
+**+50 poäng extra** om du gissade rätt exakt slutresultat.
+
+Exempel: Om du förutspår att Arsenal vinner **2–1** och det blir **2–1**, får du:
+- 1X2-poäng (beroende på hur många andra som gissade Arsenal vinner) + **50 bonus** för exakt resultat
+
+### Exempel
+4 spelare, två spelar Arsenal vs Liverpool:
+- **Dina tips:** Arsenal vinner, exakt **2–1**
+- **Verkligt resultat:** Arsenal vinner **2–1**
+- **Andra:** Anna tippar X, Malin och Kalle tippar Arsenal (men olika exakta resultat)
+
+Din poäng:
+- 1X2-rätt: Du är 1 av 3 som gissade Arsenal vinner → `100 × (4−3)/(4−1) = 33p`
+- Exakt rätt: Du gissade **2–1** → `+50p`
+- **Totalt: 83 poäng**
+
+---
+
 ## Vanliga frågor
 
 **Jag glömde mitt adminlösenord.**

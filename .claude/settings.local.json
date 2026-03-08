@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(start:*)",
+      "Read(//c/Users/David/documents/david/claude/KrokensCopa/**)",
+      "Read(//c/Users/David/documents/david/claude/**)",
+      "Bash(sed:*)",
+      "Bash(npx firebase-tools:*)",
+      "mcp__plugin_firebase_firebase__firebase_get_security_rules",
+      "mcp__plugin_firebase_firebase__firebase_get_project",
+      "Bash(ls:*)",
+      "mcp__plugin_firebase_firebase__auth_get_users",
+      "mcp__plugin_firebase_firebase__realtimedatabase_get_data",
+      "mcp__plugin_firebase_firebase__realtimedatabase_set_data"
+    ]
+  },
+  "outputStyle": "default"
+}

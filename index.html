@@ -702,15 +702,6 @@
             text-align: center;
         }
 
-        /* Outcome-strip: utfall-text + spara-knapp */
-        .pred-footer {
-            background: #f9fafb;
-            border-top: 1px solid #f0f4f8;
-            padding: 10px 16px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
         .score-label {
             flex: 1;
             font-size: .8em;
@@ -1314,7 +1305,7 @@
                                 <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 12px;">
                                     <div style="font-size:.8em;font-weight:700;color:#d4930a;margin-bottom:2px;">RÄTT 1X2-TIPS</div>
                                     <div style="font-size:.85em;color:#b8c4d4;">0–100 poäng beroende på hur många som tippade samma</div>
-                                    <div style="font-size:.78em;color:#6b7280;margin-top:3px;">Ensam rätt = 100p &nbsp;·&nbsp; Hälften rätt = 50p &nbsp;·&nbsp; Alla rätt = 0p</div>
+                                    <div style="font-size:.78em;color:#6b7280;margin-top:3px;">Poängen beräknas med formeln <code>100 × (N−k)/(N−1)</code>, där N = antal spelare och k = antal som gissade samma. Resultat: ensam rätt ger mest, alla rätt ger 0 (exakt halv rätt är inte nödvändigtvis 50&nbsp;p).</div>
                                 </div>
                                 <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 12px;">
                                     <div style="font-size:.8em;font-weight:700;color:#a78bfa;margin-bottom:2px;">EXAKT SLUTRESULTAT 🔮</div>
@@ -1323,7 +1314,7 @@
                                 </div>
                                 <div style="background:rgba(217,119,6,.12);border:1px solid rgba(217,119,6,.25);border-radius:8px;padding:10px 12px;">
                                     <div style="font-size:.8em;font-weight:700;color:#fbbf24;margin-bottom:2px;">EXEMPEL</div>
-                                    <div style="font-size:.85em;color:#b8c4d4;">4 spelare, 1 gissar rätt → 100p. 2 gissar rätt → 67p. 3 gissar rätt → 33p. 4 gissar rätt → 0p.</div>
+                                    <div style="font-size:.85em;color:#b8c4d4;">4 spelare, 1 gissar rätt → 100p. 2 gissar rätt → 67p (inte 50!). 3 gissar rätt → 33p. 4 gissar rätt → 0p.</div>
                                 </div>
                             </div>
                         </div>
@@ -1438,10 +1429,6 @@
                         👥 Spelare <span class="admin-toggle-icon">▼</span>
                     </div>
                     <div class="admin-section-body">
-                        <div id="pendingPlayersSection" style="display:none;margin-bottom:14px;">
-                            <div style="font-size:.82em;font-weight:600;color:#92400e;margin-bottom:6px;">⏳ Väntande ansökningar</div>
-                            <div id="pendingPlayerList"></div>
-                        </div>
                         <div class="player-list" id="adminPlayerList"></div>
                         <div id="invitedEmailsList" style="margin-top:10px;"></div>
                         <div id="invitePlayerSection" class="admin-row" style="margin-top:10px;display:none;">
@@ -1521,7 +1508,7 @@
                                 <div style="font-size:.85em;color:#b8c4d4;line-height:1.55;"><strong>Kan spelare tippa efter deadline?</strong><br><span style="color:#8896aa;">Nej – tips låses automatiskt när spelstopp passerat.</span></div>
                                 <div style="font-size:.85em;color:#b8c4d4;line-height:1.55;margin-top:6px;"><strong>Hur sätter jag ett resultat?</strong><br><span style="color:#8896aa;">Gå till <strong style="color:#b8c4d4;">Matcher-fliken</strong> och klicka på en match som redan startat. En knapp för att sätta resultat visas från det att matchen börjar. Knappen försvinner automatiskt när systemet hämtar det riktiga resultatet från API:et (sker automatiskt var 15:e minut).</span></div>
                                 <div style="font-size:.85em;color:#b8c4d4;line-height:1.55;margin-top:6px;"><strong>Vad händer om en match ställs in?</strong><br><span style="color:#8896aa;">Välj "Inställd" i resultat-modalen. Inga poäng delas ut för inställda matcher.</span></div>
-                                <div style="font-size:.85em;color:#b8c4d4;line-height:1.55;margin-top:6px;"><strong>Hur godkänner jag nya spelare?</strong><br><span style="color:#8896aa;">Om ligan kräver godkännande visas väntande spelare högst upp under "Spelare".</span></div>
+
                             </div>
 
                         </div>
@@ -1618,7 +1605,7 @@
 
         let members          = {};   // { uid: { name, email, joinedAt } }
         let invitedEmails    = {};   // { encodedEmail: true }
-        let pendingMembers   = {};   // { uid: { name, email, requestedAt } }
+        // Godkännande-systemet borttaget – alla spelare går direkt till members
         let leaguePlayers    = [];   // byggs från members
 
         let matches          = [];
@@ -2147,7 +2134,7 @@
             leagueUnsubscribers = [];
 
             // Återställ state
-            members = {}; invitedEmails = {}; pendingMembers = {};
+            members = {}; invitedEmails = {};
             leaguePlayers = []; matches = [];
             predictions = {}; exactPredictions = {}; deadlines = {};
 
@@ -2197,12 +2184,7 @@
                 })
             );
 
-            leagueUnsubscribers.push(
-                onValue(ref(database, `${base}/pendingMembers`), snap => {
-                    pendingMembers = snap.val() || {};
-                    if (isAdmin()) renderAdminPlayers();
-                })
-            );
+            // Godkännande-systemet borttaget – pendingMembers listener borttagen
         }
 
 
@@ -2361,19 +2343,12 @@
                         showStatus('leagueStatus', `❌ Namnet "${name}" är redan taget`, 'error');
                         return;
                     }
-                    await set(ref(database, `leagues/${currentLeagueCode}/pendingMembers/${user.uid}`), {
-                        name, email, requestedAt: Date.now()
+                    // Godkännande-systemet borttaget – spelare läggs direkt till members
+                    await set(ref(database, `leagues/${currentLeagueCode}/members/${user.uid}`), {
+                        name, email, joinedAt: Date.now()
                     });
-                    const container = document.getElementById('loginFormContainer');
-                    if (container) {
-                        container.innerHTML = `
-                            <div style="text-align:center;padding:16px 0;display:flex;flex-direction:column;gap:12px;">
-                                <div style="font-size:2em;">⏳</div>
-                                <div style="color:#e8edf5;font-weight:600;">Ansökan skickad!</div>
-                                <div style="color:#8896aa;font-size:.85em;line-height:1.5;">Väntar på att admin godkänner dig.</div>
-                                <button class="btn-ghost" onclick="window.handleLogout()">← Logga ut</button>
-                            </div>`;
-                    }
+                    await set(ref(database, `userLeagues/${user.uid}/${currentLeagueCode}`), { name: currentLeagueInfo.name || currentLeagueCode, role: 'member' });
+                    activateSession(name, user.uid);
                 }
             } catch (err) {
                 showStatus('leagueStatus', '❌ Fel: ' + err.message, 'error');
@@ -2746,10 +2721,7 @@
                                 <span class="pred-team-name">${m.awayTeam}</span>
                             </div>
                         </div>
-                        <div class="pred-footer">
-                            <div id="prediction-label-${m.id}" class="${outcomeCls}">${outcomeText}</div>
-                            <button class="btn-save-pred" onclick="window.saveScorePrediction('${m.id}')">Spara tips</button>
-                        </div>`;
+`;
                 }
 
                 return `
@@ -2931,18 +2903,18 @@
         }
 
         // ─── Tippnings-funktioner ─────────────────────────────────────────────────
-        window.updateScorePrediction = function(matchId) {
+        window.updateScorePrediction = async function(matchId) {
+            if (!currentUser) return;
             const homeVal = document.getElementById(`exact-home-${matchId}`)?.value;
             const awayVal = document.getElementById(`exact-away-${matchId}`)?.value;
-            const label   = document.getElementById(`prediction-label-${matchId}`);
             const match   = getMatch(matchId);
-            if (!label || !match) return;
+            if (!match) return;
 
             const homeEl = document.getElementById(`exact-home-${matchId}`);
             const awayEl = document.getElementById(`exact-away-${matchId}`);
+
+            // markera fält
             if (homeVal === '' || awayVal === '') {
-                label.textContent = 'Ange resultatet du tror på';
-                label.className = 'score-label placeholder';
                 if (homeEl) homeEl.classList.remove('has-val');
                 if (awayEl) awayEl.classList.remove('has-val');
                 return;
@@ -2951,75 +2923,27 @@
             if (awayEl) awayEl.classList.add('has-val');
 
             const h = parseInt(homeVal), a = parseInt(awayVal);
-            let text;
-            if (h > a)      { text = `1 – ${match.homeTeam} vinner`; }
-            else if (h < a) { text = `2 – ${match.awayTeam} vinner`; }
-            else            { text = 'X – Oavgjort'; }
-            label.textContent = text;
-            label.className = 'score-label';
-        };
+            if (isNaN(h) || isNaN(a) || h < 0 || a < 0) return;
 
-        window.saveScorePrediction = async function(matchId) {
-            if (!currentUser) { showAppMsg('Du måste vara inloggad!', 'error'); return; }
-
-            const match = getMatch(matchId);
-            if (!match) return;
-
-            if (isMatchLocked(match) || isMatchStarted(match.date)) {
-                showAppMsg('Tippningen är stängd för denna match.', 'error');
-                return;
-            }
-
-            const homeVal = document.getElementById(`exact-home-${matchId}`)?.value;
-            const awayVal = document.getElementById(`exact-away-${matchId}`)?.value;
-
-            if (homeVal === '' || awayVal === '') {
-                showAppMsg('❌ Fyll i båda siffrorna!', 'error');
-                return;
-            }
-
-            const h = parseInt(homeVal), a = parseInt(awayVal);
-            if (isNaN(h) || isNaN(a) || h < 0 || a < 0) {
-                showAppMsg('Ogiltiga siffror.', 'error');
-                return;
-            }
-
-            const outcome  = h > a ? '1' : h < a ? '2' : 'X';
-            const scoreStr = `${h}-${a}`;
-
+            // Spara direkt till Firebase
             try {
-                // Uppdatera lokal state direkt (snabbare UI)
-                if (!predictions[matchId])      predictions[matchId] = {};
+                const outcome = h > a ? '1' : h < a ? '2' : 'X';
+                const scoreStr = `${h}-${a}`;
+                if (!predictions[matchId]) predictions[matchId] = {};
                 if (!exactPredictions[matchId]) exactPredictions[matchId] = {};
-                predictions[matchId][currentUser]      = outcome;
+                predictions[matchId][currentUser] = outcome;
                 exactPredictions[matchId][currentUser] = scoreStr;
-
-                // Skriv per spelare (undviker race conditions)
                 await set(ref(database, `leagues/${currentLeagueCode}/predictions/${matchId}/${currentUser}`), outcome);
                 await set(ref(database, `leagues/${currentLeagueCode}/exactPredictions/${matchId}/${currentUser}`), scoreStr);
-
                 await logActivity('PREDICT', `Tippade på ${match.homeTeam} vs ${match.awayTeam}`);
-
-                renderPredictions();
                 renderMatches();
-
-                // Flash-animation
-                requestAnimationFrame(() => {
-                    const card = document.querySelector(`[data-match-id="${matchId}"]`);
-                    if (card) {
-                        card.classList.remove('pred-save-flash');
-                        void card.offsetWidth;
-                        card.classList.add('pred-save-flash');
-                    }
-                });
-
-                showAppMsg(`✅ Tipp sparat: ${match.homeTeam} ${h}–${a} ${match.awayTeam}`, 'success');
-
+                rebuildPointsCache();
+                renderLeaderboard();
             } catch (err) {
                 console.error('Save error:', err);
-                showAppMsg('❌ Fel: ' + err.message, 'error');
             }
         };
+
 
         // ═══════════════════════════════════════════════════════════════
         // ADMIN-FUNKTIONER (Session 3)
@@ -3378,33 +3302,7 @@
                     </div>`).join('');
             }
 
-            // Väntande ansökningar (joinMode: self)
-            const pendingSection = document.getElementById('pendingPlayersSection');
-            const pendingList    = document.getElementById('pendingPlayerList');
-            if (!pendingSection || !pendingList) return;
-            const pendingEntries = Object.entries(pendingMembers || {});
-            if (currentLeagueInfo.joinMode === 'self' && pendingEntries.length > 0) {
-                pendingSection.style.display = '';
-                pendingList.innerHTML = pendingEntries.map(([uid, p]) => {
-                    const requestedStr = p.requestedAt
-                        ? new Date(p.requestedAt).toLocaleString('sv-SE', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-                        : '';
-                    return `
-                    <div class="pending-item">
-                        <div>
-                            <span style="font-weight:600;">${p.name}</span>
-                            <span style="color:#92400e;font-size:.78em;margin-left:6px;">${p.email || ''}</span>
-                            ${requestedStr ? `<div style="font-size:.74em;color:#9ca3af;margin-top:2px;">Ansökte: ${requestedStr}</div>` : ''}
-                        </div>
-                        <div style="display:flex;gap:6px;">
-                            <button class="btn-admin btn-admin-green" style="padding:5px 10px;font-size:.78em;" onclick="window.adminApprovePending('${uid}')">✅ Godkänn</button>
-                            <button class="btn-admin btn-admin-danger" style="padding:5px 10px;font-size:.78em;" onclick="window.adminRejectPending('${uid}')">❌ Neka</button>
-                        </div>
-                    </div>`;
-                }).join('');
-            } else {
-                pendingSection.style.display = 'none';
-            }
+            // Godkännande-systemet borttaget – alla spelare läggs direkt till members
 
             // Inbjudna e-poster (joinMode: admin) – visa de som ännu inte gått med
             const inviteSection = document.getElementById('invitePlayerSection');
@@ -3470,30 +3368,7 @@
             } catch (err) { showAppMsg('❌ ' + err.message, 'error'); }
         };
 
-        window.adminApprovePending = async function(uid) {
-            if (!isAdmin()) return;
-            const pending = pendingMembers[uid];
-            if (!pending) return;
-            try {
-                await set(ref(database, `leagues/${currentLeagueCode}/members/${uid}`), {
-                    name: pending.name, email: pending.email || '', joinedAt: Date.now()
-                });
-                await set(ref(database, `leagues/${currentLeagueCode}/pendingMembers/${uid}`), null);
-                await set(ref(database, `userLeagues/${uid}/${currentLeagueCode}`), { name: currentLeagueInfo.name || currentLeagueCode, role: 'member' });
-                showAppMsg(`✅ ${pending.name} godkänd och tillagd`, 'success');
-            } catch (err) { showAppMsg('❌ ' + err.message, 'error'); }
-        };
-
-        window.adminRejectPending = async function(uid) {
-            if (!isAdmin()) return;
-            const pending = pendingMembers[uid];
-            const name = pending?.name || uid;
-            if (!confirm(`Neka ansökan från ${name}?`)) return;
-            try {
-                await set(ref(database, `leagues/${currentLeagueCode}/pendingMembers/${uid}`), null);
-                showAppMsg(`✅ Ansökan från ${name} nekad`, 'info');
-            } catch (err) { showAppMsg('❌ ' + err.message, 'error'); }
-        };
+        // Godkännande-funktionerna borttagna – spelare läggs direkt till members i join-flödet
 
         // ─── Deadlines ────────────────────────────────────────────────────────────
         const ALL_DEADLINE_KEYS = ['PL','CL_LEAGUE_PHASE','CL_KNOCKOUT_ROUND_PLAY_OFF','CL_LAST_16','CL_ROUND_OF_16','CL_QUARTER_FINALS','CL_SEMI_FINALS','CL_FINAL','WC'];
@@ -3908,7 +3783,7 @@
             currentLeagueInfo = {};
             members           = {};
             invitedEmails     = {};
-            pendingMembers    = {};
+            // Godkännande-systemet borttaget
             leaguePlayers     = [];
             matches           = [];
             predictions       = {};
@@ -4132,13 +4007,6 @@
                                 ? new Date(info.createdAt).toLocaleString('sv-SE', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
                                 : '';
                             const memberCount  = Object.keys(all[code]?.members || {}).length;
-                            const pendingCount = Object.keys(all[code]?.pendingMembers || {}).length;
-                            const pendingRows  = Object.entries(all[code]?.pendingMembers || {}).map(([uid, p]) =>
-                                `<div style="display:flex;justify-content:space-between;align-items:center;font-size:.76em;padding:3px 0;gap:8px;">
-                                    <span style="color:#fbbf24;">${p.name || uid}</span>
-                                    <span style="color:#8896aa;">${p.email || ''}</span>
-                                </div>`
-                            ).join('');
                             const card = document.createElement('div');
                             card.id = `saCard_${code}`;
                             card.style.cssText = 'background:#0a0c10;border:1px solid #1e2535;border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;';
@@ -4150,9 +4018,8 @@
                                 <div style="font-size:.76em;color:#8896aa;">
                                     Skapad av: <span style="color:#a0aec0;font-weight:500;">${createdBy}</span>${createdAt ? ` &nbsp;·&nbsp; ${createdAt}` : ''}
                                     &nbsp;·&nbsp; ${memberCount} spelare
-                                    ${pendingCount > 0 ? `&nbsp;·&nbsp; <span style="color:#fbbf24;font-weight:600;">⏳ ${pendingCount} väntande</span>` : ''}
                                 </div>
-                                ${pendingCount > 0 ? `<div style="border-top:1px solid #1e2535;padding-top:6px;">${pendingRows}</div>` : ''}
+
                                 <div style="display:flex;gap:6px;margin-top:4px;" id="saCardBtns_${code}">
                                     <button onclick="window.superAdminGoToLeague('${code}')" style="background:#f0b429;color:#0a0c10;border:none;border-radius:8px;padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:.85em;font-weight:700;cursor:pointer;flex:1;">→ Gå till</button>
                                     <button onclick="window.superAdminConfirmDelete('${code}')" style="background:transparent;color:#f87171;border:1px solid rgba(248,113,113,.35);border-radius:8px;padding:8px 12px;font-family:'DM Sans',sans-serif;font-size:.82em;font-weight:600;cursor:pointer;">🗑</button>
@@ -4169,7 +4036,7 @@
                     }
                 }
 
-                // Bygg användarlista från members + pendingMembers i alla ligor
+                // Bygg användarlista från members i alla ligor
                 saLeaguesAll = all;
                 saUserMap = {};
                 Object.entries(all).forEach(([code, leagueData]) => {
@@ -4179,7 +4046,8 @@
                         if (!saUserMap[uid]) saUserMap[uid] = { uid, name: m.name || uid, email: m.email || '', leagues: [] };
                         saUserMap[uid].leagues.push({ code, name: ligaName, role: uid === info.adminUID ? 'admin' : 'member' });
                     });
-                    Object.entries(leagueData?.pendingMembers || {}).forEach(([uid, p]) => {
+                    // Godkännande-systemet borttaget – pendingMembers inte relevant längre
+                    Object.entries({}).forEach(([uid, p]) => {
                         if (!saUserMap[uid]) saUserMap[uid] = { uid, name: p.name || uid, email: p.email || '', leagues: [] };
                         saUserMap[uid].leagues.push({ code, name: ligaName, role: 'pending' });
                     });
@@ -4281,15 +4149,11 @@
             const league = user?.leagues.find(l => l.code === code);
             if (!user || !league) return;
             if (league.role === 'admin') { alert('❌ Kan inte ta bort admin från ligan.'); return; }
-            const label = role === 'pending' ? 'Neka ansökan från' : 'Ta bort';
+            const label = 'Ta bort';
             if (!confirm(`${label} ${user.name} från ligan "${league.name}"?`)) return;
             try {
-                if (role === 'pending') {
-                    await set(ref(database, `leagues/${code}/pendingMembers/${uid}`), null);
-                } else {
-                    await set(ref(database, `leagues/${code}/members/${uid}`), null);
-                    await set(ref(database, `userLeagues/${uid}/${code}`), null);
-                }
+                await set(ref(database, `leagues/${code}/members/${uid}`), null);
+                await set(ref(database, `userLeagues/${uid}/${code}`), null);
                 saUserMap[uid].leagues = saUserMap[uid].leagues.filter(l => l.code !== code);
                 if (saUserMap[uid].leagues.length === 0) delete saUserMap[uid];
                 renderSaUserList();

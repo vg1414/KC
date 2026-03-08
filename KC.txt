@@ -1,0 +1,57 @@
+Du är en världsledande projektledare och kodare. Vi ska förbereda ett projekt som vi kan jobba på lite senare. Skapa ett nytt projekt som heter KC.
+I det här stadiet ska vi bara planera och diskutera vad som är genomförbart och vad som är bästa metoden att nå önskat mål på.
+Jag vill skala upp krokens copa till att kunna köra flera ligorparallelt med olika antal spelare och olika spelare i dessa ligor.
+Jag vill fortfarande ha kontroll på vad som spelas (till att börja med iaf) så jag tänker att jag skapar ligor och får en kod till
+nämna ligor som jag kan ge gruppen som vill spela i den specifika ligan. Har du något annat förslag på hur man kan göra? Hur bör
+detta projektet planeras? Vilken claude-modell lämpar sig bäst för detta? Jag är bara pro så jag har inte obegränsat med tokens.
+Finns dock inget som säger att projektet måste slutföras på en dag heller så du kan också lägga upp ett schema för hur
+jag bör använda mina tokens så effektivt som möjligt.
+
+Token-effektiv arbetsplan
+
+  Jag föreslår att vi delar upp projektet i fyra tydliga sessioner, en åt gången. Håll dig till Sonnet (som du redan
+  har) – det ger bäst balans mellan kapacitet och tokenförbrukning.
+
+  ┌─────────────────────────┬───────────────────────────────────────────────────────┬────────────────────────┐
+  │         Session         │                      Vad vi gör                       │ Uppskattad tokenåtgång │
+  ├─────────────────────────┼───────────────────────────────────────────────────────┼────────────────────────┤
+  │ 1 – Grund & Ligasystem  │ Landningssida, skapa liga, ligakod, Firebase-struktur │ Medel                  │
+  ├─────────────────────────┼───────────────────────────────────────────────────────┼────────────────────────┤
+  │ 2 – Spelfunktioner      │ Flytta tippning/poäng in i liga-kontexten             │ Hög                    │
+  ├─────────────────────────┼───────────────────────────────────────────────────────┼────────────────────────┤
+  │ 3 – Admin & Spelarlista │ Admin per liga, bjuda in spelare, hantera matcher     │ Medel                  │
+  ├─────────────────────────┼───────────────────────────────────────────────────────┼────────────────────────┤
+  │ 4 – Putsning & Deploy   │ UI-polish, testning, GitHub Pages                     │ Låg                    │
+  └─────────────────────────┴───────────────────────────────────────────────────────┴────────────────────────┘
+
+  Tips för att spara tokens:
+  - Börja ALLTID en ny session med "Fortsätt KC – vi är i fas X, förra sessionen gjorde vi Y" så slipper jag utforska
+  projektet från noll
+  - Håll koden i en fil (som nu) – lättare för mig att ha hela kontexten
+  - Spara viktiga beslut i MEMORY.md (det gör jag automatiskt)
+  
+  ---
+  Förberedelserna är klara
+
+  Firebase ✅
+  - Projekt: KrokensCopa-Multi
+  - Realtime Database aktiverad
+  - Database URL: https://krokenscopa-multi-default-rtdb.firebaseio.com
+  - All konfiguration sparad i CLAUDE.md
+
+  GitHub ✅
+  - Repo: https://github.com/vg1414/KC
+  - Lokal mapp kopplad till repot
+
+  Planeringsfiler ✅
+  - CLAUDE.md – uppdaterad med Firebase-config och repo-länk
+  - SESSIONER.md – alla förberedande steg ikryssade
+  - PLAN.md – arkitektur och funktionslista klar
+
+  ---
+  När du är redo att börja koda Session 1 skriver du bara:
+
+  "Vi fortsätter KC-projektet. Vi är i Session 1. Läs CLAUDE.md och PLAN.md i mappen
+  C:\Users\David\documents\david\claude\KC\"
+
+  ...så plockar jag upp exakt där vi slutade utan att slösa ett enda token på att utforska projektet från noll.
