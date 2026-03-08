@@ -1,5 +1,12 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-08 – Superadmin: Användarlista
+
+### Nytt
+- Superadmin-panelen har nu en "Användare"-flik som visar alla registrerade spelare
+- Varje användare visar namn, e-post och vilka ligor de spelar i (med Admin/Spelare-roll)
+- Ligor-fliken visar nu även antal spelare per liga
+
 ## 2026-03-08 – Tippnings-UX & Mina ligor
 
 ### Nytt
