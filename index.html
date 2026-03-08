@@ -809,32 +809,93 @@
         <div class="logo-block">
             <span class="logo-fish" id="landingFish">🎣</span>
             <div class="logo-title">KROKENS <span>COPA</span></div>
+            <div class="logo-sub">Tipsligans hemvist</div>
         </div>
 
-        <div id="landingAuthInfo" style="display:none;width:100%;text-align:center;">
-            <div style="font-size:.78em;color:#4a5568;">Inloggad som <span id="landingAuthEmail" style="color:#8896aa;"></span> &nbsp;·&nbsp;
+        <div class="card">
+            <div style="display:flex;border-bottom:1px solid #1e2535;margin-bottom:12px;">
+                <button id="landingTabLogin" style="flex:1;padding:10px;background:transparent;border:none;border-bottom:2px solid #f0b429;color:#f0b429;font-family:'DM Sans',sans-serif;font-size:.9em;font-weight:600;cursor:pointer;" onclick="window.switchLandingTab('login')">Logga in</button>
+                <button id="landingTabRegister" style="flex:1;padding:10px;background:transparent;border:none;border-bottom:2px solid transparent;color:#4a5568;font-family:'DM Sans',sans-serif;font-size:.9em;font-weight:600;cursor:pointer;" onclick="window.switchLandingTab('register')">Registrera dig</button>
+            </div>
+
+            <div id="landingStatus"></div>
+
+            <div id="landingLoginForm" style="display:flex;flex-direction:column;gap:12px;">
+                <div class="field">
+                    <label>E-post</label>
+                    <input type="email" id="landingLoginEmail" placeholder="din@email.com" autocomplete="email"
+                           onkeydown="if(event.key==='Enter')window.handleLandingLogin()">
+                </div>
+                <div class="field">
+                    <label>Lösenord</label>
+                    <input type="password" id="landingLoginPassword" placeholder="••••••••"
+                           onkeydown="if(event.key==='Enter')window.handleLandingLogin()">
+                </div>
+                <button class="btn-gold" onclick="window.handleLandingLogin()">Logga in</button>
+                <button style="background:transparent;border:none;color:#4a5568;font-size:.8em;font-family:'DM Sans',sans-serif;cursor:pointer;padding:2px;text-align:left;" onclick="window.toggleLandingForgot()">Glömt lösenordet?</button>
+                <div id="landingForgotPanel" style="display:none;flex-direction:column;gap:8px;background:#12161f;border:1px solid #1e2535;border-radius:8px;padding:12px;">
+                    <div style="font-size:.82em;color:#8896aa;">Ange din e-post så skickar vi en återställningslänk.</div>
+                    <input type="email" id="landingForgotEmail" placeholder="din@email.com"
+                           style="padding:8px 10px;border:1px solid #1e2535;border-radius:6px;font-size:.9em;font-family:'DM Sans',sans-serif;width:100%;box-sizing:border-box;background:#0a0c10;color:#e8edf5;"
+                           onkeydown="if(event.key==='Enter')window.handleLandingForgot()">
+                    <button class="btn-gold" style="font-size:.85em;padding:8px;" onclick="window.handleLandingForgot()">Skicka återställningsmail</button>
+                </div>
+            </div>
+
+            <div id="landingRegisterForm" style="display:none;flex-direction:column;gap:12px;">
+                <div class="field">
+                    <label>E-post</label>
+                    <input type="email" id="landingRegEmail" placeholder="din@email.com" autocomplete="email">
+                </div>
+                <div class="field">
+                    <label>Välj lösenord</label>
+                    <input type="password" id="landingRegPassword" placeholder="••••••••"
+                           onkeydown="if(event.key==='Enter')window.handleLandingRegister()">
+                </div>
+                <button class="btn-gold" onclick="window.handleLandingRegister()">Skapa konto</button>
+                <div style="font-size:.78em;color:#4a5568;text-align:center;">Du skapar ett konto och kan sedan gå med i eller starta en liga.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Hub (inloggad användare) ── -->
+    <div id="viewHub" class="page-wrap" style="display:none">
+        <div class="logo-block">
+            <span class="logo-fish">🎣</span>
+            <div class="logo-title">KROKENS <span>COPA</span></div>
+        </div>
+
+        <div style="width:100%;text-align:center;">
+            <div style="font-size:.78em;color:#4a5568;">Inloggad som <span id="hubAuthEmail" style="color:#8896aa;"></span> &nbsp;·&nbsp;
                 <button onclick="window.handleLogout()" style="background:none;border:none;color:#f87171;font-size:1em;font-family:'DM Sans',sans-serif;cursor:pointer;padding:0;">Logga ut</button>
             </div>
         </div>
 
-        <div id="recentLeaguesSection" style="display:none;width:100%;">
+        <div id="hubInvitationsSection" style="display:none;width:100%;">
+            <div class="card" style="gap:10px;border:1px solid #f0b429;">
+                <div class="card-label">✉️ Inbjudningar</div>
+                <div id="hubInvitationsList" style="display:flex;flex-direction:column;gap:8px;"></div>
+            </div>
+        </div>
+
+        <div id="hubMyLeaguesSection" style="display:none;width:100%;">
             <div class="card" style="gap:10px;">
-                <div class="card-label" id="recentLeaguesLabel">🕐 Dina senaste ligor</div>
-                <div id="recentLeaguesList" style="display:flex;flex-direction:column;gap:8px;"></div>
+                <div class="card-label">🎣 Mina ligor</div>
+                <div id="hubMyLeaguesList" style="display:flex;flex-direction:column;gap:8px;"></div>
             </div>
             <div class="or-divider">eller ange kod</div>
         </div>
 
         <div class="card">
-            <div class="card-label">🎣 Gå med i en liga</div>
-            <div id="landingStatus"></div>
+            <div class="card-label">🔑 Gå med i en liga</div>
+            <div id="hubStatus"></div>
             <div class="field">
-                <input type="text" class="code-input" id="codeInput"
+                <input type="text" class="code-input" id="hubCodeInput"
                        placeholder="HJK4P2" maxlength="6"
                        autocomplete="off" spellcheck="false"
-                       onkeydown="if(event.key==='Enter')window.goToLeague()">
+                       onkeydown="if(event.key==='Enter')window.goToLeagueFromHub()">
             </div>
-            <button class="btn-gold" id="goBtn" onclick="window.goToLeague()">Gå till liga &rarr;</button>
+            <button class="btn-gold" onclick="window.goToLeagueFromHub()">Gå till liga &rarr;</button>
         </div>
 
         <div class="or-divider">eller</div>
@@ -1408,7 +1469,7 @@
         let currentModalMatchId = null;
 
         // ─── Vy-lista (måste deklareras innan try-blocket anropar routeFromUrl) ──
-        const ALL_VIEWS = ['viewLoading','viewLanding','viewCreate','viewCreated','viewNotFound','viewLeague','viewApp'];
+        const ALL_VIEWS = ['viewLoading','viewLanding','viewHub','viewCreate','viewCreated','viewNotFound','viewLeague','viewApp'];
 
         // ─── Firebase init ────────────────────────────────────────────────────────
         try {
@@ -1440,7 +1501,11 @@
             const params = new URLSearchParams(window.location.search);
             const raw    = params.get('liga');
 
-            if (!raw) { renderMyLeagues(); showView('viewLanding'); return; }
+            if (!raw) {
+                if (currentAuthUser) { renderHub(); showView('viewHub'); }
+                else { showView('viewLanding'); }
+                return;
+            }
 
             const code = raw.toUpperCase();
             showView('viewLoading');
@@ -2110,6 +2175,8 @@
                         name, email, joinedAt: Date.now()
                     });
                     await set(ref(database, `userLeagues/${user.uid}/${currentLeagueCode}`), { name: currentLeagueInfo.name || currentLeagueCode, role: 'member' });
+                    const encEmail = (user.email || '').replace('@','_AT_').replace(/\./g,'_DOT_');
+                    await set(ref(database, `pendingInvitations/${encEmail}/${currentLeagueCode}`), null);
                     activateSession(name, user.uid);
                 } else {
                     const existingNames = Object.values(members).map(m => m.name);
@@ -2209,7 +2276,6 @@
             leagueUnsubscribers.forEach(u => u());
             leagueUnsubscribers = [];
             history.pushState({}, '', window.location.pathname);
-            renderMyLeagues();
             showView('viewLanding');
         };
 
@@ -3140,6 +3206,7 @@
             const encodedEmail = email.replace('@', '_AT_').replace(/\./g, '_DOT_');
             try {
                 await set(ref(database, `leagues/${currentLeagueCode}/invitedEmails/${encodedEmail}`), true);
+                await set(ref(database, `pendingInvitations/${encodedEmail}/${currentLeagueCode}`), { name: currentLeagueInfo.name || currentLeagueCode, invitedAt: Date.now() });
                 console.log('[EmailJS] Firebase OK, skickar till:', email);
                 const leagueUrl = `https://vg1414.github.io/KC/?liga=${currentLeagueCode}&register=1`;
                 const result = await emailjs.send('service_2p2viit', 'template_7444d1m', {
@@ -3348,16 +3415,6 @@
         }
 
 
-        // ─── Navigering ───────────────────────────────────────────────────────────
-        window.goToLeague = function() {
-            const code = document.getElementById('codeInput').value.trim().toUpperCase();
-            if (!code) { showStatus('landingStatus', '❌ Ange en ligakod', 'error'); return; }
-            if (code.length !== 6) { showStatus('landingStatus', '❌ Koden måste vara 6 tecken', 'error'); return; }
-            clearStatus('landingStatus');
-            document.getElementById('goBtn').disabled = true;
-            window.location.href = `?liga=${code}`;
-        };
-
         // ─── Skapa-formulär: visa/dölj omgångsinputs ─────────────────────────────
         // ─── Senaste ligor (localStorage) ────────────────────────────────────────
         function saveRecentLeague(code, name) {
@@ -3367,57 +3424,6 @@
                 recent.unshift({ code, name: name || code, visitedAt: Date.now() });
                 recent = recent.slice(0, 5);
                 localStorage.setItem('kc_recent_leagues', JSON.stringify(recent));
-            } catch(e) {}
-        }
-
-        function leagueButtonHtml(code, name, badge) {
-            return `<button onclick="window.location.href='?liga=${code}'"
-                style="width:100%;display:flex;justify-content:space-between;align-items:center;
-                       background:#0a0c10;border:1px solid #1e2535;border-radius:10px;
-                       padding:12px 16px;color:#e8edf5;font-family:'DM Sans',sans-serif;
-                       font-size:.95em;cursor:pointer;text-align:left;transition:border-color .2s;"
-                onmouseover="this.style.borderColor='#f0b429'"
-                onmouseout="this.style.borderColor='#1e2535'">
-                <span>${name}${badge ? `<span style="color:#f0b429;font-size:.75em;margin-left:6px;">${badge}</span>` : ''}</span>
-                <span style="font-family:monospace;font-size:.85em;color:#f0b429;letter-spacing:3px;">${code}</span>
-            </button>`;
-        }
-
-        async function renderMyLeagues() {
-            const section   = document.getElementById('recentLeaguesSection');
-            const list      = document.getElementById('recentLeaguesList');
-            const label     = document.getElementById('recentLeaguesLabel');
-            const authInfo  = document.getElementById('landingAuthInfo');
-            const authEmail = document.getElementById('landingAuthEmail');
-            if (!section || !list) return;
-
-            if (authInfo) authInfo.style.display = currentAuthUser ? '' : 'none';
-            if (authEmail && currentAuthUser) authEmail.textContent = currentAuthUser.email || '';
-
-            if (currentAuthUser) {
-                try {
-                    const snap = await get(ref(database, `userLeagues/${currentAuthUser.uid}`));
-                    if (snap.exists()) {
-                        const entries = Object.entries(snap.val());
-                        if (entries.length > 0) {
-                            if (label) label.textContent = '🎣 Mina ligor';
-                            section.style.display = '';
-                            list.innerHTML = entries
-                                .map(([code, info]) => leagueButtonHtml(code, info.name, info.role === 'admin' ? '(Admin)' : ''))
-                                .join('');
-                            return;
-                        }
-                    }
-                } catch(e) {}
-            }
-
-            // Fallback: localStorage
-            try {
-                const recent = JSON.parse(localStorage.getItem('kc_recent_leagues') || '[]');
-                if (recent.length === 0) { section.style.display = 'none'; return; }
-                if (label) label.textContent = '🕐 Dina senaste ligor';
-                section.style.display = '';
-                list.innerHTML = recent.map(r => leagueButtonHtml(r.code, r.name, '')).join('');
             } catch(e) {}
         }
 
@@ -3496,6 +3502,153 @@
             if (wmWrap) wmWrap.style.display = (comp === 'WC') ? '' : 'none';
         };
 
+        // ─── Hub ─────────────────────────────────────────────────────────────────
+        async function renderHub() {
+            const emailEl = document.getElementById('hubAuthEmail');
+            if (emailEl) emailEl.textContent = currentAuthUser?.email || '';
+
+            // Mina ligor
+            const mySection = document.getElementById('hubMyLeaguesSection');
+            const myList    = document.getElementById('hubMyLeaguesList');
+            if (mySection && myList && currentAuthUser) {
+                try {
+                    const snap = await get(ref(database, `userLeagues/${currentAuthUser.uid}`));
+                    if (snap.exists()) {
+                        const entries = Object.entries(snap.val());
+                        if (entries.length > 0) {
+                            mySection.style.display = '';
+                            myList.innerHTML = entries.map(([code, info]) => `
+                                <button onclick="window.location.href='?liga=${code}'"
+                                    style="width:100%;display:flex;justify-content:space-between;align-items:center;
+                                           background:#0a0c10;border:1px solid #1e2535;border-radius:10px;
+                                           padding:12px 16px;color:#e8edf5;font-family:'DM Sans',sans-serif;
+                                           font-size:.95em;cursor:pointer;text-align:left;transition:border-color .2s;"
+                                    onmouseover="this.style.borderColor='#f0b429'"
+                                    onmouseout="this.style.borderColor='#1e2535'">
+                                    <span>${info.name}${info.role === 'admin' ? '<span style="color:#f0b429;font-size:.75em;margin-left:6px;">(Admin)</span>' : ''}</span>
+                                    <span style="font-family:monospace;font-size:.85em;color:#f0b429;letter-spacing:3px;">${code}</span>
+                                </button>`).join('');
+                        } else { mySection.style.display = 'none'; }
+                    } else { mySection.style.display = 'none'; }
+                } catch(e) { mySection.style.display = 'none'; }
+            }
+
+            // Inbjudningar
+            const invSection = document.getElementById('hubInvitationsSection');
+            const invList    = document.getElementById('hubInvitationsList');
+            if (invSection && invList && currentAuthUser?.email) {
+                const encodedEmail = currentAuthUser.email.replace('@','_AT_').replace(/\./g,'_DOT_');
+                try {
+                    const snap = await get(ref(database, `pendingInvitations/${encodedEmail}`));
+                    if (snap.exists()) {
+                        const entries = Object.entries(snap.val());
+                        if (entries.length > 0) {
+                            invSection.style.display = '';
+                            invList.innerHTML = entries.map(([code, info]) => `
+                                <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                                    <div>
+                                        <div style="color:#e8edf5;font-size:.9em;font-weight:600;">${info.name || code}</div>
+                                        <div style="font-family:monospace;font-size:.75em;color:#f0b429;letter-spacing:2px;">${code}</div>
+                                    </div>
+                                    <button onclick="window.location.href='?liga=${code}&register=1'"
+                                        style="background:#f0b429;color:#0a0c10;border:none;border-radius:8px;padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:.82em;font-weight:700;cursor:pointer;white-space:nowrap;">Gå med →</button>
+                                </div>`).join('');
+                        } else { invSection.style.display = 'none'; }
+                    } else { invSection.style.display = 'none'; }
+                } catch(e) { invSection.style.display = 'none'; }
+            }
+        }
+
+        // ─── Landing-login ────────────────────────────────────────────────────────
+        window.switchLandingTab = function(tab) {
+            const loginForm  = document.getElementById('landingLoginForm');
+            const regForm    = document.getElementById('landingRegisterForm');
+            const tabLogin   = document.getElementById('landingTabLogin');
+            const tabReg     = document.getElementById('landingTabRegister');
+            const isLogin    = tab === 'login';
+            if (loginForm) loginForm.style.display = isLogin ? 'flex' : 'none';
+            if (regForm)   regForm.style.display   = isLogin ? 'none' : 'flex';
+            if (tabLogin) { tabLogin.style.color = isLogin ? '#f0b429' : '#4a5568'; tabLogin.style.borderBottomColor = isLogin ? '#f0b429' : 'transparent'; }
+            if (tabReg)   { tabReg.style.color   = isLogin ? '#4a5568' : '#f0b429'; tabReg.style.borderBottomColor   = isLogin ? 'transparent' : '#f0b429'; }
+            clearStatus('landingStatus');
+        };
+
+        window.toggleLandingForgot = function() {
+            const panel = document.getElementById('landingForgotPanel');
+            if (!panel) return;
+            const isVisible = panel.style.display === 'flex';
+            panel.style.display = isVisible ? 'none' : 'flex';
+            if (!isVisible) {
+                const email = document.getElementById('landingLoginEmail')?.value || '';
+                const inp = document.getElementById('landingForgotEmail');
+                if (inp && email) inp.value = email;
+            }
+        };
+
+        window.handleLandingForgot = async function() {
+            const email = (document.getElementById('landingForgotEmail')?.value || '').trim();
+            if (!email) { showStatus('landingStatus', '❌ Ange din e-postadress', 'error'); return; }
+            try {
+                await sendPasswordResetEmail(auth, email);
+                showStatus('landingStatus', '✅ Återställningsmail skickat till ' + email, 'success');
+                const panel = document.getElementById('landingForgotPanel');
+                if (panel) panel.style.display = 'none';
+            } catch(e) {
+                showStatus('landingStatus', '❌ ' + e.message, 'error');
+            }
+        };
+
+        window.handleLandingLogin = async function() {
+            const email = (document.getElementById('landingLoginEmail')?.value || '').trim();
+            const pw    = document.getElementById('landingLoginPassword')?.value || '';
+            if (!email || !pw) { showStatus('landingStatus', '❌ Fyll i e-post och lösenord', 'error'); return; }
+            showStatus('landingStatus', '⏳ Loggar in...', 'info');
+            try {
+                const cred = await signInWithEmailAndPassword(auth, email, pw);
+                currentAuthUser = cred.user;
+                currentUserUID  = cred.user.uid;
+                clearStatus('landingStatus');
+                await renderHub();
+                showView('viewHub');
+            } catch(e) {
+                let msg = '❌ ' + e.message;
+                if (e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password') msg = '❌ Fel e-post eller lösenord';
+                if (e.code === 'auth/user-not-found') msg = '❌ Inget konto med den e-postadressen';
+                if (e.code === 'auth/too-many-requests') msg = '❌ För många försök – försök igen senare';
+                showStatus('landingStatus', msg, 'error');
+            }
+        };
+
+        window.handleLandingRegister = async function() {
+            const email = (document.getElementById('landingRegEmail')?.value || '').trim();
+            const pw    = document.getElementById('landingRegPassword')?.value || '';
+            if (!email || !pw) { showStatus('landingStatus', '❌ Fyll i e-post och lösenord', 'error'); return; }
+            if (pw.length < 6) { showStatus('landingStatus', '❌ Lösenordet måste vara minst 6 tecken', 'error'); return; }
+            showStatus('landingStatus', '⏳ Skapar konto...', 'info');
+            try {
+                const cred = await createUserWithEmailAndPassword(auth, email, pw);
+                currentAuthUser = cred.user;
+                currentUserUID  = cred.user.uid;
+                clearStatus('landingStatus');
+                await renderHub();
+                showView('viewHub');
+            } catch(e) {
+                let msg = '❌ ' + e.message;
+                if (e.code === 'auth/email-already-in-use') msg = '❌ Det finns redan ett konto med den e-postadressen';
+                if (e.code === 'auth/invalid-email') msg = '❌ Ogiltig e-postadress';
+                if (e.code === 'auth/weak-password') msg = '❌ Lösenordet är för svagt (minst 6 tecken)';
+                showStatus('landingStatus', msg, 'error');
+            }
+        };
+
+        window.goToLeagueFromHub = function() {
+            const code = (document.getElementById('hubCodeInput')?.value || '').trim().toUpperCase();
+            if (!code) { showStatus('hubStatus', '❌ Ange en ligakod', 'error'); return; }
+            if (code.length !== 6) { showStatus('hubStatus', '❌ Koden måste vara 6 tecken', 'error'); return; }
+            clearStatus('hubStatus');
+            window.location.href = '?liga=' + code;
+        };
+
         window.showLanding = function() {
             currentUser       = null;
             currentUserUID    = null;
@@ -3513,9 +3666,8 @@
             leagueUnsubscribers = [];
 
             history.pushState({}, '', window.location.pathname);
-            clearStatus('landingStatus');
-            renderMyLeagues();
-            showView('viewLanding');
+            if (currentAuthUser) { renderHub(); showView('viewHub'); }
+            else { showView('viewLanding'); }
         };
 
         window.showCreateForm = function() {
@@ -3927,12 +4079,7 @@
         };
 
         // ─── Tangentbords-handlers ────────────────────────────────────────────────
-        document.getElementById('codeInput').addEventListener('keydown', e => {
-            if (e.key === 'Enter') window.goToLeague();
-        });
-
-
-        document.getElementById('codeInput').addEventListener('input', e => {
+        document.getElementById('hubCodeInput').addEventListener('input', e => {
             const c = e.target.value.toUpperCase().replace(/[^A-Z2-9]/g, '');
             if (e.target.value !== c) e.target.value = c;
         });
