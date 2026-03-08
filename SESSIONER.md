@@ -144,6 +144,9 @@ Kopiera och anpassa dessa delar (byt hårdkodade sökvägar mot `/leagues/{kod}/
 | Session 8 | ✅ Klar | 2026-03-07 | Troféer/historik/åskådare borttagna, Firebase Rules låsta (auth != null) |
 | Session 9 | ✅ Klar | 2026-03-07 | EmailJS-integration, aktivitetslogg förbättrad, superadmin-panel med ligaöversikt och radering |
 | Session 10 | ✅ Klar | 2026-03-07 | Buggfixar (inbjudningslänk, auth-fel, lösenordsåterställning), Regler-tab, mobiloptimering |
+| Session 11 | ✅ Klar | 2026-03-08 | Tippnings-UX (eget tipp synligt, deadline-chips per grupp, Tippa-flik döljs), Mina ligor via Firebase userLeagues-index, pName-bug fixad |
+
+**Planerat (framtida session):** Superadmin-vy med alla användare och vilka ligor de spelar i/administrerar.
 
 ---
 

@@ -813,7 +813,7 @@
 
         <div id="recentLeaguesSection" style="display:none;width:100%;">
             <div class="card" style="gap:10px;">
-                <div class="card-label">🕐 Dina senaste ligor</div>
+                <div class="card-label" id="recentLeaguesLabel">🕐 Dina senaste ligor</div>
                 <div id="recentLeaguesList" style="display:flex;flex-direction:column;gap:8px;"></div>
             </div>
             <div class="or-divider">eller ange kod</div>
@@ -1428,7 +1428,7 @@
             const params = new URLSearchParams(window.location.search);
             const raw    = params.get('liga');
 
-            if (!raw) { renderRecentLeagues(); showView('viewLanding'); return; }
+            if (!raw) { renderMyLeagues(); showView('viewLanding'); return; }
 
             const code = raw.toUpperCase();
             showView('viewLoading');
@@ -1725,6 +1725,25 @@
         }
 
         // ─── Render-pipeline ──────────────────────────────────────────────────────
+        function updateTippaTabVisibility() {
+            const tippaTab = document.querySelector('[data-tab="tippning"]');
+            if (!tippaTab) return;
+            if (!matches || matches.length === 0) {
+                tippaTab.style.display = '';
+                return;
+            }
+            const hasOpenMatch = matches.some(m => !isMatchLocked(m) && !isMatchStarted(m.date));
+            if (!hasOpenMatch) {
+                tippaTab.style.display = 'none';
+                const activeTab = document.querySelector('.app-tab.active');
+                if (activeTab && activeTab.dataset.tab === 'tippning') {
+                    window.switchTab('matcher');
+                }
+            } else {
+                tippaTab.style.display = '';
+            }
+        }
+
         function scheduleRender() {
             if (!currentUser) return;
             if (renderScheduled) return;
@@ -1736,6 +1755,7 @@
                 renderPredictions();
                 renderMatches();
                 renderLeaderboard();
+                updateTippaTabVisibility();
                 if (isAdmin()) {
                     renderAdminPlayers();
                     renderAdminDeadlines();
@@ -2076,6 +2096,7 @@
                     await set(ref(database, `leagues/${currentLeagueCode}/members/${user.uid}`), {
                         name, email, joinedAt: Date.now()
                     });
+                    await set(ref(database, `userLeagues/${user.uid}/${currentLeagueCode}`), { name: currentLeagueInfo.name || currentLeagueCode, role: 'member' });
                     activateSession(name, user.uid);
                 } else {
                     const existingNames = Object.values(members).map(m => m.name);
@@ -2227,18 +2248,18 @@
                             const exact = matchExact[player];
                             const label = { '1': m.homeTeam, 'X': 'Oavgjort', '2': m.awayTeam }[pred] || pred;
                             if (!pred) {
-                                predsHtml += `<div class="pred-row pred-row-waiting">❌ ${pName}: Tippade inte</div>`;
+                                predsHtml += `<div class="pred-row pred-row-waiting">❌ ${player}: Tippade inte</div>`;
                             } else {
                                 const display = exact
                                     ? `<strong>${exact.replace('-', ' – ')}</strong> <span style="color:#9ca3af;font-size:.85em;">(${label})</span>`
                                     : `<strong>${label}</strong>`;
-                                predsHtml += `<div class="pred-row" style="color:#374151;">🎯 ${pName}: ${display}</div>`;
+                                predsHtml += `<div class="pred-row" style="color:#374151;">🎯 ${player}: ${display}</div>`;
                             }
                         });
                     } else {
                         allPlayers.forEach(player => {
-                            // Admin/ghost ser alltid sitt eget faktiska tips
-                            if ((isAdmin() || isGhost()) && player === currentUser && matchPreds[player]) {
+                            // Inloggad spelare ser alltid sitt eget faktiska tips
+                            if (player === currentUser && matchPreds[player]) {
                                 const pred  = matchPreds[player];
                                 const exact = matchExact[player];
                                 const label = { '1': m.homeTeam, 'X': 'Oavgjort', '2': m.awayTeam }[pred] || pred;
@@ -2446,43 +2467,43 @@
                     </div>`;
             }
 
-            // Bygg deadline-chips och matcher
+            // Bygg deadline-chips och matcher – chip visas per grupp
             let html = '';
 
-            // Visa deadline-chips
-            const banners = [];
             groupOrder.forEach(key => {
-                const deadline = deadlines[key];
-                const isLocked = deadline && new Date() >= new Date(deadline);
-                const label    = DEADLINE_LABELS[key] || key;
+                const groupMatches = groups[key];
+                const deadline     = deadlines[key];
+                const isLocked     = deadline && new Date() >= new Date(deadline);
+                const label        = DEADLINE_LABELS[key] || key;
+
+                let chipHtml = '';
                 if (isLocked) {
                     const lockedStr = new Date(deadline).toLocaleString('sv-SE', {
                         weekday: 'long', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
                     });
-                    banners.push(`<div class="deadline-chip deadline-chip-locked">
+                    chipHtml = `<div class="deadline-chip deadline-chip-locked">
                         <span class="deadline-dot"></span>
-                        <span>Stangd · ${label} · Stangde ${lockedStr}</span>
-                    </div>`);
+                        <span>Stängd · ${label} · Stängdes ${lockedStr}</span>
+                    </div>`;
                 } else if (deadline) {
                     const deadlineStr = new Date(deadline).toLocaleString('sv-SE', {
                         weekday: 'long', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
                     });
                     const countdown = formatCountdown(deadline);
-                    banners.push(`<div class="deadline-chip deadline-chip-open">
+                    chipHtml = `<div class="deadline-chip deadline-chip-open">
                         <span class="deadline-dot"></span>
-                        <span>Oppen · ${label} · Tippa klart innan ${deadlineStr}</span>
+                        <span>Öppen · ${label} · Tippa klart innan ${deadlineStr}</span>
                         ${countdown ? `<span class="deadline-countdown" data-countdown="${deadline}">${countdown}</span>` : ''}
-                    </div>`);
+                    </div>`;
                 }
+
+                if (chipHtml) {
+                    html += `<div class="deadlines-row">${chipHtml}</div>`;
+                }
+
+                const sortedGroup = [...groupMatches].sort((a, b) => new Date(a.date) - new Date(b.date));
+                html += sortedGroup.map(m => renderPredCard(m, isMatchLocked(m))).join('');
             });
-
-            if (banners.length > 0) {
-                html += `<div class="deadlines-row">${banners.join('')}</div>`;
-            }
-
-            // Sortera alla matcher kronologiskt
-            const sorted = [...matches].sort((a, b) => new Date(a.date) - new Date(b.date));
-            html += sorted.map(m => renderPredCard(m, isMatchLocked(m))).join('');
 
             list.innerHTML = html;
         }
@@ -3126,6 +3147,7 @@
             if (!confirm(`Ta bort ${member.name}?`)) return;
             try {
                 await set(ref(database, `leagues/${currentLeagueCode}/members/${uid}`), null);
+                await set(ref(database, `userLeagues/${uid}/${currentLeagueCode}`), null);
                 showAppMsg(`✅ ${member.name} borttagen`, 'success');
             } catch (err) { showAppMsg('❌ ' + err.message, 'error'); }
         };
@@ -3139,6 +3161,7 @@
                     name: pending.name, email: pending.email || '', joinedAt: Date.now()
                 });
                 await set(ref(database, `leagues/${currentLeagueCode}/pendingMembers/${uid}`), null);
+                await set(ref(database, `userLeagues/${uid}/${currentLeagueCode}`), { name: currentLeagueInfo.name || currentLeagueCode, role: 'member' });
                 showAppMsg(`✅ ${pending.name} godkänd och tillagd`, 'success');
             } catch (err) { showAppMsg('❌ ' + err.message, 'error'); }
         };
@@ -3330,25 +3353,49 @@
             } catch(e) {}
         }
 
-        function renderRecentLeagues() {
+        function leagueButtonHtml(code, name, badge) {
+            return `<button onclick="window.location.href='?liga=${code}'"
+                style="width:100%;display:flex;justify-content:space-between;align-items:center;
+                       background:#0a0c10;border:1px solid #1e2535;border-radius:10px;
+                       padding:12px 16px;color:#e8edf5;font-family:'DM Sans',sans-serif;
+                       font-size:.95em;cursor:pointer;text-align:left;transition:border-color .2s;"
+                onmouseover="this.style.borderColor='#f0b429'"
+                onmouseout="this.style.borderColor='#1e2535'">
+                <span>${name}${badge ? `<span style="color:#f0b429;font-size:.75em;margin-left:6px;">${badge}</span>` : ''}</span>
+                <span style="font-family:monospace;font-size:.85em;color:#f0b429;letter-spacing:3px;">${code}</span>
+            </button>`;
+        }
+
+        async function renderMyLeagues() {
+            const section = document.getElementById('recentLeaguesSection');
+            const list    = document.getElementById('recentLeaguesList');
+            const label   = document.getElementById('recentLeaguesLabel');
+            if (!section || !list) return;
+
+            if (currentAuthUser) {
+                try {
+                    const snap = await get(ref(database, `userLeagues/${currentAuthUser.uid}`));
+                    if (snap.exists()) {
+                        const entries = Object.entries(snap.val());
+                        if (entries.length > 0) {
+                            if (label) label.textContent = '🎣 Mina ligor';
+                            section.style.display = '';
+                            list.innerHTML = entries
+                                .map(([code, info]) => leagueButtonHtml(code, info.name, info.role === 'admin' ? '(Admin)' : ''))
+                                .join('');
+                            return;
+                        }
+                    }
+                } catch(e) {}
+            }
+
+            // Fallback: localStorage
             try {
                 const recent = JSON.parse(localStorage.getItem('kc_recent_leagues') || '[]');
-                const section = document.getElementById('recentLeaguesSection');
-                const list    = document.getElementById('recentLeaguesList');
-                if (!section || !list) return;
                 if (recent.length === 0) { section.style.display = 'none'; return; }
+                if (label) label.textContent = '🕐 Dina senaste ligor';
                 section.style.display = '';
-                list.innerHTML = recent.map(r => `
-                    <button onclick="window.location.href='?liga=${r.code}'"
-                        style="width:100%;display:flex;justify-content:space-between;align-items:center;
-                               background:#0a0c10;border:1px solid #1e2535;border-radius:10px;
-                               padding:12px 16px;color:#e8edf5;font-family:'DM Sans',sans-serif;
-                               font-size:.95em;cursor:pointer;text-align:left;transition:border-color .2s;"
-                        onmouseover="this.style.borderColor='#f0b429'"
-                        onmouseout="this.style.borderColor='#1e2535'">
-                        <span>${r.name}</span>
-                        <span style="font-family:monospace;font-size:.85em;color:#f0b429;letter-spacing:3px;">${r.code}</span>
-                    </button>`).join('');
+                list.innerHTML = recent.map(r => leagueButtonHtml(r.code, r.name, '')).join('');
             } catch(e) {}
         }
 
@@ -3445,7 +3492,7 @@
 
             history.pushState({}, '', window.location.pathname);
             clearStatus('landingStatus');
-            renderRecentLeagues();
+            renderMyLeagues();
             showView('viewLanding');
         };
 
@@ -3510,6 +3557,7 @@
                     matches: [],
                     predictions: {}, exactPredictions: {}
                 });
+                await set(ref(database, `userLeagues/${user.uid}/${code}`), { name, role: 'admin' });
 
                 createdLeagueCode  = code;
                 createdCreatorName = creatorName;

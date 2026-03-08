@@ -1,5 +1,18 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-08 – Tippnings-UX & Mina ligor
+
+### Nytt
+- Landningssidan visar "Mina ligor" för inloggade användare (hämtas från Firebase `userLeagues/{uid}`)
+- Firebase-index `userLeagues` uppdateras automatiskt vid ligeskapande, gå med och godkännande
+
+### Fixar
+- Alla inloggade spelare ser nu sin egen tippning i Matcher-fliken (inte bara admin)
+- `pName`-bugg fixad – spelares namn visades som "undefined" i Matcher-flik efter spelstopp
+- Deadline-chips visas nu per grupp, direkt ovanför sina matcher (inte alla samlade överst)
+- Svenska tecken fixade i chips: "Stängd"/"Öppen" (var "Stangd"/"Oppen")
+- Tippa-fliken döljs automatiskt när alla matcher är låsta/startade
+
 ## 2026-03-07 – Favicon, Apple Touch Icon & README-uppdatering
 
 ### Nytt
