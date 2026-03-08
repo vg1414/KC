@@ -1,5 +1,44 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-08 – Design 4: Tippa-korten och bakgrund (Session 12)
+
+### Ändringar
+- Tippa-fliken: vita kort med Design 4-layout (meta → lag → inputs → utfall → spara)
+- Score-inputs: ljus bakgrund med guldkant vid värde/fokus, `has-val`-klass för dynamisk styling
+- Låst kort: stort guld-resultat i JetBrains Mono istället för gråa siffror
+- Tipp-counter: Bebas Neue-siffra (t.ex. "3/8 matcher tippade") istället för progress-bar
+- Deadline-chips: ljusgröna/ljusröda bakgrunder (naturliga färger istället för neontonar)
+- Bakgrund: Cool Slate `#d8e0eb` för tydligare kontrast mot vita kort
+- Design justeras ytterligare vid ett senare tillfälle
+
+## 2026-03-08 – Admin-guide: regel 4 och FAQ rättade
+
+### Fixar
+- Regel 4 i "Komma igång": förtydligat att manuell resultatinmatning sker i **Matcher-fliken** (inte Tippnings-fliken), från matchstart tills API hämtat resultatet automatiskt
+- FAQ "Hur sätter jag ett resultat?": rättad till Matcher-fliken + tillagt att auto-hämtning sker var 15:e minut
+- Övriga regler (1–3) omskrivna till enklare och tydligare språk för nya admins
+
+## 2026-03-08 – Admin-guide i Admin-fliken
+
+### Nytt
+- Admin-guide lagd som kollapsbar sektion längst ner i Admin-fliken
+- Innehåller: komma igång-checklista (4 steg) och vanliga frågor om deadline, resultat, inställda matcher och spelarhantering
+- Korrigerat: guide refererar inte längre till borttagna funktioner (Ladda matcher / Hämta resultat)
+
+## 2026-03-08 – Automatisk deadline vid matchstart
+
+### Nytt
+- Om admin inte sätter ett manuellt spelstopp gäller första matchstart i varje grupp automatiskt som deadline
+- Deadline-chipen visar "Stänger vid matchstart" (auto) eller "Tippa klart innan" (manuell) beroende på typ
+
+## 2026-03-08 – Design-förbättringar
+
+### Förbättringar
+- **Header**: Liganamnet visas nu centrerat i headern (3-kolumn layout)
+- **Header**: Ny användarpill med avatar-bokstav (första bokstaven i namnet), visningsnamn och ✕ för utloggning
+- **Tippning**: Texten "1 – Liverpool vinner / X – Oavgjort / 2 – Away vinner" har nu enhetlig mörk färg (ej tre olika färger)
+- **Deadline-chip**: Redesignad layout – status + nedräkning på översta raden, datum/tid på understa. Nedräkningen visas nu alltid tydligt och uppdateras direkt vid rendering
+
 ## 2026-03-08 – Superadmin: Användarlista
 
 ### Nytt
