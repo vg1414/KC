@@ -811,6 +811,12 @@
             <div class="logo-title">KROKENS <span>COPA</span></div>
         </div>
 
+        <div id="landingAuthInfo" style="display:none;width:100%;text-align:center;">
+            <div style="font-size:.78em;color:#4a5568;">Inloggad som <span id="landingAuthEmail" style="color:#8896aa;"></span> &nbsp;·&nbsp;
+                <button onclick="window.handleLogout()" style="background:none;border:none;color:#f87171;font-size:1em;font-family:'DM Sans',sans-serif;cursor:pointer;padding:0;">Logga ut</button>
+            </div>
+        </div>
+
         <div id="recentLeaguesSection" style="display:none;width:100%;">
             <div class="card" style="gap:10px;">
                 <div class="card-label" id="recentLeaguesLabel">🕐 Dina senaste ligor</div>
@@ -1870,6 +1876,7 @@
                     </div>
 
                     <button class="btn-ghost" onclick="window.showLanding()">← Tillbaka</button>
+                    ${currentAuthUser ? `<div style="text-align:center;font-size:.76em;color:#4a5568;padding-top:4px;">Inloggad som ${currentAuthUser.email} &nbsp;·&nbsp; <button onclick="window.handleLogout()" style="background:none;border:none;color:#f87171;font-size:1em;font-family:'DM Sans',sans-serif;cursor:pointer;padding:0;">Logga ut</button></div>` : ''}
                 </div>`;
         }
 
@@ -2199,7 +2206,11 @@
             currentUser     = null;
             currentUserUID  = null;
             currentAuthUser = null;
-            showView('viewLeague');
+            leagueUnsubscribers.forEach(u => u());
+            leagueUnsubscribers = [];
+            history.pushState({}, '', window.location.pathname);
+            renderMyLeagues();
+            showView('viewLanding');
         };
 
         // ─── RENDER: Matcher (Matcher-flik) ───────────────────────────────────────
@@ -3373,10 +3384,15 @@
         }
 
         async function renderMyLeagues() {
-            const section = document.getElementById('recentLeaguesSection');
-            const list    = document.getElementById('recentLeaguesList');
-            const label   = document.getElementById('recentLeaguesLabel');
+            const section   = document.getElementById('recentLeaguesSection');
+            const list      = document.getElementById('recentLeaguesList');
+            const label     = document.getElementById('recentLeaguesLabel');
+            const authInfo  = document.getElementById('landingAuthInfo');
+            const authEmail = document.getElementById('landingAuthEmail');
             if (!section || !list) return;
+
+            if (authInfo) authInfo.style.display = currentAuthUser ? '' : 'none';
+            if (authEmail && currentAuthUser) authEmail.textContent = currentAuthUser.email || '';
 
             if (currentAuthUser) {
                 try {
