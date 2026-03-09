@@ -1,5 +1,14 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-09 – UX-förbättringar: liganamn, superadmin, aktivitetslogg, regler
+
+### Ändringar
+- **Regler**: Tog bort "(inte 50!)" ur exempelraden i poängsystemet
+- **Liganamn på mobil**: `.app-league-chip` visas nu även på mobil (< 480px) – tog bort `display:none` i media query
+- **Superadmin logout**: Ghost/superadmin-användaren visas nu i header-pillen med "👻 Superadmin" och kan logga ut därifrån
+- **Aktivitetslogg**: Laddas automatiskt när sektionen expanderas – "Uppdatera"-knappen borttagen
+- **Ny spelare i aktivitetslogg**: Event `NEW_PLAYER` (🆕) loggas nu när en spelare skapar sitt konto i ligan (gäller båda join-lägena)
+
 ## 2026-03-09 – Safari-scroll-fix + auto-fokus vid tippning
 
 ### Ändringar
