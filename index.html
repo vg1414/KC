@@ -1494,7 +1494,7 @@
                             <div>
                                 <div style="font-size:.8em;font-weight:700;color:#d4930a;margin-bottom:8px;letter-spacing:.05em;">🚀 KOMMA IGÅNG</div>
                                 <div style="display:flex;flex-direction:column;gap:6px;font-size:.87em;color:#8896aa;">
-                                    <div style="display:flex;gap:10px;align-items:flex-start;"><span style="color:#f0b429;font-weight:700;flex-shrink:0;">1.</span><span>Dela <strong>ligakoden</strong> eller <strong>länken</strong> med dina spelare – de hittar dem under "Ligainfo &amp; Delning" längst upp på den här sidan.</span></div>
+                                    <div style="display:flex;gap:10px;align-items:flex-start;"><span style="color:#f0b429;font-weight:700;flex-shrink:0;">1.</span><span>Dela <strong>ligakoden</strong> eller <strong>länken</strong> med dina spelare – du hittar dem under "Ligainfo &amp; Delning" längst upp på den här sidan.</span></div>
                                     <div style="display:flex;gap:10px;align-items:flex-start;"><span style="color:#f0b429;font-weight:700;flex-shrink:0;">2.</span><span>Lägg till spelare: bjud in via e-post under <strong>Spelare</strong>, eller dela koden/länken så kan de gå med själva.</span></div>
                                     <div style="display:flex;gap:10px;align-items:flex-start;"><span style="color:#f0b429;font-weight:700;flex-shrink:0;">3.</span><span>Sätt ett <strong>spelstopp</strong> per omgång under "Spelstopp"-sektionen. Om du inte sätter ett stopp låses tipsen automatiskt när den första matchen i omgången börjar.</span></div>
                                     <div style="display:flex;gap:10px;align-items:flex-start;"><span style="color:#f0b429;font-weight:700;flex-shrink:0;">4.</span><span>Du kan mata in match<strong>resultat</strong> manuellt – gå till <strong>Matcher-fliken</strong> och klicka på en match som har startat. Knappen syns från matchstart och försvinner automatiskt när systemet hämtat resultatet från API:et.</span></div>
@@ -1574,7 +1574,7 @@
 
     <script type="module">
         import { initializeApp }                            from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getDatabase, ref, set, get, onValue, push } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        import { getDatabase, ref, set, get, onValue, push, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
         import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
         const firebaseConfig = {
@@ -1619,6 +1619,7 @@
 
         let plApiKey         = '';
         let autoFetchInterval = null;
+        let activityLogUnsubscriber = null;
         let currentModalMatchId = null;
 
         // ─── Vy-lista (måste deklareras innan try-blocket anropar routeFromUrl) ──
@@ -2143,6 +2144,14 @@
                 onValue(ref(database, `${base}/members`), snap => {
                     members = snap.val() || {};
                     leaguePlayers = Object.values(members).map(m => m.name);
+                    // Kolla om inloggad spelare blivit borttagen från ligan
+                    if (currentUserUID && currentUserUID !== '__ghost__' && currentUser && currentUser !== '__ghost__') {
+                        if (!members[currentUserUID]) {
+                            showAppMsg('Du har tagits bort från ligan.', 'error');
+                            setTimeout(() => signOut(auth).then(() => { window.location.href = window.location.pathname; }), 2500);
+                            return;
+                        }
+                    }
                     if (currentUser) scheduleRender();
                 })
             );
@@ -2372,6 +2381,11 @@
             // Logga inloggning (ej ghost)
             if (name !== '__ghost__') logActivity('LOGIN', 'Loggade in');
 
+            // Spara lastSeen-tidsstämpel
+            if (name !== '__ghost__' && uid !== '__ghost__' && currentLeagueCode) {
+                set(ref(database, `leagues/${currentLeagueCode}/members/${uid}/lastSeen`), Date.now()).catch(() => {});
+            }
+
             // Uppdatera app-header
             const userPill = document.querySelector('.user-pill');
             if (isGhost()) {
@@ -2442,6 +2456,7 @@
             currentAuthUser = null;
             leagueUnsubscribers.forEach(u => u());
             leagueUnsubscribers = [];
+            if (activityLogUnsubscriber) { activityLogUnsubscriber(); activityLogUnsubscriber = null; }
             history.pushState({}, '', window.location.pathname);
             showView('viewLanding');
         };
@@ -2487,12 +2502,17 @@
                 const isPostponed    = m.actualOutcome === 'POSTPONED';
 
                 // Visa alla i spelarlistam + alla som faktiskt tippat (t.ex. admin)
-                // Sortera: de som tippat (i tippningsordning) → de som inte tippat
+                // Sortera: de som tippat (i tippningsordning) → de som inte tippat (stabilt via joinedAt)
                 const matchTs = predictionTimestamps[m.id] || {};
-                const allPlayers = [...new Set([...leaguePlayers, ...Object.keys(matchPreds)])].sort((a, b) => {
-                    const ta = matchTs[a] || Infinity;
-                    const tb = matchTs[b] || Infinity;
-                    return ta - tb;
+                const joinedAtMap = {};
+                Object.values(members).forEach(mem => { joinedAtMap[mem.name] = mem.joinedAt || 0; });
+                const allPlayers = [...leaguePlayers].sort((a, b) => {
+                    const ta = matchTs[a];
+                    const tb = matchTs[b];
+                    if (ta && tb) return ta - tb;
+                    if (ta) return -1;
+                    if (tb) return 1;
+                    return (joinedAtMap[a] || 0) - (joinedAtMap[b] || 0);
                 });
 
                 let predsHtml = '';
@@ -2986,8 +3006,12 @@
             const icon = el.querySelector('.admin-toggle-icon');
             body.classList.toggle('open');
             if (icon) icon.textContent = body.classList.contains('open') ? '▲' : '▼';
-            if (body.classList.contains('open') && body.querySelector('#activityLogBox')) {
-                window.renderActivityLog();
+            if (body.querySelector('#activityLogBox')) {
+                if (body.classList.contains('open')) {
+                    window.renderActivityLog();
+                } else {
+                    if (activityLogUnsubscriber) { activityLogUnsubscriber(); activityLogUnsubscriber = null; }
+                }
             }
         };
 
@@ -3318,6 +3342,18 @@
         };
 
         // ─── Spelare ──────────────────────────────────────────────────────────────
+        function formatLastSeen(ts) {
+            if (!ts) return 'Aldrig';
+            const diff = Date.now() - ts;
+            const mins = Math.floor(diff / 60000);
+            if (mins < 1) return 'Just nu';
+            if (mins < 60) return `${mins} min sedan`;
+            const hours = Math.floor(mins / 60);
+            if (hours < 24) return `${hours} tim sedan`;
+            const days = Math.floor(hours / 24);
+            return `${days} dag${days !== 1 ? 'ar' : ''} sedan`;
+        }
+
         function renderAdminPlayers() {
             const list = document.getElementById('adminPlayerList');
             if (!list) return;
@@ -3330,6 +3366,7 @@
                         <div>
                             <span class="player-item-name">${member.name}</span>
                             <span style="color:#6b7280;font-size:.78em;margin-left:6px;">${member.email || ''}</span>
+                            <span style="color:#9ca3af;font-size:.74em;margin-left:6px;">· ${formatLastSeen(member.lastSeen)}</span>
                         </div>
                         ${uid !== currentLeagueInfo.adminUID
                             ? `<button class="btn-admin btn-admin-danger" style="padding:5px 10px;font-size:.78em;" onclick="window.adminRemovePlayer('${uid}')">Ta bort</button>`
@@ -3395,11 +3432,21 @@
             const member = members[uid];
             if (!member) return;
             if (uid === currentLeagueInfo.adminUID) { showAppMsg('❌ Kan inte ta bort admin', 'error'); return; }
-            if (!confirm(`Ta bort ${member.name}?`)) return;
+            if (!confirm(`Ta bort ${member.name}? Deras tips raderas permanent.`)) return;
             try {
+                const playerName = member.name;
+                // Radera spelarens tips för alla matcher
+                const updates = {};
+                matches.forEach(m => {
+                    updates[`leagues/${currentLeagueCode}/predictions/${m.id}/${playerName}`] = null;
+                    updates[`leagues/${currentLeagueCode}/exactPredictions/${m.id}/${playerName}`] = null;
+                    updates[`leagues/${currentLeagueCode}/predictionTimestamps/${m.id}/${playerName}`] = null;
+                });
+                if (Object.keys(updates).length > 0) await update(ref(database), updates);
                 await set(ref(database, `leagues/${currentLeagueCode}/members/${uid}`), null);
                 await set(ref(database, `userLeagues/${uid}/${currentLeagueCode}`), null);
-                showAppMsg(`✅ ${member.name} borttagen`, 'success');
+                await logActivity('REMOVE_PLAYER', `Tog bort spelare: ${playerName}`);
+                showAppMsg(`✅ ${playerName} borttagen`, 'success');
             } catch (err) { showAppMsg('❌ ' + err.message, 'error'); }
         };
 
@@ -3469,12 +3516,16 @@
 
 
         // ─── Aktivitetslogg (ghost) ───────────────────────────────────────────────
-        window.renderActivityLog = async function() {
+        window.renderActivityLog = function() {
             const el = document.getElementById('activityLogBox');
             if (!el) return;
+
+            // Avregistrera eventuell föregående lyssnare
+            if (activityLogUnsubscriber) { activityLogUnsubscriber(); activityLogUnsubscriber = null; }
+
             el.innerHTML = '<span style="color:#9ca3af;">Laddar...</span>';
-            try {
-                const snap = await get(ref(database, `leagues/${currentLeagueCode}/activityLog`));
+
+            activityLogUnsubscriber = onValue(ref(database, `leagues/${currentLeagueCode}/activityLog`), snap => {
                 const data = snap.val();
                 if (!data) { el.innerHTML = '<span style="color:#9ca3af;">Ingen aktivitet ännu.</span>'; return; }
                 const raw = Array.isArray(data) ? data : Object.values(data);
@@ -3509,7 +3560,7 @@
                     return `<div style="color:${color};padding:3px 0;">[${timeStr}] ${icon} <strong>${entry.user}</strong>: ${entry.details}</div>`;
                 }).join('');
                 el.scrollTop = el.scrollHeight;
-            } catch(e) { el.innerHTML = '<span style="color:#f87171;">Fel: ' + e.message + '</span>'; }
+            }, e => { el.innerHTML = '<span style="color:#f87171;">Fel: ' + e.message + '</span>'; });
         };
 
         // ─── API-nyckel ───────────────────────────────────────────────────────────

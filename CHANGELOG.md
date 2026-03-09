@@ -1,5 +1,12 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-09 – Spelarsortering fix, lastSeen-tracking, force-logout vid borttagning
+
+### Ändringar
+- **Sortering fix**: Spelare i Matcher-fliken sorteras nu stabilt efter tippningsordning. Om en spelare saknar tidsstämpel (äldre tips) används `joinedAt` som reservsortering istället för slumpmässig ordning
+- **lastSeen-tracking**: Tidsstämpel sparas i Firebase (`members/{uid}/lastSeen`) vid varje inloggning. Adminpanelens spelarlista visar nu "· X min sedan" / "· 2 dagar sedan" / "· Aldrig" bredvid varje spelare
+- **Force-logout vid borttagning**: Om admin tar bort en spelare från ligan loggas de ut automatiskt inom 2,5 sekunder och skickas till startsidan
+
 ## 2026-03-09 – Färg på eget tips, sortering, "Tabell", teamnamn i rätt färg
 
 ### Ändringar
