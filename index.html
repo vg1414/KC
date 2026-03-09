@@ -1217,7 +1217,7 @@
             <div class="app-tabs">
                 <button class="app-tab active" data-tab="tippning" onclick="window.switchTab('tippning')">🎯 Tippa</button>
                 <button class="app-tab" data-tab="matcher" onclick="window.switchTab('matcher')">📅 Matcher</button>
-                <button class="app-tab" data-tab="topplista" onclick="window.switchTab('topplista')">🏆 Topplista</button>
+                <button class="app-tab" data-tab="topplista" onclick="window.switchTab('topplista')">🏆 Tabell</button>
                 <button class="app-tab" data-tab="regler" onclick="window.switchTab('regler')">📋 Regler</button>
                 <button class="app-tab" id="adminTab" data-tab="admin" style="display:none" onclick="window.switchTab('admin')">⚙️ Admin</button>
             </div>
@@ -1256,7 +1256,7 @@
                     <div class="title-chip-detail" id="unicornLeaderDetail"></div>
                 </div>
                 <div class="app-card">
-                    <div class="app-card-title">🏆 Topplista</div>
+                    <div class="app-card-title">🏆 Tabell</div>
                     <div style="overflow-x:auto;">
                         <table class="leaderboard-table">
                             <thead>
@@ -1607,8 +1607,9 @@
         let leaguePlayers    = [];   // byggs från members
 
         let matches          = [];
-        let predictions      = {};
-        let exactPredictions = {};
+        let predictions           = {};
+        let exactPredictions      = {};
+        let predictionTimestamps  = {};
         let deadlines        = {};
         let matchMap         = {};
         let pointsCache      = {};
@@ -2134,7 +2135,7 @@
             // Återställ state
             members = {}; invitedEmails = {};
             leaguePlayers = []; matches = [];
-            predictions = {}; exactPredictions = {}; deadlines = {};
+            predictions = {}; exactPredictions = {}; predictionTimestamps = {}; deadlines = {};
 
             const base = `leagues/${code}`;
 
@@ -2171,6 +2172,13 @@
             leagueUnsubscribers.push(
                 onValue(ref(database, `${base}/exactPredictions`), snap => {
                     exactPredictions = snap.val() || {};
+                    if (currentUser) scheduleRender();
+                })
+            );
+
+            leagueUnsubscribers.push(
+                onValue(ref(database, `${base}/predictionTimestamps`), snap => {
+                    predictionTimestamps = snap.val() || {};
                     if (currentUser) scheduleRender();
                 })
             );
@@ -2479,7 +2487,13 @@
                 const isPostponed    = m.actualOutcome === 'POSTPONED';
 
                 // Visa alla i spelarlistam + alla som faktiskt tippat (t.ex. admin)
-                const allPlayers = [...new Set([...leaguePlayers, ...Object.keys(matchPreds)])];
+                // Sortera: de som tippat (i tippningsordning) → de som inte tippat
+                const matchTs = predictionTimestamps[m.id] || {};
+                const allPlayers = [...new Set([...leaguePlayers, ...Object.keys(matchPreds)])].sort((a, b) => {
+                    const ta = matchTs[a] || Infinity;
+                    const tb = matchTs[b] || Infinity;
+                    return ta - tb;
+                });
 
                 let predsHtml = '';
                 if (!m.actualOutcome) {
@@ -2493,7 +2507,7 @@
                                 predsHtml += `<div class="pred-row pred-row-waiting">❌ ${player}: Tippade inte</div>`;
                             } else {
                                 const display = exact
-                                    ? `<strong>${exact.replace('-', ' – ')}</strong> <span style="color:#9ca3af;font-size:.85em;">(${label})</span>`
+                                    ? `<strong>${exact.replace('-', ' – ')}</strong> <span style="font-size:.85em;">(${label})</span>`
                                     : `<strong>${label}</strong>`;
                                 predsHtml += `<div class="pred-row" style="color:#b8c4d4;">🎯 ${player}: ${display}</div>`;
                             }
@@ -2506,9 +2520,9 @@
                                 const exact = matchExact[player];
                                 const label = { '1': m.homeTeam, 'X': 'Oavgjort', '2': m.awayTeam }[pred] || pred;
                                 const display = exact
-                                    ? `<strong>${exact.replace('-', ' – ')}</strong> <span style="color:#9ca3af;font-size:.85em;">(${label})</span>`
+                                    ? `<strong>${exact.replace('-', ' – ')}</strong> <span style="font-size:.85em;">(${label})</span>`
                                     : `<strong>${label}</strong>`;
-                                predsHtml += `<div class="pred-row" style="color:#b8c4d4;">🎯 ${player}: ${display}</div>`;
+                                predsHtml += `<div class="pred-row pred-row-pending">🎯 ${player}: ${display}</div>`;
                             } else if (matchPreds[player]) {
                                 predsHtml += `<div class="pred-row pred-row-pending">✅ ${player}: Har tippat</div>`;
                             } else {
@@ -2663,7 +2677,7 @@
                                     <span><strong>${player}</strong></span>
                                     <span style="font-weight:600;color:#d4930a;">
                                         ${exact ? exact.replace('-', ' – ') : pred}
-                                        <span style="color:#9ca3af;font-weight:400;font-size:.85em;">(${label})</span>
+                                        <span style="font-weight:400;font-size:.85em;">(${label})</span>
                                     </span>
                                 </div>`;
                             }).join('')}
@@ -2934,10 +2948,17 @@
                 const scoreStr = `${h}-${a}`;
                 if (!predictions[matchId]) predictions[matchId] = {};
                 if (!exactPredictions[matchId]) exactPredictions[matchId] = {};
+                if (!predictionTimestamps[matchId]) predictionTimestamps[matchId] = {};
+                const alreadyTipped = !!predictionTimestamps[matchId][currentUser];
                 predictions[matchId][currentUser] = outcome;
                 exactPredictions[matchId][currentUser] = scoreStr;
                 await set(ref(database, `leagues/${currentLeagueCode}/predictions/${matchId}/${currentUser}`), outcome);
                 await set(ref(database, `leagues/${currentLeagueCode}/exactPredictions/${matchId}/${currentUser}`), scoreStr);
+                if (!alreadyTipped) {
+                    const ts = Date.now();
+                    predictionTimestamps[matchId][currentUser] = ts;
+                    await set(ref(database, `leagues/${currentLeagueCode}/predictionTimestamps/${matchId}/${currentUser}`), ts);
+                }
                 await logActivity('PREDICT', `Tippade på ${match.homeTeam} vs ${match.awayTeam}`);
                 renderMatches();
                 rebuildPointsCache();

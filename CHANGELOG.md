@@ -1,5 +1,13 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-09 – Färg på eget tips, sortering, "Tabell", teamnamn i rätt färg
+
+### Ändringar
+- **Eget tips grönt**: Eget tips i Matcher-fliken visas nu i grönt (som andras "Har tippat") istället för grått
+- **Teamnamn i rätt färg**: `(Liverpool)` etc. ärver nu radens färg istället för att alltid vara grått – gäller Matcher- och Tippa-fliken
+- **Sortering per tippningsordning**: Spelare sorteras i den ordning de tippade för varje match. Timestamp sparas i Firebase vid första tippningen
+- **"Topplista" → "Tabell"**: Fliken och rubriken omdöpta
+
 ## 2026-03-09 – Fix Safari iOS scroll (arkitekturändring)
 
 ### Ändringar
