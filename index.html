@@ -429,7 +429,8 @@
             position: fixed;
             inset: 0;
             background: #2a2d37;
-            overflow-y: auto;
+            overflow-y: scroll;
+            -webkit-overflow-scrolling: touch;
             z-index: 50;
         }
 
@@ -548,7 +549,7 @@
         .app-tab.active { color: #d4930a; border-bottom-color: #d4930a; font-weight: 600; }
 
         /* ── Content-area ── */
-        .app-content { max-width: 700px; margin: 0 auto; padding: 16px; padding-bottom: 48px; }
+        .app-content { max-width: 700px; margin: 0 auto; padding: 16px; padding-bottom: max(48px, calc(env(safe-area-inset-bottom) + 32px)); }
 
         /* ── App-bakgrund (ljust tema) ── */
         #viewApp { background: #d8e0eb; min-height: 100vh; }
@@ -2709,7 +2710,7 @@
                             <div class="score-inputs">
                                 <input type="number" min="0" max="99" id="exact-home-${m.id}"
                                     value="${homeVal}"
-                                    oninput="window.updateScorePrediction('${m.id}')"
+                                    oninput="window.updateScorePrediction('${m.id}'); window.advanceToAway('${m.id}', this)"
                                     class="score-input${hasVal ? ' has-val' : ''}" placeholder="?">
                                 <span class="score-dash">–</span>
                                 <input type="number" min="0" max="99" id="exact-away-${m.id}"
@@ -2944,6 +2945,14 @@
             }
         };
 
+
+        window.advanceToAway = function(matchId, el) {
+            const val = el.value;
+            if (val.length === 1 && val >= '0' && val <= '9') {
+                const away = document.getElementById(`exact-away-${matchId}`);
+                if (away) { away.focus(); away.select(); }
+            }
+        };
 
         // ═══════════════════════════════════════════════════════════════
         // ADMIN-FUNKTIONER (Session 3)

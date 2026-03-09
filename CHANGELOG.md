@@ -1,5 +1,12 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-09 – Safari-scroll-fix + auto-fokus vid tippning
+
+### Ändringar
+- **Scroll-fix Safari iOS**: `#viewApp` använder nu `overflow-y: scroll` och `-webkit-overflow-scrolling: touch` istället för `auto` – fixar problemet med att inte kunna scrolla längst ner i Tippa-fliken på iPhone
+- **Safe-area padding**: `.app-content` får nu dynamisk `padding-bottom` som tar hänsyn till iPhones hemindikator (safe-area-inset-bottom)
+- **Auto-fokus vid tippning**: När man skriver en siffra (0–9) i hemma-rutan hoppar fokus automatiskt till borta-rutan – underlättar tippning på mobil
+
 ## 2026-03-08 – Godkännande-systemet borttaget; Automatisk sparning av tips; Poänglogik uppdaterad
 
 ### Ändringar
