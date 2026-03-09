@@ -1,5 +1,10 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-09 – Fix Safari iOS scroll (arkitekturändring)
+
+### Ändringar
+- **Safari scroll-fix**: Scroll-arkitekturen omgjord – `#viewApp` är nu en flex-kolumn utan scroll. Istället är `#appScrollArea` (wrappern runt innehållet) det enda scrollbara elementet med `flex: 1; overflow-y: scroll; -webkit-overflow-scrolling: touch`. Header och tab-bar sitter fast naturligt som flex-barn, utan `position: sticky` som orsakade Safari-buggar
+
 ## 2026-03-09 – UX-förbättringar: liganamn, superadmin, aktivitetslogg, regler
 
 ### Ändringar

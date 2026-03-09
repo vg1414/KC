@@ -429,8 +429,8 @@
             position: fixed;
             inset: 0;
             background: #2a2d37;
-            overflow-y: scroll;
-            -webkit-overflow-scrolling: touch;
+            display: flex;
+            flex-direction: column;
             z-index: 50;
         }
 
@@ -442,8 +442,7 @@
             align-items: center;
             justify-content: space-between;
             height: 52px;
-            position: sticky;
-            top: 0;
+            flex-shrink: 0;
             z-index: 20;
             box-shadow: 0 2px 8px rgba(0,0,0,.2);
         }
@@ -514,8 +513,7 @@
         .app-tabs-wrap {
             background: #23262f;
             border-bottom: 1px solid rgba(255,255,255,.08);
-            position: sticky;
-            top: 52px;
+            flex-shrink: 0;
             z-index: 15;
         }
 
@@ -549,10 +547,11 @@
         .app-tab.active { color: #d4930a; border-bottom-color: #d4930a; font-weight: 600; }
 
         /* ── Content-area ── */
-        .app-content { max-width: 700px; margin: 0 auto; padding: 16px; padding-bottom: max(48px, calc(env(safe-area-inset-bottom) + 32px)); }
+        .app-content { max-width: 700px; width: 100%; margin: 0 auto; padding: 16px; padding-bottom: max(48px, calc(env(safe-area-inset-bottom) + 32px)); }
 
         /* ── App-bakgrund (ljust tema) ── */
-        #viewApp { background: #d8e0eb; min-height: 100vh; }
+        #viewApp { background: #d8e0eb; }
+        #appScrollArea { flex: 1; overflow-y: scroll; -webkit-overflow-scrolling: touch; background: #d8e0eb; }
 
         /* ── App-kort ── */
         .app-card {
@@ -1225,7 +1224,7 @@
         </div>
 
         <!-- Tab-innehåll -->
-        <div class="app-content">
+        <div id="appScrollArea"><div class="app-content">
 
             <!-- Tippa -->
             <div id="tab-tippning" class="tab-content">
@@ -1517,7 +1516,7 @@
 
             </div><!-- /tab-admin -->
 
-        </div><!-- /app-content -->
+        </div></div><!-- /app-content /appScrollArea -->
     </div><!-- /viewApp -->
 
     <!-- ── Superadmin-overlay (från landningssidan) ── -->
