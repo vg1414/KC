@@ -2596,12 +2596,20 @@
             if (pendingRounds.size > 0) {
                 expandedRounds = pendingRounds;
             } else {
-                const firstUpcoming = roundOrder.find(rn => roundGroups[rn].every(m => !isMatchStarted(m.date)));
-                if (firstUpcoming) {
-                    expandedRounds = new Set([firstUpcoming]);
+                const mixedRound = roundOrder.find(rn => {
+                    const ms = roundGroups[rn];
+                    return ms.some(m => m.actualOutcome) && ms.some(m => !m.actualOutcome);
+                });
+                if (mixedRound) {
+                    expandedRounds = new Set([mixedRound]);
                 } else {
-                    const lastDone = [...roundOrder].reverse().find(rn => roundGroups[rn].every(m => m.actualOutcome));
-                    expandedRounds = new Set([lastDone || roundOrder[0]]);
+                    const firstUpcoming = roundOrder.find(rn => roundGroups[rn].every(m => !isMatchStarted(m.date)));
+                    if (firstUpcoming) {
+                        expandedRounds = new Set([firstUpcoming]);
+                    } else {
+                        const lastDone = [...roundOrder].reverse().find(rn => roundGroups[rn].every(m => m.actualOutcome));
+                        expandedRounds = new Set([lastDone || roundOrder[0]]);
+                    }
                 }
             }
 
@@ -2892,7 +2900,7 @@
                     if (!match.actualOutcome || match.actualOutcome === 'POSTPONED') return;
                     const pred = predictions[match.id]?.[player];
                     if (!pred || pred !== match.actualOutcome) return;
-                    const correctCount = Object.values(predictions[match.id] || {}).filter(p => p === match.actualOutcome).length;
+                    const correctCount = leaguePlayers.filter(p => predictions[match.id]?.[p] === match.actualOutcome).length;
                     if (correctCount === 1) soloCorrect++;
                 });
                 return { player, soloCorrect };
@@ -2938,7 +2946,7 @@
                     if (exactPredictions[match.id]?.[player] !== match.actualScore) return;
                     const pred = predictions[match.id]?.[player];
                     if (!pred || pred !== match.actualOutcome) return;
-                    const correctCount = Object.values(predictions[match.id] || {}).filter(p => p === match.actualOutcome).length;
+                    const correctCount = leaguePlayers.filter(p => predictions[match.id]?.[p] === match.actualOutcome).length;
                     if (correctCount === 1) unicornCount++;
                 });
                 return { player, unicornCount };

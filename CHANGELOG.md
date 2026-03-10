@@ -1,5 +1,11 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-10 – Unicorn-fix och bättre kortexpandering
+
+### Ändringar
+- **Unicorn/Sniper-bugg fixad**: Borttagna spelare (spökspelare) räknades med i beräkningen av vem som ensam tippat rätt – nu filtreras enbart aktiva spelare
+- **Kortexpandering fixad**: Kort med blandning av klara och kommande matcher expanderas nu alltid före rent kommande kort
+
 ## 2026-03-10 – Smart expandering av omgångar, admin kan hämta resultat manuellt
 
 ### Ändringar
