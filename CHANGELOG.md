@@ -1,5 +1,11 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-10 – Smart expandering av omgångar, admin kan hämta resultat manuellt
+
+### Ändringar
+- **Smart expandering**: Matcher-fliken öppnar nu automatiskt rätt omgång – väntande resultat prioriteras, annars nästa kommande, annars senaste avklarade
+- **Hämta resultat för alla admins**: "Hämta nu"-knappen visas nu för alla ligeadmins, inte bara superadmin
+
 ## 2026-03-10 – Resultatinfo på matchrad, POSTPONED-fix
 
 ### Ändringar

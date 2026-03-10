@@ -2411,7 +2411,7 @@
             if (apiKeySection)       apiKeySection.style.display       = isGhost() ? '' : 'none';
             if (activityLogSection)  activityLogSection.style.display  = isGhost() ? '' : 'none';
             if (loadMatchesSection)  loadMatchesSection.style.display  = isGhost() ? '' : 'none';
-            if (fetchResultsSection) fetchResultsSection.style.display = isGhost() ? '' : 'none';
+            if (fetchResultsSection) fetchResultsSection.style.display = isAdmin() ? '' : 'none';
 
             showView('viewApp');
             window.switchTab(isAdmin() ? 'admin' : 'tippning');
@@ -2588,13 +2588,30 @@
                     </div>`;
             }
 
-            list.innerHTML = roundOrder.map((roundName, idx) => {
+            // Räkna ut vilka omgångar som ska expanderas
+            const pendingRounds = new Set(roundOrder.filter(rn =>
+                roundGroups[rn].some(m => isMatchStarted(m.date) && !m.actualOutcome)
+            ));
+            let expandedRounds;
+            if (pendingRounds.size > 0) {
+                expandedRounds = pendingRounds;
+            } else {
+                const firstUpcoming = roundOrder.find(rn => roundGroups[rn].every(m => !isMatchStarted(m.date)));
+                if (firstUpcoming) {
+                    expandedRounds = new Set([firstUpcoming]);
+                } else {
+                    const lastDone = [...roundOrder].reverse().find(rn => roundGroups[rn].every(m => m.actualOutcome));
+                    expandedRounds = new Set([lastDone || roundOrder[0]]);
+                }
+            }
+
+            list.innerHTML = roundOrder.map((roundName) => {
                 const rMatches   = roundGroups[roundName];
                 const played     = rMatches.filter(m => m.actualOutcome).length;
                 const meta       = played === rMatches.length ? `${rMatches.length} matcher · Klar` :
                                    played > 0 ? `${rMatches.length} matcher · ${played}/${rMatches.length} spelade` :
                                    `${rMatches.length} matcher`;
-                const isCollapsed = idx > 0;
+                const isCollapsed = !expandedRounds.has(roundName);
                 return `
                     <div class="round-group">
                         <div class="round-header" onclick="window.toggleRound(this)">
