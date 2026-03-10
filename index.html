@@ -2577,13 +2577,12 @@
 
                 const canSetResult = !!currentUser && started && (isAdmin() || m.setBy !== 'API') && m.actualOutcome !== 'POSTPONED';
                 const resultBtn = canSetResult ? `<button class="result-set-btn" onclick="window.openResultModal('${m.id}')">${m.actualOutcome ? '✏️ Ändra resultat' : '📝 Sätt resultat'}</button>` : '';
-                const setByLine = m.setBy && m.setBy !== 'API' && m.actualOutcome ? `<div style="font-size:.76em;color:#8896aa;margin-top:4px;">✏️ Satt av: ${m.setBy}</div>` : '';
+                const setByText = m.setBy && m.actualOutcome ? `  (Satt av: ${m.setBy === 'API' ? 'API' : m.setBy})` : '';
 
                 return `
                     <div class="match-item">
                         <div class="match-teams">${m.homeTeam} vs ${m.awayTeam}</div>
-                        <div class="match-meta">${dateStr} · ${status}</div>
-                        ${setByLine}
+                        <div class="match-meta">${dateStr} · ${status}${setByText}</div>
                         ${predsHtml}
                         ${resultBtn}
                     </div>`;
@@ -3172,7 +3171,10 @@
                     const ageHours = match.setAt ? (now - new Date(match.setAt)) / 3600000 : Infinity;
                     if (ageHours > 48) return false;
                 }
-                if (match.actualOutcome === 'POSTPONED') return false;
+                if (match.actualOutcome === 'POSTPONED') {
+                    const ageHours = (now - new Date(match.date)) / 3600000;
+                    if (ageHours > 48) return false;
+                }
                 if (!isMatchStarted(match.date)) return false;
                 return (now - new Date(match.date)) / 3600000 >= 100/60;
             });

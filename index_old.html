@@ -845,9 +845,9 @@
         .title-chip-header { font-size: .7em; letter-spacing: .12em; text-transform: uppercase; font-weight: 600; margin-bottom: 3px; opacity: .75; }
         .title-chip-name { font-size: 1em; font-weight: 700; }
         .title-chip-detail { font-size: .8em; margin-top: 2px; opacity: .75; }
-        .title-chip-sniper { background: rgba(245,158,11,.12); color: #fbbf24; }
-        .title-chip-nostradamus { background: rgba(139,92,246,.12); color: #a78bfa; }
-        .title-chip-unicorn { background: rgba(236,72,153,.12); color: #f472b6; }
+        .title-chip-sniper { background: rgba(245,158,11,.15); color: #b45309; border: 1px solid rgba(245,158,11,.3); }
+        .title-chip-nostradamus { background: rgba(139,92,246,.15); color: #6d28d9; border: 1px solid rgba(139,92,246,.3); }
+        .title-chip-unicorn { background: rgba(236,72,153,.15); color: #be185d; border: 1px solid rgba(236,72,153,.3); }
 
         /* ── Admin-panel ── */
         .admin-section { background: #333743; border: 1px solid rgba(255,255,255,.08); border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
@@ -1240,21 +1240,6 @@
 
             <!-- Topplista -->
             <div id="tab-topplista" class="tab-content" style="display:none">
-                <div id="sniperSection" style="display:none" class="title-chip title-chip-sniper">
-                    <div class="title-chip-header">🎯 Ligans Sniper</div>
-                    <div class="title-chip-name" id="sniperName"></div>
-                    <div class="title-chip-detail" id="sniperDetails"></div>
-                </div>
-                <div id="nostradamusSection" style="display:none" class="title-chip title-chip-nostradamus">
-                    <div class="title-chip-header">🔮 Ligans Nostradamus</div>
-                    <div class="title-chip-name" id="nostradamusLeader"></div>
-                    <div class="title-chip-detail" id="nostradamusLeaderDetail"></div>
-                </div>
-                <div id="unicornSection" style="display:none" class="title-chip title-chip-unicorn">
-                    <div class="title-chip-header">🦄 Ligans Unicorn</div>
-                    <div class="title-chip-name" id="unicornLeader"></div>
-                    <div class="title-chip-detail" id="unicornLeaderDetail"></div>
-                </div>
                 <div class="app-card">
                     <div class="app-card-title">🏆 Tabell</div>
                     <div style="overflow-x:auto;">
@@ -1274,6 +1259,21 @@
                             </tbody>
                         </table>
                     </div>
+                </div>
+                <div id="sniperSection" style="display:none" class="title-chip title-chip-sniper">
+                    <div class="title-chip-header">🎯 Ligans Sniper</div>
+                    <div class="title-chip-name" id="sniperName"></div>
+                    <div class="title-chip-detail" id="sniperDetails"></div>
+                </div>
+                <div id="nostradamusSection" style="display:none" class="title-chip title-chip-nostradamus">
+                    <div class="title-chip-header">🔮 Ligans Nostradamus</div>
+                    <div class="title-chip-name" id="nostradamusLeader"></div>
+                    <div class="title-chip-detail" id="nostradamusLeaderDetail"></div>
+                </div>
+                <div id="unicornSection" style="display:none" class="title-chip title-chip-unicorn">
+                    <div class="title-chip-header">🦄 Ligans Unicorn</div>
+                    <div class="title-chip-name" id="unicornLeader"></div>
+                    <div class="title-chip-detail" id="unicornLeaderDetail"></div>
                 </div>
             </div>
 
@@ -1304,7 +1304,7 @@
                                 <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 12px;">
                                     <div style="font-size:.8em;font-weight:700;color:#d4930a;margin-bottom:2px;">RÄTT 1X2-TIPS</div>
                                     <div style="font-size:.85em;color:#b8c4d4;">0–100 poäng beroende på hur många som tippade samma</div>
-                                    <div style="font-size:.78em;color:#6b7280;margin-top:3px;">Poängen beräknas med formeln <code>100 × (N−k)/(N−1)</code>, där N = antal spelare och k = antal som gissade samma. Resultat: ensam rätt ger mest, alla rätt ger 0 (exakt halv rätt är inte nödvändigtvis 50&nbsp;p).</div>
+                                    <div style="font-size:.78em;color:#6b7280;margin-top:3px;">Poängen beräknas med formeln <code>100 × (N−k)/(N−1)</code>, där N = antal spelare och k = antal som gissade samma. Ensam rätt ger mest, alla rätt ger 0.</div>
                                 </div>
                                 <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 12px;">
                                     <div style="font-size:.8em;font-weight:700;color:#a78bfa;margin-bottom:2px;">EXAKT SLUTRESULTAT 🔮</div>
@@ -2575,13 +2575,14 @@
                     predsHtml += '</div>';
                 }
 
-                const canSetResult = !!currentUser && started && m.setBy !== 'API' && m.actualOutcome !== 'POSTPONED';
+                const canSetResult = !!currentUser && started && (isAdmin() || m.setBy !== 'API') && m.actualOutcome !== 'POSTPONED';
                 const resultBtn = canSetResult ? `<button class="result-set-btn" onclick="window.openResultModal('${m.id}')">${m.actualOutcome ? '✏️ Ändra resultat' : '📝 Sätt resultat'}</button>` : '';
+                const setByText = m.setBy && m.actualOutcome ? `  (Satt av: ${m.setBy === 'API' ? 'API' : m.setBy})` : '';
 
                 return `
                     <div class="match-item">
                         <div class="match-teams">${m.homeTeam} vs ${m.awayTeam}</div>
-                        <div class="match-meta">${dateStr} · ${status}</div>
+                        <div class="match-meta">${dateStr} · ${status}${setByText}</div>
                         ${predsHtml}
                         ${resultBtn}
                     </div>`;
@@ -3166,8 +3167,14 @@
             if (!plApiKey) return;
             const now = new Date();
             const pendingMatches = matches.filter(match => {
-                if (match.setBy === 'API') return false;
-                if (match.actualOutcome === 'POSTPONED') return false;
+                if (match.setBy === 'API') {
+                    const ageHours = match.setAt ? (now - new Date(match.setAt)) / 3600000 : Infinity;
+                    if (ageHours > 48) return false;
+                }
+                if (match.actualOutcome === 'POSTPONED') {
+                    const ageHours = (now - new Date(match.date)) / 3600000;
+                    if (ageHours > 48) return false;
+                }
                 if (!isMatchStarted(match.date)) return false;
                 return (now - new Date(match.date)) / 3600000 >= 100/60;
             });

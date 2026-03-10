@@ -1,5 +1,11 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-10 – Resultatinfo på matchrad, POSTPONED-fix
+
+### Ändringar
+- **Satt av på samma rad**: Matcher-fliken visar nu "(Satt av: [namn])" och "(Satt av: API)" direkt på datumraden, inga emojis
+- **POSTPONED-fix**: Inställda matcher checkas nu mot API:t om matchdatumet är yngre än 48h – fångar upp matcher som faktiskt spelades ändå
+
 ## 2026-03-10 – UX-fix: poängtext, sniper-kort, vem satte resultatet, API-felhantering
 
 ### Ändringar
