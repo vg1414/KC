@@ -1,5 +1,15 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-10 – UX-fix: poängtext, sniper-kort, vem satte resultatet, API-felhantering
+
+### Ändringar
+- **Poängbeskrivning**: Tog bort "exakt halv rätt är inte nödvändigtvis 50 p" ur regler-fliken – onödigt förvirrande
+- **Sniper/Nostradamus/Unicorn**: Korten visas nu under tabellen istället för ovanför. Färgerna mörkade för bättre läsbarhet (gult-på-gult-problem löst)
+- **Vem satte resultatet**: I Matcher-fliken visas nu "✏️ Satt av: [namn]" för manuellt inmatade resultat
+- **Admin kan alltid ändra resultat**: Admin ser "Ändra resultat"-knappen även på API-satta matcher (säkerhetsnät vid fel API-data)
+- **Auto-fetch re-checkar inom 48h**: API-satta resultat hämtas om automatiskt om de är yngre än 48 timmar – fångar upp korrigeringar från football-data.org
+- **Firebase-fix**: Galatasaray–Liverpool rättad till 1-0 (API returnerade felaktigt 1-1 p.g.a. VAR-underkänt mål)
+
 ## 2026-03-09 – Spelarsortering fix, lastSeen-tracking, force-logout vid borttagning
 
 ### Ändringar
