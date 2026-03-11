@@ -1,5 +1,12 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-11 – Utmärkelse-chips i toppliste-kortet med matchande färger
+
+### Ändringar
+- Sniper/Nostradamus/Unicorn-chips flyttades in i samma mörka app-card som tabellen
+- Separator-linje med luft tillagd mellan tabell och utmärkelser
+- Textfärger matchar nu exakt Regler-sektionens chips (amber/lila/rosa på mörk bakgrund)
+
 ## 2026-03-11 – Bättre kontrast på titel-chips i regler
 
 ### Ändringar
