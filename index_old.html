@@ -2554,6 +2554,7 @@
                     predsHtml += '</div>';
                 } else {
                     predsHtml = `<div style="margin-top:8px;">`;
+                    const correctOutcomeCount = allPlayers.filter(p => matchPreds[p] === m.actualOutcome).length;
                     allPlayers.forEach(player => {
                         const pred  = matchPreds[player];
                         const exact = matchExact[player];
@@ -2566,11 +2567,14 @@
                         } else {
                             const isCorrect   = pred === m.actualOutcome;
                             const exactRight  = exact && m.actualScore && exact === m.actualScore;
+                            const isUnicorn   = isCorrect && exactRight && correctOutcomeCount === 1;
+                            const isSniper    = isCorrect && correctOutcomeCount === 1 && !isUnicorn;
                             const icon        = isCorrect ? '✅' : '❌';
-                            const exactTag    = exact ? ` [${exact}]${exactRight ? ' 🔮+50' : ''}` : '';
+                            const exactTag    = exact ? ` [${exact}]${exactRight ? ` 🔮+50${isUnicorn ? ' 🦄' : ''}` : ''}` : '';
+                            const sniperTag   = isSniper ? ' 🎯' : '';
                             const pts         = getCachedPoints(m.id, player);
                             const ptsBadge    = `<span class="pts-badge ${isCorrect ? 'pts-badge-correct' : 'pts-badge-wrong'}">${pts}p</span>`;
-                            predsHtml += `<div class="pred-row ${isCorrect ? 'pred-row-correct' : 'pred-row-wrong'}">${icon} ${player}: ${label}${exactTag}${ptsBadge}</div>`;
+                            predsHtml += `<div class="pred-row ${isCorrect ? 'pred-row-correct' : 'pred-row-wrong'}">${icon} ${player}: ${label}${exactTag}${sniperTag}${ptsBadge}</div>`;
                         }
                     });
                     predsHtml += '</div>';

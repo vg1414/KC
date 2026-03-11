@@ -1,5 +1,11 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-11 – Sniper-emoji 🎯 på matchrader
+
+### Ändringar
+- **Sniper-emoji 🎯** visas bredvid tippad 1X2 om spelaren är ensam om rätt utfall (och inte unicorn)
+- Unicorn 🦄 (ensam + exakt resultat) visas som tidigare – 🎯 visas inte dubbelt i det fallet
+
 ## 2026-03-11 – Web App Manifest för hemskärmsikon
 
 ### Ändringar
