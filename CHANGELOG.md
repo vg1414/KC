@@ -1,5 +1,10 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-11 – Bättre kontrast på titel-chips i regler
+
+### Ändringar
+- Sniper/Nostradamus/Unicorn-chips i Regler-fliken och topplistan fick ljusare textfärger (`#fbbf24`, `#c4b5fd`, `#f9a8d4`) för bättre läsbarhet mot mörk kortbakgrund
+
 ## 2026-03-11 – Sniper-emoji 🎯 på matchrader
 
 ### Ändringar
