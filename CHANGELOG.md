@@ -1,5 +1,11 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-11 – Web App Manifest för hemskärmsikon
+
+### Ändringar
+- **manifest.json skapad**: Chrome på Android använder nu rätt ikon (apple-touch-icon.png) och namn (Krokens Copa) när appen läggs till på hemskärmen
+- **manifest-länk tillagd i index.html**: `<link rel="manifest">` kopplad till manifestfilen
+
 ## 2026-03-10 – Unicorn-fix och bättre kortexpandering
 
 ### Ändringar
