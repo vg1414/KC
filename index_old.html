@@ -3075,11 +3075,11 @@
 
         // ─── Hjälpfunktion: hämta matcher för en tävling ─────────────────────────
         async function fetchCompetitionMatches(code, rounds) {
-            const apiUrl = `https://api.football-data.org/v4/competitions/${code}/matches?status=SCHEDULED,TIMED`;
-            const url = 'https://corsproxy.io/?' + encodeURIComponent(apiUrl);
+            const path = `competitions/${code}/matches?status=SCHEDULED,TIMED`;
+            const url = 'https://football-proxy.davhef.workers.dev/?path=' + encodeURIComponent(path);
             adminLog(`🔗 Hämtar ${code}...`);
 
-            const response = await fetch(url, { headers: { 'X-Auth-Token': plApiKey } });
+            const response = await fetch(url);
             if (!response.ok) throw new Error(`${code} API svarade ${response.status}`);
 
             const data = await response.json();
@@ -3235,9 +3235,9 @@
             for (const key of Object.keys(groups)) {
                 const group = groups[key];
                 try {
-                    const apiUrl = `https://api.football-data.org/v4/competitions/${group.comp}/matches?dateFrom=${group.matchDate}&dateTo=${group.matchDate}`;
-                    const url = 'https://corsproxy.io/?' + encodeURIComponent(apiUrl);
-                    const response = await fetch(url, { headers: { 'X-Auth-Token': plApiKey } });
+                    const path = `competitions/${group.comp}/matches?dateFrom=${group.matchDate}&dateTo=${group.matchDate}`;
+                    const url = 'https://football-proxy.davhef.workers.dev/?path=' + encodeURIComponent(path);
+                    const response = await fetch(url);
 
                     if (response.status === 429) { fetchLog('⚠️ Rate limit – väntar 60s...'); await new Promise(r => setTimeout(r, 60000)); continue; }
                     if (!response.ok) { fetchLog(`⚠️ API ${response.status} för ${group.comp} ${group.matchDate}`); continue; }

@@ -1,5 +1,12 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-14 – Byt CORS-proxy till Cloudflare Worker
+
+### Ändringar
+- Ersatte corsproxy.io med en egen Cloudflare Worker (`football-proxy.davhef.workers.dev`)
+- API-nyckeln för football-data.org lagras nu säkert som Secret i Workern – syns inte längre i frontend-koden
+- Uppdaterade `fetchCompetitionMatches` och `fetchResults` att använda Worker-proxyn
+
 ## 2026-03-12 – Uppdatera CORS-proxy för resultatshämtning
 
 ### Ändringar
