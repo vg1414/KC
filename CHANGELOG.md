@@ -1,5 +1,11 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-12 – Uppdatera CORS-proxy för resultatshämtning
+
+### Ändringar
+- Bytte proxy-URL-format till `corsproxy.io/?url=` (ny syntax)
+- Behåller `X-Auth-Token` som header (football-data.org stödjer ej token i URL)
+
 ## 2026-03-11 – Utmärkelse-chips i toppliste-kortet med matchande färger
 
 ### Ändringar
