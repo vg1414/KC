@@ -1,5 +1,10 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-13 – Open Graph-taggar för WhatsApp-förhandsgranskning
+
+### Lagt till
+- Open Graph-taggar (og:title, og:description, og:image, og:url) i index.html så länken visar ikon och beskrivning när den delas på WhatsApp
+
 ## 2026-03-13 – Buggfix: tippa-flik försvinner för spelare
 
 ### Fixat
