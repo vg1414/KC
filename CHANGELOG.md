@@ -1,5 +1,18 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-13 – Liga-switcher, FAQ på landningssida, admin kan byta spelarnamn, UI-förbättringar
+
+### Nytt
+- Liga-switcher: klicka på liganamnet i headern för att byta mellan dina ligor via dropdown
+- FAQ-sektion i Regler-fliken med 14 vanliga frågor och svar
+- FAQ/Hjälp bottom sheet på landningssidan (öppnas via "Hjälp"-knappen)
+- Admin kan byta visningsnamn på spelare – alla tips migreras automatiskt till det nya namnet
+
+### Förbättrat
+- Slash-tecknet i tippa-räknaren (9/18) har nu samma storlek och font som siffrorna
+- FAQ: rättad text om andras tips (syns efter deadline, inte vid matchstart)
+- FAQ: felsökningsfrågan borttagen
+
 ## 2026-03-13 – Gruppering per omgång i tippa-fliken + auto-fokus mellan matcher
 
 ### Förbättrat
