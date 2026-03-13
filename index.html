@@ -1114,6 +1114,33 @@
                 </div>
             </div>
 
+            <div class="field">
+                <label>Spelstoppsinställning</label>
+                <div class="radio-group">
+                    <label class="radio-label">
+                        <input type="radio" name="createDeadlineMode" value="global" checked>
+                        <div>
+                            <div class="radio-title">🔒 Globalt spelstopp</div>
+                            <div class="radio-desc">Allt låser när den allra första matchen sparkas igång – ingen kan tippa baserat på tidigare resultat</div>
+                        </div>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="createDeadlineMode" value="perRound">
+                        <div>
+                            <div class="radio-title">📅 Omgång för omgång</div>
+                            <div class="radio-desc">Varje omgång låser sig separat vid sin första matchstart</div>
+                        </div>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="createDeadlineMode" value="perMatch">
+                        <div>
+                            <div class="radio-title">⏱️ Match för match</div>
+                            <div class="radio-desc">Varje enskild match låser sig individuellt vid sin start</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
             <button class="btn-gold" onclick="window.createLeague()" id="createBtn">🎣 Skapa liga</button>
             <button class="btn-ghost" onclick="window.showLanding()">← Avbryt</button>
         </div>
@@ -1554,6 +1581,41 @@
         </div>
     </div>
 
+    <!-- ── Deadline-dialog (efter inladdning) ── -->
+    <div id="deadlineDialog" style="display:none" class="result-modal-overlay">
+        <div class="result-modal" style="max-width:400px;">
+            <div class="result-modal-title">📅 Spelstopp har passerat</div>
+            <div class="result-modal-match">Nya matcher laddades in. Vad ska gälla för dem?</div>
+            <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+                <label style="display:flex;flex-direction:column;gap:3px;padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.1);cursor:pointer;background:#2a2d37;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <input type="radio" name="deadlineChoice" value="auto" checked style="accent-color:#d4930a;">
+                        <span style="font-weight:600;font-size:.9em;color:#d0d6e0;">Automatiskt – vid första matchstart</span>
+                    </div>
+                    <span id="deadlineAutoTime" style="font-size:.8em;color:#9ca3af;margin-left:22px;"></span>
+                </label>
+                <label style="display:flex;flex-direction:column;gap:6px;padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.1);cursor:pointer;background:#2a2d37;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <input type="radio" name="deadlineChoice" value="manual" style="accent-color:#d4930a;">
+                        <span style="font-weight:600;font-size:.9em;color:#d0d6e0;">Välj datum/tid manuellt</span>
+                    </div>
+                    <input type="datetime-local" id="deadlineManualInput" style="margin-left:22px;font-size:.82em;padding:5px 8px;border:1px solid rgba(255,255,255,.15);border-radius:6px;background:#1e2535;color:#d0d6e0;width:calc(100% - 22px);">
+                </label>
+                <label style="display:flex;flex-direction:column;gap:3px;padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.1);cursor:pointer;background:#2a2d37;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <input type="radio" name="deadlineChoice" value="open" style="accent-color:#d4930a;">
+                        <span style="font-weight:600;font-size:.9em;color:#d0d6e0;">Låt matcherna vara öppna tills vidare</span>
+                    </div>
+                    <span style="font-size:.8em;color:#9ca3af;margin-left:22px;">Varje match låser sig när den startar</span>
+                </label>
+            </div>
+            <div class="result-modal-btns">
+                <button class="btn-admin btn-admin-secondary" style="flex:1" onclick="window.closeDeadlineDialog()">Avbryt</button>
+                <button class="btn-admin btn-admin-primary" style="flex:1" onclick="window.confirmDeadlineChoice()">Bekräfta</button>
+            </div>
+        </div>
+    </div>
+
     <div class="signature">Made by: David Hefner</div>
 
     <script type="module">
@@ -1595,6 +1657,7 @@
         let exactPredictions      = {};
         let predictionTimestamps  = {};
         let deadlines        = {};
+        let deadlineMode     = 'global'; // 'global' | 'perRound' | 'perMatch'
         let matchMap         = {};
         let pointsCache      = {};
         let cachedFirstMatch = null;
@@ -1875,11 +1938,20 @@
         // ─── Match-hjälpare ───────────────────────────────────────────────────────
         function isMatchStarted(dateStr) { return new Date() >= new Date(dateStr); }
 
+        function sanitizeDeadlineKey(str) {
+            return (str || '')
+                .replace(/å/g,'a').replace(/ä/g,'a').replace(/ö/g,'o')
+                .replace(/Å/g,'A').replace(/Ä/g,'A').replace(/Ö/g,'O')
+                .replace(/[^a-zA-Z0-9]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');
+        }
+
         function getDeadlineKey(match) {
+            if (deadlineMode === 'global') return 'GLOBAL';
+            if (deadlineMode === 'perMatch') return `MATCH_${match.id}`;
+            // perRound
             const comp = match.competition;
-            if (comp === 'PL') return 'PL';
-            if (comp === 'WC') return 'WC';
-            return match.stage ? `CL_${match.stage}` : 'CL';
+            if (comp === 'CL') return match.stage ? `CL_${match.stage}` : 'CL';
+            return sanitizeDeadlineKey(match.league || comp);
         }
 
         function getSeasonForComp(comp) {
@@ -1889,9 +1961,14 @@
         }
 
         function getEffectiveDeadline(match) {
+            if (deadlineMode === 'perMatch') return { time: match.date, auto: true };
             const key = getDeadlineKey(match);
             if (deadlines[key]) return { time: deadlines[key], auto: false };
-            // Inget manuellt spelstopp – använd första matchstart i gruppen
+            if (deadlineMode === 'global') {
+                // Inget globalt spelstopp satt → varje match låser vid sin egen start
+                return { time: match.date, auto: true };
+            }
+            // perRound: använd första matchstart i omgången
             const groupFirst = matches
                 .filter(m => getDeadlineKey(m) === key)
                 .reduce((min, m) => !min || new Date(m.date) < new Date(min) ? m.date : min, null);
@@ -1988,6 +2065,7 @@
                 if (isAdmin()) {
                     renderAdminPlayers();
                     renderAdminDeadlines();
+                    renderAdminCompRows();
                 }
             });
         }
@@ -2006,6 +2084,7 @@
         function setupLeagueView(code, data) {
             currentLeagueCode = code;
             currentLeagueInfo = data.info || {};
+            deadlineMode = currentLeagueInfo.deadlineMode || 'global';
             saveRecentLeague(code, currentLeagueInfo.name);
 
             // Fyll liga-header i login-vyn
@@ -2189,7 +2268,9 @@
             globalMatchUnsubscribers.forEach(u => u());
             globalMatchUnsubscribers = [];
             const allCompMatches = {};
-            (comps || []).forEach(comp => {
+            // Lyssna alltid på alla tävlingar så att admin kan ladda in valfri tävling i efterhand
+            const ALL_COMPS = ['PL', 'CL', 'WC'];
+            ALL_COMPS.forEach(comp => {
                 const season = getSeasonForComp(comp);
                 const path = `globalMatches/${comp}/${season}`;
                 const unsub = onValue(ref(database, path), snap => {
@@ -2201,6 +2282,7 @@
                     matches.sort((a, b) => new Date(a.date) - new Date(b.date));
                     cachedFirstMatch = null;
                     if (currentUser) scheduleRender();
+                    renderAdminCompRows();
                 });
                 globalMatchUnsubscribers.push(unsub);
             });
@@ -2522,38 +2604,24 @@
                 let predsHtml = '';
                 if (!m.actualOutcome) {
                     predsHtml = '<div style="margin-top:8px;">';
-                    if (locked || started) {
-                        allPlayers.forEach(player => {
+                    allPlayers.forEach(player => {
+                        // Visa alltid eget faktiskt tips, oavsett status
+                        if (player === currentUser && matchPreds[player]) {
                             const pred  = matchPreds[player];
                             const exact = matchExact[player];
                             const label = { '1': m.homeTeam, 'X': 'Oavgjort', '2': m.awayTeam }[pred] || pred;
-                            if (!pred) {
-                                predsHtml += `<div class="pred-row pred-row-waiting">❌ ${player}: Tippade inte</div>`;
-                            } else {
-                                const display = exact
-                                    ? `<strong>${exact.replace('-', ' – ')}</strong> <span style="font-size:.85em;">(${label})</span>`
-                                    : `<strong>${label}</strong>`;
-                                predsHtml += `<div class="pred-row" style="color:#b8c4d4;">🎯 ${player}: ${display}</div>`;
-                            }
-                        });
-                    } else {
-                        allPlayers.forEach(player => {
-                            // Inloggad spelare ser alltid sitt eget faktiska tips
-                            if (player === currentUser && matchPreds[player]) {
-                                const pred  = matchPreds[player];
-                                const exact = matchExact[player];
-                                const label = { '1': m.homeTeam, 'X': 'Oavgjort', '2': m.awayTeam }[pred] || pred;
-                                const display = exact
-                                    ? `<strong>${exact.replace('-', ' – ')}</strong> <span style="font-size:.85em;">(${label})</span>`
-                                    : `<strong>${label}</strong>`;
-                                predsHtml += `<div class="pred-row pred-row-pending">🎯 ${player}: ${display}</div>`;
-                            } else if (matchPreds[player]) {
-                                predsHtml += `<div class="pred-row pred-row-pending">✅ ${player}: Har tippat</div>`;
-                            } else {
-                                predsHtml += `<div class="pred-row pred-row-waiting">⏳ ${player}: Har inte tippat ännu</div>`;
-                            }
-                        });
-                    }
+                            const display = exact
+                                ? `<strong>${exact.replace('-', ' – ')}</strong> <span style="font-size:.85em;">(${label})</span>`
+                                : `<strong>${label}</strong>`;
+                            const rowClass = (locked || started) ? 'pred-row' : 'pred-row pred-row-pending';
+                            predsHtml += `<div class="${rowClass}" style="color:#b8c4d4;">🎯 ${player}: ${display}</div>`;
+                        } else if (matchPreds[player]) {
+                            const rowClass = (locked || started) ? 'pred-row pred-row-pending' : 'pred-row pred-row-pending';
+                            predsHtml += `<div class="${rowClass}">✅ ${player}: Har tippat</div>`;
+                        } else {
+                            predsHtml += `<div class="pred-row pred-row-waiting">⏳ ${player}: Har inte tippat ännu</div>`;
+                        }
+                    });
                     predsHtml += '</div>';
                 } else {
                     predsHtml = `<div style="margin-top:8px;">`;
@@ -2684,11 +2752,11 @@
                     </div>`;
             }
 
-            // Gruppera matcher per deadline-key
+            // Gruppera matcher – per omgång (m.league) för perRound/perMatch, annars per deadline-key
             const groups     = {};
             const groupOrder = [];
             matches.forEach(m => {
-                const key = getDeadlineKey(m);
+                const key = (deadlineMode === 'global') ? getDeadlineKey(m) : m.league;
                 if (!groups[key]) { groups[key] = []; groupOrder.push(key); }
                 groups[key].push(m);
             });
@@ -2721,7 +2789,8 @@
                     const lockedLabel = `<span class="pred-locked-tipp">${myExact ? `Din tipp: <strong>${myExact.replace('-', ' – ')}</strong>` : 'Du tippade inte'}</span><span class="pred-locked-chip">STÄNGD</span>`;
 
                     let predsHtml = '';
-                    if (Object.keys(matchPreds).length > 0) {
+                    if (started && Object.keys(matchPreds).length > 0) {
+                        // Matchen har startat – visa alla tippningar
                         predsHtml = `<div class="predictions-revealed">
                             <h4>Alla tippningar:</h4>
                             ${Object.entries(matchPreds).map(([player, pred]) => {
@@ -2736,6 +2805,13 @@
                                 </div>`;
                             }).join('')}
                         </div>`;
+                    } else if (!started) {
+                        // Deadline passerad men matchen ej startad – visa bara antal tippade
+                        const tippedCount = Object.keys(matchPreds).length;
+                        const totalCount  = leaguePlayers.length;
+                        if (totalCount > 0) {
+                            predsHtml = `<div style="margin-top:6px;font-size:.8em;color:#9ca3af;">${tippedCount} av ${totalCount} har tippat</div>`;
+                        }
                     }
 
                     const actualDisp = m.actualScore
@@ -2805,51 +2881,67 @@
                     </div>`;
             }
 
-            // Bygg deadline-chips och matcher – chip visas per grupp
+            // Bygg deadline-chips och matcher
             let html = '';
 
-            groupOrder.forEach(key => {
-                const groupMatches = groups[key];
-                const label        = DEADLINE_LABELS[key] || key;
-
-                // Effektiv deadline: manuell om satt, annars första matchstart i gruppen
-                const manualDeadline = deadlines[key];
-                const autoDeadline   = groupMatches.reduce((min, m) =>
-                    !min || new Date(m.date) < new Date(min) ? m.date : min, null);
-                const effDeadline    = manualDeadline || autoDeadline;
-                const isAuto         = !manualDeadline;
-                const isLocked       = effDeadline && new Date() >= new Date(effDeadline);
-
-                let chipHtml = '';
+            function buildDeadlineChip(effDeadline, isAuto, label) {
+                if (!effDeadline) return '';
+                const isLocked = new Date() >= new Date(effDeadline);
                 if (isLocked) {
                     const lockedStr = new Date(effDeadline).toLocaleString('sv-SE', {
                         weekday: 'long', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
                     });
-                    chipHtml = `<div class="deadline-chip deadline-chip-locked">
+                    return `<div class="deadlines-row"><div class="deadline-chip deadline-chip-locked">
                         <span class="deadline-dot"></span>
-                        <span>🔒 Stängd · ${label}</span>
+                        <span>🔒 Stängd${label ? ' · ' + label : ''}</span>
                         <span class="deadline-chip-sub">· ${isAuto ? 'vid matchstart' : ''} ${lockedStr}</span>
-                    </div>`;
-                } else if (effDeadline) {
-                    const deadlineStr = new Date(effDeadline).toLocaleString('sv-SE', {
-                        weekday: 'long', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
-                    });
-                    const countdown = formatCountdown(effDeadline);
-                    chipHtml = `<div class="deadline-chip deadline-chip-open">
-                        <span class="deadline-dot"></span>
-                        <span>Öppen · ${label}</span>
-                        <span class="deadline-chip-sub">· ${isAuto ? 'stänger vid matchstart' : deadlineStr}</span>
-                        ${countdown ? `<span class="deadline-countdown" data-countdown="${effDeadline}">${countdown}</span>` : ''}
-                    </div>`;
+                    </div></div>`;
                 }
+                const deadlineStr = new Date(effDeadline).toLocaleString('sv-SE', {
+                    weekday: 'long', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+                const countdown = formatCountdown(effDeadline);
+                return `<div class="deadlines-row"><div class="deadline-chip deadline-chip-open">
+                    <span class="deadline-dot"></span>
+                    <span>Öppen${label ? ' · ' + label : ''}</span>
+                    <span class="deadline-chip-sub">· ${isAuto ? 'stänger vid matchstart' : deadlineStr}</span>
+                    ${countdown ? `<span class="deadline-countdown" data-countdown="${effDeadline}">${countdown}</span>` : ''}
+                </div></div>`;
+            }
 
-                if (chipHtml) {
-                    html += `<div class="deadlines-row">${chipHtml}</div>`;
-                }
+            if (deadlineMode === 'global') {
+                // Ett globalt spelstopp – visa ett chip överst, sedan alla matcher grupperade per omgång
+                const globalDeadline = deadlines['GLOBAL'];
+                const autoDeadline   = matches.reduce((min, m) =>
+                    !min || new Date(m.date) < new Date(min) ? m.date : min, null);
+                const effDeadline    = globalDeadline || autoDeadline;
+                const isAuto         = !globalDeadline;
+                html += buildDeadlineChip(effDeadline, isAuto, '');
 
-                const sortedGroup = [...groupMatches].sort((a, b) => new Date(a.date) - new Date(b.date));
-                html += sortedGroup.map(m => renderPredCard(m, isMatchLocked(m))).join('');
-            });
+                // Gruppera för display per omgång (m.league)
+                const lgGroups = {}, lgOrder = [];
+                matches.forEach(m => {
+                    if (!lgGroups[m.league]) { lgGroups[m.league] = []; lgOrder.push(m.league); }
+                    lgGroups[m.league].push(m);
+                });
+                lgOrder.forEach(league => {
+                    const sorted = [...lgGroups[league]].sort((a, b) => new Date(a.date) - new Date(b.date));
+                    html += sorted.map(m => renderPredCard(m, isMatchLocked(m))).join('');
+                });
+            } else {
+                // perRound / perMatch – chip per omgång
+                groupOrder.forEach(key => {
+                    const groupMatches = groups[key];
+                    const label        = groupMatches[0]?.league || DEADLINE_LABELS[key] || key;
+                    const firstMatch   = groupMatches.reduce((min, m) =>
+                        !min || new Date(m.date) < new Date(min) ? m : min, null);
+                    const eff          = firstMatch ? getEffectiveDeadline(firstMatch) : null;
+                    const showChip     = deadlineMode === 'perRound';
+                    if (showChip && eff) html += buildDeadlineChip(eff.time, eff.auto, label);
+                    const sorted = [...groupMatches].sort((a, b) => new Date(a.date) - new Date(b.date));
+                    html += sorted.map(m => renderPredCard(m, isMatchLocked(m))).join('');
+                });
+            }
 
             list.innerHTML = html;
         }
@@ -3135,20 +3227,22 @@
         function renderAdminCompRows() {
             const container = document.getElementById('adminCompRows');
             if (!container) return;
-            const comps = currentLeagueInfo.competitions || [];
+            const ALL_COMPS = ['PL', 'CL', 'WC'];
             const compNames = { PL: '⚽ Premier League', CL: '🏆 Champions League', WC: '🌍 VM' };
-            const defRounds = currentLeagueInfo.defaultRounds || {};
-            container.innerHTML = comps.map(comp => `
-                <div class="admin-row" style="align-items:flex-end;margin-bottom:6px;">
-                    <div class="admin-field" style="flex:2;">
-                        <label>${compNames[comp] || comp}</label>
-                        <input type="number" id="adminRounds_${comp}" value="${defRounds[comp] ?? 2}" min="0" max="30" style="width:70px;">
-                    </div>
-                    <div style="display:flex;align-items:center;gap:4px;margin-bottom:1px;">
-                        <span style="font-size:.78em;color:#9ca3af;">omgångar</span>
-                        <button class="btn-admin btn-admin-primary" style="padding:6px 12px;" onclick="window.adminLoadComp('${comp}')">Hämta</button>
-                    </div>
-                </div>`).join('');
+            container.innerHTML = ALL_COMPS.map(comp => {
+                // Räkna faktiskt laddade omgångar (unika stages för CL, unika league-label för PL/WC)
+                const loadedRounds = comp === 'CL'
+                    ? new Set(matches.filter(m => m.competition === comp).map(m => m.stage || m.league)).size
+                    : new Set(matches.filter(m => m.competition === comp).map(m => m.league)).size;
+                const isActive = loadedRounds > 0;
+                return `
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+                    <span style="flex:1;min-width:140px;font-weight:600;font-size:.88em;color:${isActive ? '#d0d6e0' : '#6b7280'};">${compNames[comp]}${isActive ? '' : ' <span style="font-size:.75em;color:#6b7280;">(ej laddad)</span>'}</span>
+                    <input type="number" id="adminRounds_${comp}" value="${loadedRounds}" min="0" max="30" style="width:52px;padding:5px 8px;border-radius:6px;border:1px solid rgba(255,255,255,.15);background:#1e2535;color:#d0d6e0;font-size:.9em;text-align:center;">
+                    <span style="font-size:.78em;color:#9ca3af;white-space:nowrap;">omgångar</span>
+                    <button class="btn-admin btn-admin-primary" style="padding:5px 14px;font-size:.85em;" onclick="window.adminLoadComp('${comp}')">Hämta</button>
+                </div>`;
+            }).join('');
         }
 
         async function loadMatchesForComp(comp, rounds) {
@@ -3160,11 +3254,11 @@
                     .forEach(m => { deletes[`globalMatches/${comp}/${season}/${m.id}`] = null; });
                 if (Object.keys(deletes).length > 0) await update(ref(database), deletes);
                 adminLog(`🗑️ ${comp}: alla pending-matcher borttagna`);
-                return 0;
+                return { count: 0, converted: [] };
             }
             const result = await fetchCompetitionMatches(comp, rounds);
             const matchesToLoad = result.converted;
-            if (matchesToLoad.length === 0) { adminLog(`⚠️ Inga ${comp}-matcher hittades.`); return 0; }
+            if (matchesToLoad.length === 0) { adminLog(`⚠️ Inga ${comp}-matcher hittades.`); return { count: 0, converted: [] }; }
             const existingMap = {};
             matches.forEach(m => { existingMap[m.id] = m; });
             const newMatches = matchesToLoad.map(m => {
@@ -3185,7 +3279,7 @@
                 .forEach(m => { updates[`globalMatches/${comp}/${season}/${m.id}`] = null; });
             await update(ref(database), updates);
             adminLog(`✅ ${comp}: ${matchesToLoad.length} matcher (${result.labels.join(', ')})`);
-            return matchesToLoad.length;
+            return { count: matchesToLoad.length, converted: newMatches };
         }
 
         window.adminLoadComp = async function(comp) {
@@ -3200,10 +3294,11 @@
             const logEl = document.getElementById('adminLoadLog');
             if (logEl) logEl.textContent = '';
             try {
-                const count = await loadMatchesForComp(comp, rounds);
+                const { count, converted } = await loadMatchesForComp(comp, rounds);
                 if (count > 0) {
                     await logActivity('ADMIN_LOAD_MATCHES', `Laddade ${count} ${comp}-matcher`);
                     showAppMsg(`✅ ${count} matcher laddade!`, 'success');
+                    setTimeout(() => window.checkAndShowDeadlineDialog(converted), 500);
                 }
             } catch (error) {
                 adminLog(`❌ FEL: ${error.message}`);
@@ -3222,14 +3317,18 @@
             const logEl = document.getElementById('adminLoadLog');
             if (logEl) logEl.textContent = '';
             let total = 0;
+            const allConverted = [];
             try {
                 for (const comp of comps) {
                     const rounds = parseInt(document.getElementById(`adminRounds_${comp}`)?.value || 2);
-                    total += await loadMatchesForComp(comp, rounds);
+                    const { count, converted } = await loadMatchesForComp(comp, rounds);
+                    total += count;
+                    allConverted.push(...converted);
                 }
                 if (total > 0) {
                     await logActivity('ADMIN_LOAD_MATCHES', `Laddade ${total} matcher (${comps.join(', ')})`);
                     showAppMsg(`✅ ${total} matcher laddade!`, 'success');
+                    setTimeout(() => window.checkAndShowDeadlineDialog(allConverted), 500);
                 }
             } catch (error) {
                 adminLog(`❌ FEL: ${error.message}`);
@@ -3564,15 +3663,9 @@
         function renderAdminDeadlines() {
             const el = document.getElementById('adminDeadlinesList');
             if (!el) return;
-            const comps = currentLeagueInfo.competitions || [];
-            const relevantKeys = ALL_DEADLINE_KEYS.filter(k => {
-                if (k === 'PL') return comps.includes('PL');
-                if (k === 'WC') return comps.includes('WC');
-                return comps.includes('CL');
-            });
-            el.innerHTML = relevantKeys.map(key => {
+
+            function deadlineRowHtml(key, label) {
                 const deadline = deadlines[key];
-                const label = DEADLINE_LABELS_FULL[key] || key;
                 const isLocked = deadline && new Date() >= new Date(deadline);
                 const currentStr = deadline
                     ? new Date(deadline).toLocaleString('sv-SE', { weekday:'short', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })
@@ -3590,7 +3683,49 @@
                         ${deadline ? `<button class="btn-admin btn-admin-danger" style="padding:6px 10px;font-size:.78em;" onclick="window.adminClearDeadline('${key}')">Rensa</button>` : ''}
                     </div>
                 </div>`;
-            }).join('');
+            }
+
+            const modeLabels = {
+                global:   { title: '🔒 Globalt spelstopp', desc: 'Allt låser när första matchen startar' },
+                perRound: { title: '📅 Omgång för omgång', desc: 'Varje omgång låser vid sin första matchstart' },
+                perMatch: { title: '⏱️ Match för match', desc: 'Varje match låser individuellt vid sin start' }
+            };
+            const modeToggle = `
+                <div style="margin-bottom:14px;">
+                    <div style="font-size:.8em;color:#9ca3af;margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Spelstoppsinställning</div>
+                    ${['global','perRound','perMatch'].map(m => `
+                        <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:6px;cursor:pointer;${deadlineMode===m?'background:rgba(212,147,10,.12);border:1px solid rgba(212,147,10,.3);':'border:1px solid transparent;'}margin-bottom:4px;">
+                            <input type="radio" name="adminDeadlineMode" value="${m}" ${deadlineMode===m?'checked':''} onchange="window.adminSetDeadlineMode('${m}')" style="accent-color:#d4930a;">
+                            <div>
+                                <div style="font-size:.85em;font-weight:600;color:#d0d6e0;">${modeLabels[m].title}</div>
+                                <div style="font-size:.77em;color:#9ca3af;">${modeLabels[m].desc}</div>
+                            </div>
+                        </label>`).join('')}
+                </div>`;
+
+            let deadlineRows = '';
+            if (deadlineMode === 'global') {
+                deadlineRows = deadlineRowHtml('GLOBAL', 'Globalt spelstopp');
+            } else if (deadlineMode === 'perRound') {
+                const roundKeys = [...new Set(matches.map(m => getDeadlineKey(m)))].filter(k => k !== 'GLOBAL');
+                roundKeys.sort((a, b) => {
+                    const aDate = matches.filter(m => getDeadlineKey(m) === a).reduce((min, m) => !min || new Date(m.date) < new Date(min) ? m.date : min, null);
+                    const bDate = matches.filter(m => getDeadlineKey(m) === b).reduce((min, m) => !min || new Date(m.date) < new Date(min) ? m.date : min, null);
+                    return new Date(aDate) - new Date(bDate);
+                });
+                if (roundKeys.length === 0) {
+                    deadlineRows = '<div style="font-size:.82em;color:#9ca3af;padding:8px 0;">Inga matcher laddade ännu.</div>';
+                } else {
+                    deadlineRows = roundKeys.map(key => {
+                        const label = matches.find(m => getDeadlineKey(m) === key)?.league || key;
+                        return deadlineRowHtml(key, label);
+                    }).join('');
+                }
+            } else {
+                deadlineRows = '<div style="font-size:.82em;color:#9ca3af;padding:8px 0;">Varje match låser automatiskt vid sin egen starttid. Inga manuella spelstopp behövs.</div>';
+            }
+
+            el.innerHTML = modeToggle + deadlineRows;
         }
 
         window.adminSaveDeadline = async function(key) {
@@ -3614,6 +3749,69 @@
             } catch (err) { showAppMsg('❌ ' + err.message, 'error'); }
         };
 
+
+        window.adminSetDeadlineMode = async function(mode) {
+            if (!isAdmin()) return;
+            try {
+                await set(ref(database, `leagues/${currentLeagueCode}/info/deadlineMode`), mode);
+                deadlineMode = mode;
+                renderAdminDeadlines();
+                showAppMsg('✅ Spelstoppsläge uppdaterat', 'success');
+            } catch (err) { showAppMsg('❌ ' + err.message, 'error'); }
+        };
+
+        // Senast laddade matcher (för dialog-auto-tid)
+        let _lastLoadedMatches = [];
+
+        window.checkAndShowDeadlineDialog = function(loadedMatches) {
+            if (deadlineMode !== 'global') return;
+            const globalDeadline = deadlines['GLOBAL'];
+            if (!globalDeadline) return; // Inget globalt spelstopp satt – ingen dialog
+            if (new Date() < new Date(globalDeadline)) return; // Spelstopp ej passerat
+            // Spelstopp har passerat – visa dialog
+            _lastLoadedMatches = loadedMatches || [];
+            const earliest = _lastLoadedMatches
+                .filter(m => !isMatchStarted(m.date))
+                .reduce((min, m) => !min || new Date(m.date) < new Date(min) ? m.date : min, null);
+            const autoTimeEl = document.getElementById('deadlineAutoTime');
+            if (autoTimeEl) {
+                autoTimeEl.textContent = earliest
+                    ? new Date(earliest).toLocaleString('sv-SE', { weekday:'long', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' })
+                    : 'Inga framtida matcher hittades';
+            }
+            // Återställ till auto
+            const autoRadio = document.querySelector('input[name="deadlineChoice"][value="auto"]');
+            if (autoRadio) autoRadio.checked = true;
+            document.getElementById('deadlineDialog').style.display = 'flex';
+        };
+
+        window.confirmDeadlineChoice = async function() {
+            const choice = document.querySelector('input[name="deadlineChoice"]:checked')?.value;
+            if (!choice) return;
+            try {
+                if (choice === 'auto') {
+                    const earliest = _lastLoadedMatches
+                        .filter(m => !isMatchStarted(m.date))
+                        .reduce((min, m) => !min || new Date(m.date) < new Date(min) ? m.date : min, null);
+                    if (!earliest) { showAppMsg('⚠️ Inga framtida matcher att sätta spelstopp för', 'warning'); window.closeDeadlineDialog(); return; }
+                    await set(ref(database, `leagues/${currentLeagueCode}/deadlines/GLOBAL`), earliest);
+                    showAppMsg('✅ Globalt spelstopp satt till ' + new Date(earliest).toLocaleString('sv-SE', { weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }), 'success');
+                } else if (choice === 'manual') {
+                    const val = document.getElementById('deadlineManualInput')?.value;
+                    if (!val) { showAppMsg('❌ Välj datum och tid', 'error'); return; }
+                    await set(ref(database, `leagues/${currentLeagueCode}/deadlines/GLOBAL`), val);
+                    showAppMsg('✅ Globalt spelstopp satt', 'success');
+                } else if (choice === 'open') {
+                    await set(ref(database, `leagues/${currentLeagueCode}/deadlines/GLOBAL`), null);
+                    showAppMsg('✅ Spelstopp borttaget – matcher låser vid matchstart', 'success');
+                }
+            } catch (err) { showAppMsg('❌ ' + err.message, 'error'); }
+            window.closeDeadlineDialog();
+        };
+
+        window.closeDeadlineDialog = function() {
+            document.getElementById('deadlineDialog').style.display = 'none';
+        };
 
         // ─── Aktivitetslogg (ghost) ───────────────────────────────────────────────
         window.renderActivityLog = function() {
@@ -3749,7 +3947,8 @@
             try {
                 let total = 0;
                 for (const comp of comps) {
-                    total += await loadMatchesForComp(comp, rounds[comp] || 2);
+                    const { count } = await loadMatchesForComp(comp, rounds[comp] || 2);
+                    total += count;
                 }
                 if (total > 0) {
                     await logActivity('AUTO_LOAD_MATCHES', `Auto-laddade ${total} matcher (${comps.join(', ')})`);
@@ -3962,6 +4161,7 @@
             predictions       = {};
             exactPredictions  = {};
             deadlines         = {};
+            deadlineMode      = 'global';
             leagueUnsubscribers.forEach(u => u());
             leagueUnsubscribers = [];
             globalMatchUnsubscribers.forEach(u => u());
@@ -4012,7 +4212,8 @@
             if (comps.includes('CL')) defaultRounds.CL = parseInt(document.getElementById('createClRounds')?.value || 2);
             if (comps.includes('WC')) defaultRounds.WC = parseInt(document.getElementById('createWcRounds')?.value || 2);
 
-            const joinMode = document.querySelector('input[name="joinMode"]:checked').value;
+            const joinMode     = document.querySelector('input[name="joinMode"]:checked').value;
+            const createDlMode = document.querySelector('input[name="createDeadlineMode"]:checked')?.value || 'global';
             const btn = document.getElementById('createBtn');
             btn.disabled = true;
             btn.textContent = '⏳ Skapar liga...';
@@ -4040,7 +4241,7 @@
                     info: {
                         name, createdAt: Date.now(), createdBy: creatorName,
                         joinMode, competitions: comps, status: 'active',
-                        adminUID: user.uid, defaultRounds
+                        adminUID: user.uid, defaultRounds, deadlineMode: createDlMode
                     },
                     members: {
                         [user.uid]: { name: creatorName, email: effectiveEmail, joinedAt: Date.now() }

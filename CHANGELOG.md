@@ -1,5 +1,19 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-13 – Deadline-system + bugfixar
+
+### Nytt
+- Tre deadline-lägen: Globalt / Omgång för omgång / Match för match
+- Väljs vid skapande av liga och kan ändras i admin-panelen
+- Dialog vid inladdning av matcher efter passerat spelstopp (3 val)
+- Andras tippningar döljs tills matchen faktiskt startat (ej bara vid spelstopp)
+
+### Bugfixar
+- PL grå i admin-panelen efter inladdning – fixat
+- CL visade 2 omgångar trots 1 laddad – fixat (räknar nu stages, ej labels)
+
+---
+
 ## 2026-03-13 – Rensning av tillfällig migreringskod
 
 ### Ändringar
