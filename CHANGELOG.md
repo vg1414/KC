@@ -1,5 +1,32 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-13 – Buggfixar och UI-förbättringar
+
+### Buggfixar
+- Matcher förladdades från fel liga – `setupGlobalMatchListeners` lyssnar nu bara på ligans egna tävlingar
+- Raderade ligor visades fortfarande i liga-switchern – filtreras nu bort och rensas från `userLeagues`
+- Allsvenskan-matcher saknade tider – `strTimestamp` (UTC) konverteras nu till svensk tid via `Intl.DateTimeFormat` med `Europe/Stockholm`
+- Datum skrivs nu alltid över vid omladdning av matcher (inte bara resultat)
+
+### UI
+- Admin "Ladda matcher": en knapp för alla tävlingar istället för en per liga
+- Stepper-design (−/+) för antal omgångar per tävling
+- Grid-layout så spinnarna är lodrätt linjerade
+- "omgångar" och "(ej laddad)" synligare färg
+
+## 2026-03-13 – Allsvenskan (Session B)
+
+### Nytt
+- Allsvenskan som ny tävlingstyp via TheSportsDB API (gratis, ingen CORS-proxy)
+- `fetchAllsvenskanMatches(rounds)` – hämtar kommande Allsvenskan-omgångar
+- `fetchAllsvenskanResults(pendingMatches)` – hämtar resultat från TheSportsDB
+- Allsvenskan-checkbox + omgångsinput i skapningsformuläret
+- Allsvenskan-rad i admin-panelens "Ladda matcher"-sektion
+- Allsvenskan-deadline-stöd (nyckel: `ALLSVENSKAN`)
+- Allsvenskan-badge i liga-header (grön: `#4ade80`)
+- `loadMatchesForComp` routar ALLSVENSKAN till rätt API
+- Ligor med enbart Allsvenskan kräver ingen football-data.org API-nyckel
+
 ## 2026-03-13 – Liga-switcher, FAQ på landningssida, admin kan byta spelarnamn, UI-förbättringar
 
 ### Nytt

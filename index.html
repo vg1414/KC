@@ -338,6 +338,7 @@
         .comp-badge-pl { background: rgba(59,130,246,.15);  color: #93c5fd; }
         .comp-badge-cl { background: rgba(139,92,246,.15);  color: #c4b5fd; }
         .comp-badge-wc { background: rgba(240,180,41,.15);  color: #f0b429; }
+        .comp-badge-allsvenskan { background: rgba(0,100,30,.15); color: #4ade80; }
 
         /* ── Liga-header (i login-vyn) ── */
         .league-header {
@@ -821,6 +822,8 @@
         }
         .score-input::-webkit-outer-spin-button,
         .score-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        #adminCompRows input[type=number]::-webkit-outer-spin-button,
+        #adminCompRows input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .score-input:focus { outline: none; border-color: #d4930a; background: #fffbeb; box-shadow: 0 0 0 3px rgba(212,147,10,.12); }
         .score-input.has-val { border-color: #d4930a; color: #d4930a; background: #fffbeb; }
 
@@ -1212,6 +1215,7 @@
                     <label class="check-label"><input type="checkbox" id="compPL" onchange="window.updateCreateRounds()"> ⚽ Premier League</label>
                     <label class="check-label"><input type="checkbox" id="compCL" onchange="window.updateCreateRounds()"> 🏆 Champions League</label>
                     <label class="check-label"><input type="checkbox" id="compWC" onchange="window.updateCreateRounds()"> 🌍 VM (Världsmästerskapet)</label>
+                    <label class="check-label"><input type="checkbox" id="compALLSVENSKAN" onchange="window.updateCreateRounds()"> 🇸🇪 Allsvenskan</label>
                 </div>
             </div>
 
@@ -1232,6 +1236,11 @@
                     <div id="createWcRoundsWrap" style="display:none;align-items:center;gap:10px;">
                         <label style="font-size:.82em;color:#8896aa;width:160px;">🌍 VM</label>
                         <input type="number" id="createWcRounds" value="2" min="0" max="10"
+                            style="background:#0a0c10;border:1px solid #1e2535;border-radius:10px;padding:10px 14px;color:#e8edf5;font-family:'DM Sans',sans-serif;font-size:1em;width:80px;outline:none;">
+                    </div>
+                    <div id="createAllsvenskanRoundsWrap" style="display:none;align-items:center;gap:10px;">
+                        <label style="font-size:.82em;color:#8896aa;width:160px;">🇸🇪 Allsvenskan</label>
+                        <input type="number" id="createAllsvenskanRounds" value="3" min="1" max="30"
                             style="background:#0a0c10;border:1px solid #1e2535;border-radius:10px;padding:10px 14px;color:#e8edf5;font-family:'DM Sans',sans-serif;font-size:1em;width:80px;outline:none;">
                     </div>
                 </div>
@@ -1676,7 +1685,7 @@
                     </div>
                     <div class="admin-section-body">
                         <div id="adminCompRows"></div>
-                        <button class="btn-admin btn-admin-green" style="margin-top:6px;" onclick="window.adminLoadAllMatches()">📥 Hämta alla tävlingar</button>
+                        <button class="btn-admin btn-admin-green" style="margin-top:10px;width:100%;" onclick="window.adminLoadAllMatches()">📥 Ladda matcher</button>
                         <div class="admin-log" id="adminLoadLog"></div>
                     </div>
                 </div>
@@ -2296,6 +2305,7 @@
             // perRound
             const comp = match.competition;
             if (comp === 'CL') return match.stage ? `CL_${match.stage}` : 'CL';
+            if (comp === 'ALLSVENSKAN') return 'ALLSVENSKAN';
             return sanitizeDeadlineKey(match.league || comp);
         }
 
@@ -2439,7 +2449,7 @@
             const badgesEl = document.getElementById('leagueCompBadges');
             if (badgesEl) {
                 badgesEl.innerHTML = '';
-                const labels = { PL: '⚽ PL', CL: '🏆 CL', WC: '🌍 VM' };
+                const labels = { PL: '⚽ PL', CL: '🏆 CL', WC: '🌍 VM', ALLSVENSKAN: '🇸🇪 Allsvenskan' };
                 (currentLeagueInfo.competitions || []).forEach(comp => {
                     const span = document.createElement('span');
                     span.className = `comp-badge comp-badge-${comp.toLowerCase()}`;
@@ -2625,8 +2635,8 @@
             globalMatchUnsubscribers.forEach(u => u());
             globalMatchUnsubscribers = [];
             const allCompMatches = {};
-            // Lyssna alltid på alla tävlingar så att admin kan ladda in valfri tävling i efterhand
-            const ALL_COMPS = ['PL', 'CL', 'WC'];
+            // Lyssna bara på ligans egna tävlingar
+            const ALL_COMPS = (comps && comps.length > 0) ? comps : ['PL', 'CL', 'WC'];
             ALL_COMPS.forEach(comp => {
                 const season = getSeasonForComp(comp);
                 const path = `globalMatches/${comp}/${season}`;
@@ -3122,6 +3132,7 @@
                 'PL': 'Premier League',
                 'CL': 'Champions League',
                 'WC': 'VM',
+                'ALLSVENSKAN': 'Allsvenskan',
                 'CL_LEAGUE_PHASE': 'CL – Ligafas',
                 'CL_KNOCKOUT_ROUND_PLAY_OFF': 'CL – Playoff',
                 'CL_ROUND_OF_16': 'CL – Åttondelsfinaler',
@@ -3599,12 +3610,102 @@
             return { converted, labels };
         }
 
+        // ─── Allsvenskan: hämta matcher (TheSportsDB) ────────────────────────────
+        async function fetchAllsvenskanMatches(rounds) {
+            adminLog('🔗 Hämtar Allsvenskan från TheSportsDB...');
+            const resp = await fetch('https://www.thesportsdb.com/api/v1/json/3/eventsseason.php?id=4347&s=2026');
+            if (!resp.ok) throw new Error(`TheSportsDB ${resp.status}`);
+            const data = await resp.json();
+            const upcoming = (data.events || [])
+                .filter(e => e.strStatus === 'Not Started')
+                .sort((a, b) => new Date(a.strTimestamp) - new Date(b.strTimestamp));
+
+            const byRound = {};
+            upcoming.forEach(e => {
+                const r = e.intRound || '?';
+                if (!byRound[r]) byRound[r] = [];
+                byRound[r].push(e);
+            });
+
+            const roundKeys = Object.keys(byRound)
+                .sort((a, b) => Number(a) - Number(b))
+                .slice(0, rounds);
+
+            const converted = [], labels = [];
+            roundKeys.forEach(roundKey => {
+                const label = `Allsvenskan – Omgång ${roundKey}`;
+                labels.push(label);
+                byRound[roundKey].forEach(e => {
+                    // strTimeLocal/dateEventLocal är alltid null för Allsvenskan
+                    // Konvertera strTimestamp (UTC) till svensk tid via IANA-tidszon (hanterar CET/CEST automatiskt)
+                    let dateStr, timeStr;
+                    if (e.strTimestamp) {
+                        const utcDate = new Date(e.strTimestamp + 'Z');
+                        const fmt = new Intl.DateTimeFormat('sv-SE', {
+                            timeZone: 'Europe/Stockholm',
+                            year: 'numeric', month: '2-digit', day: '2-digit',
+                            hour: '2-digit', minute: '2-digit', hour12: false
+                        });
+                        const parts = fmt.formatToParts(utcDate);
+                        const p = {};
+                        parts.forEach(({ type, value }) => { p[type] = value; });
+                        dateStr = `${p.year}-${p.month}-${p.day}`;
+                        timeStr = `${p.hour}:${p.minute}`;
+                    } else {
+                        dateStr = e.dateEventLocal || e.strTimestamp?.slice(0, 10) || '?';
+                        timeStr = '00:00';
+                    }
+                    converted.push({
+                        id: String(e.idEvent),
+                        homeTeam: e.strHomeTeam,
+                        awayTeam: e.strAwayTeam,
+                        league: label,
+                        date: `${dateStr}T${timeStr}`,
+                        actualOutcome: null, actualScore: null,
+                        apiMatchId: e.idEvent,
+                        competition: 'ALLSVENSKAN',
+                        stage: null,
+                        setBy: null, setAt: null
+                    });
+                });
+            });
+            adminLog(`✅ ${converted.length} Allsvenskan-matcher hämtade`);
+            return { converted, labels };
+        }
+
+        // ─── Allsvenskan: hämta resultat (TheSportsDB) ───────────────────────────
+        async function fetchAllsvenskanResults(pendingMatches) {
+            if (!pendingMatches.length) return 0;
+            fetchLog('🔗 Hämtar Allsvenskan-resultat...');
+            const resp = await fetch('https://www.thesportsdb.com/api/v1/json/3/eventsseason.php?id=4347&s=2026');
+            if (!resp.ok) { fetchLog(`⚠️ TheSportsDB ${resp.status}`); return 0; }
+            const data = await resp.json();
+            const finished = (data.events || []).filter(e => e.strStatus === 'Match Finished');
+            let found = 0;
+            const updates = {};
+            for (const match of pendingMatches) {
+                const game = finished.find(e => String(e.idEvent) === String(match.id));
+                if (!game) continue;
+                const h = parseInt(game.intHomeScore), a = parseInt(game.intAwayScore);
+                if (isNaN(h) || isNaN(a)) continue;
+                const outcome = h > a ? '1' : h < a ? '2' : 'X';
+                const updated = { ...match, actualOutcome: outcome, actualScore: `${h}-${a}`,
+                                  setBy: 'API', setAt: new Date().toISOString() };
+                const { id: _id, ...matchData } = updated;
+                updates[`globalMatches/ALLSVENSKAN/2026/${match.id}`] = matchData;
+                fetchLog(`✅ ${match.homeTeam} ${h}-${a} ${match.awayTeam}`);
+                found++;
+            }
+            if (found > 0) await update(ref(database), updates);
+            return found;
+        }
+
         // ─── Ladda matcher ────────────────────────────────────────────────────────
         function renderAdminCompRows() {
             const container = document.getElementById('adminCompRows');
             if (!container) return;
-            const ALL_COMPS = ['PL', 'CL', 'WC'];
-            const compNames = { PL: '⚽ Premier League', CL: '🏆 Champions League', WC: '🌍 VM' };
+            const ALL_COMPS = ['PL', 'CL', 'WC', 'ALLSVENSKAN'];
+            const compNames = { PL: '⚽ Premier League', CL: '🏆 Champions League', WC: '🌍 VM', ALLSVENSKAN: '🇸🇪 Allsvenskan' };
             container.innerHTML = ALL_COMPS.map(comp => {
                 // Räkna faktiskt laddade omgångar (unika stages för CL, unika league-label för PL/WC)
                 const loadedRounds = comp === 'CL'
@@ -3612,11 +3713,14 @@
                     : new Set(matches.filter(m => m.competition === comp).map(m => m.league)).size;
                 const isActive = loadedRounds > 0;
                 return `
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
-                    <span style="flex:1;min-width:140px;font-weight:600;font-size:.88em;color:${isActive ? '#d0d6e0' : '#6b7280'};">${compNames[comp]}${isActive ? '' : ' <span style="font-size:.75em;color:#6b7280;">(ej laddad)</span>'}</span>
-                    <input type="number" id="adminRounds_${comp}" value="${loadedRounds}" min="0" max="30" style="width:52px;padding:5px 8px;border-radius:6px;border:1px solid rgba(255,255,255,.15);background:#1e2535;color:#d0d6e0;font-size:.9em;text-align:center;">
-                    <span style="font-size:.78em;color:#9ca3af;white-space:nowrap;">omgångar</span>
-                    <button class="btn-admin btn-admin-primary" style="padding:5px 14px;font-size:.85em;" onclick="window.adminLoadComp('${comp}')">Hämta</button>
+                <div style="display:grid;grid-template-columns:140px auto 1fr;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);">
+                    <span style="white-space:nowrap;font-weight:600;font-size:.88em;color:${isActive ? '#d0d6e0' : '#9ca3af'};">${compNames[comp]}</span>
+                    <div style="display:flex;align-items:center;background:#0d1017;border:1px solid rgba(255,255,255,.09);border-radius:7px;overflow:hidden;">
+                        <button onclick="(function(b){var i=b.parentElement.querySelector('input');i.value=Math.max(0,parseInt(i.value||0)-1);})(this)" style="width:26px;height:26px;background:none;border:none;color:#9ca3af;font-size:1em;cursor:pointer;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.color='#f0b429'" onmouseout="this.style.color='#9ca3af'">−</button>
+                        <input type="number" id="adminRounds_${comp}" value="${loadedRounds}" min="0" max="30" style="width:28px;background:none;border:none;color:#f0b429;font-size:.86em;font-weight:700;text-align:center;outline:none;-moz-appearance:textfield;">
+                        <button onclick="(function(b){var i=b.parentElement.querySelector('input');i.value=Math.min(30,parseInt(i.value||0)+1);})(this)" style="width:26px;height:26px;background:none;border:none;color:#9ca3af;font-size:1em;cursor:pointer;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.color='#f0b429'" onmouseout="this.style.color='#9ca3af'">+</button>
+                    </div>
+                    <span style="font-size:.78em;color:#9ca3af;white-space:nowrap;">omgångar${isActive ? '' : ' (ej laddad)'}</span>
                 </div>`;
             }).join('');
         }
@@ -3632,13 +3736,16 @@
                 adminLog(`🗑️ ${comp}: alla pending-matcher borttagna`);
                 return { count: 0, converted: [] };
             }
-            const result = await fetchCompetitionMatches(comp, rounds);
+            const result = comp === 'ALLSVENSKAN'
+                ? await fetchAllsvenskanMatches(rounds)
+                : await fetchCompetitionMatches(comp, rounds);
             const matchesToLoad = result.converted;
             if (matchesToLoad.length === 0) { adminLog(`⚠️ Inga ${comp}-matcher hittades.`); return { count: 0, converted: [] }; }
             const existingMap = {};
             matches.forEach(m => { existingMap[m.id] = m; });
             const newMatches = matchesToLoad.map(m => {
                 const ex = existingMap[m.id];
+                // Bevara bara resultat från existerande matcher – datum/tid skrivs alltid över med ny data
                 return ex ? { ...m, actualOutcome: ex.actualOutcome ?? null, actualScore: ex.actualScore ?? null, setBy: ex.setBy ?? null, setAt: ex.setAt ?? null } : m;
             });
             const updates = {};
@@ -3660,12 +3767,14 @@
 
         window.adminLoadComp = async function(comp) {
             if (!isAdmin()) return;
-            if (!plApiKey) {
-                try { const s = await get(ref(database, 'config/apikey')); plApiKey = s.val() || ''; } catch(e) {}
+            if (comp !== 'ALLSVENSKAN') {
+                if (!plApiKey) {
+                    try { const s = await get(ref(database, 'config/apikey')); plApiKey = s.val() || ''; } catch(e) {}
+                }
+                if (!plApiKey) { showAppMsg('❌ Ingen API-nyckel sparad.', 'error'); return; }
             }
-            if (!plApiKey) { showAppMsg('❌ Ingen API-nyckel sparad.', 'error'); return; }
             const rounds = parseInt(document.getElementById(`adminRounds_${comp}`)?.value || 2);
-            const compNames = { PL: 'Premier League', CL: 'Champions League', WC: 'VM' };
+            const compNames = { PL: 'Premier League', CL: 'Champions League', WC: 'VM', ALLSVENSKAN: 'Allsvenskan' };
             if (!confirm(`Hämta matcher från ${compNames[comp] || comp}?\nNya matcher läggs till. Befintliga resultat bevaras.`)) return;
             const logEl = document.getElementById('adminLoadLog');
             if (logEl) logEl.textContent = '';
@@ -3684,11 +3793,14 @@
 
         window.adminLoadAllMatches = async function() {
             if (!isAdmin()) return;
-            if (!plApiKey) {
-                try { const s = await get(ref(database, 'config/apikey')); plApiKey = s.val() || ''; } catch(e) {}
-            }
-            if (!plApiKey) { showAppMsg('❌ Ingen API-nyckel sparad.', 'error'); return; }
             const comps = currentLeagueInfo.competitions || [];
+            const needsApiKey = comps.some(c => c !== 'ALLSVENSKAN');
+            if (needsApiKey) {
+                if (!plApiKey) {
+                    try { const s = await get(ref(database, 'config/apikey')); plApiKey = s.val() || ''; } catch(e) {}
+                }
+                if (!plApiKey) { showAppMsg('❌ Ingen API-nyckel sparad.', 'error'); return; }
+            }
             if (!confirm(`Hämta matcher för alla tävlingar (${comps.join(', ')})?`)) return;
             const logEl = document.getElementById('adminLoadLog');
             if (logEl) logEl.textContent = '';
@@ -3740,8 +3852,16 @@
             fetchLog(`⚽ Kollar ${pendingMatches.length} matcher...`);
             let foundResults = 0;
 
+            // Dela upp: Allsvenskan hanteras via TheSportsDB, övriga via football-data.org
+            const allsvenskanPending = pendingMatches.filter(m => m.competition === 'ALLSVENSKAN');
+            const fdoPending = pendingMatches.filter(m => m.competition !== 'ALLSVENSKAN');
+
+            if (allsvenskanPending.length > 0) {
+                foundResults += await fetchAllsvenskanResults(allsvenskanPending);
+            }
+
             const groups = {};
-            pendingMatches.forEach(match => {
+            fdoPending.forEach(match => {
                 const matchDate = match.date.split('T')[0];
                 const comp = match.competition || (match.id?.startsWith('cl_') ? 'CL' : match.id?.startsWith('wc_') ? 'WC' : 'PL');
                 const key = `${comp}_${matchDate}`;
@@ -3794,7 +3914,7 @@
 
             const resultUpdates = {};
             matchesCopy
-                .filter(m => m.setBy === 'API')
+                .filter(m => m.setBy === 'API' && m.competition !== 'ALLSVENSKAN')
                 .forEach(m => {
                     const s = getSeasonForComp(m.competition);
                     const { id, ...rest } = m;
@@ -4094,12 +4214,12 @@
         // Godkännande-funktionerna borttagna – spelare läggs direkt till members i join-flödet
 
         // ─── Deadlines ────────────────────────────────────────────────────────────
-        const ALL_DEADLINE_KEYS = ['PL','CL_LEAGUE_PHASE','CL_KNOCKOUT_ROUND_PLAY_OFF','CL_LAST_16','CL_ROUND_OF_16','CL_QUARTER_FINALS','CL_SEMI_FINALS','CL_FINAL','WC'];
+        const ALL_DEADLINE_KEYS = ['PL','CL_LEAGUE_PHASE','CL_KNOCKOUT_ROUND_PLAY_OFF','CL_LAST_16','CL_ROUND_OF_16','CL_QUARTER_FINALS','CL_SEMI_FINALS','CL_FINAL','WC','ALLSVENSKAN'];
         const DEADLINE_LABELS_FULL = {
             'PL': 'Premier League', 'CL_LEAGUE_PHASE': 'CL – Ligafas',
             'CL_KNOCKOUT_ROUND_PLAY_OFF': 'CL – Playoff', 'CL_LAST_16': 'CL – Åttondelsfinaler', 'CL_ROUND_OF_16': 'CL – Åttondelsfinaler',
             'CL_QUARTER_FINALS': 'CL – Kvartsfinaler', 'CL_SEMI_FINALS': 'CL – Semifinaler',
-            'CL_FINAL': 'CL – Final', 'WC': 'VM'
+            'CL_FINAL': 'CL – Final', 'WC': 'VM', 'ALLSVENSKAN': 'Allsvenskan'
         };
 
         function renderAdminDeadlines() {
@@ -4366,15 +4486,18 @@
             const pl = document.getElementById('compPL')?.checked;
             const cl = document.getElementById('compCL')?.checked;
             const wc = document.getElementById('compWC')?.checked;
-            const anyChecked = pl || cl || wc;
+            const sv = document.getElementById('compALLSVENSKAN')?.checked;
+            const anyChecked = pl || cl || wc || sv;
             const section = document.getElementById('createRoundsSection');
             if (section) section.style.display = anyChecked ? '' : 'none';
             const plW = document.getElementById('createPlRoundsWrap');
             const clW = document.getElementById('createClRoundsWrap');
             const wcW = document.getElementById('createWcRoundsWrap');
+            const svW = document.getElementById('createAllsvenskanRoundsWrap');
             if (plW) plW.style.display = pl ? 'flex' : 'none';
             if (clW) clW.style.display = cl ? 'flex' : 'none';
             if (wcW) wcW.style.display = wc ? 'flex' : 'none';
+            if (svW) svW.style.display = sv ? 'flex' : 'none';
         };
 
         // ─── Auto-ladda matcher (ny liga med defaultRounds) ───────────────────────
@@ -4382,10 +4505,13 @@
             if (!isAdmin()) return;
             const rounds = currentLeagueInfo.defaultRounds || {};
             const comps  = currentLeagueInfo.competitions || [];
-            if (!plApiKey) {
-                try { const s = await get(ref(database, 'config/apikey')); plApiKey = s.val() || ''; } catch(e) {}
+            const needsApiKey = comps.some(c => c !== 'ALLSVENSKAN');
+            if (needsApiKey) {
+                if (!plApiKey) {
+                    try { const s = await get(ref(database, 'config/apikey')); plApiKey = s.val() || ''; } catch(e) {}
+                }
+                if (!plApiKey) { showAppMsg('⚠️ Ingen API-nyckel – matcher kunde inte hämtas.', 'error'); return; }
             }
-            if (!plApiKey) { showAppMsg('⚠️ Ingen API-nyckel – matcher kunde inte hämtas.', 'error'); return; }
             try {
                 let total = 0;
                 for (const comp of comps) {
@@ -4618,7 +4744,22 @@
                     return;
                 }
                 const entries = Object.entries(snap.val());
-                dropdown.innerHTML = entries.map(([code, info]) => `
+                // Filtrera bort raderade ligor – kolla att de fortfarande finns i Firebase
+                const existChecks = await Promise.all(entries.map(([code]) =>
+                    get(ref(database, `leagues/${code}/info`)).then(s => ({ code, exists: s.exists() }))
+                ));
+                // Ta bort raderade ligor från userLeagues
+                for (const { code, exists } of existChecks) {
+                    if (!exists) {
+                        set(ref(database, `userLeagues/${currentAuthUser.uid}/${code}`), null).catch(() => {});
+                    }
+                }
+                const validEntries = entries.filter(([code]) => existChecks.find(c => c.code === code)?.exists);
+                if (validEntries.length === 0) {
+                    dropdown.innerHTML = '<div style="color:#9ca3af;font-size:.85em;padding:8px 12px;">Inga andra ligor</div>';
+                    return;
+                }
+                dropdown.innerHTML = validEntries.map(([code, info]) => `
                     <button onclick="window.switchLeague('${code}')" class="${code === currentLeagueCode ? 'active' : ''}">
                         <span>${info.name || code}${info.role === 'admin' ? '<span style="color:#f0b429;font-size:.75em;margin-left:5px;">(Admin)</span>' : ''}</span>
                         <span class="ls-code">${code}</span>
@@ -4695,6 +4836,7 @@
             if (document.getElementById('compPL').checked) comps.push('PL');
             if (document.getElementById('compCL').checked) comps.push('CL');
             if (document.getElementById('compWC').checked) comps.push('WC');
+            if (document.getElementById('compALLSVENSKAN')?.checked) comps.push('ALLSVENSKAN');
 
             if (comps.length === 0) { showStatus('createStatus', '❌ Välj minst en tävling', 'error'); return; }
 
@@ -4702,6 +4844,7 @@
             if (comps.includes('PL')) defaultRounds.PL = parseInt(document.getElementById('createPlRounds')?.value || 2);
             if (comps.includes('CL')) defaultRounds.CL = parseInt(document.getElementById('createClRounds')?.value || 2);
             if (comps.includes('WC')) defaultRounds.WC = parseInt(document.getElementById('createWcRounds')?.value || 2);
+            if (comps.includes('ALLSVENSKAN')) defaultRounds.ALLSVENSKAN = parseInt(document.getElementById('createAllsvenskanRounds')?.value || 3);
 
             const joinMode     = document.querySelector('input[name="joinMode"]:checked').value;
             const createDlMode = document.querySelector('input[name="createDeadlineMode"]:checked')?.value || 'global';
