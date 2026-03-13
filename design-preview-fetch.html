@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hämta resultat – Designförslag</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0a0c10;
+    font-family: 'DM Sans', sans-serif;
+    color: #d0d6e0;
+    padding: 32px 20px;
+    min-height: 100vh;
+  }
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    color: #f0b429;
+    font-size: 2em;
+    letter-spacing: 3px;
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    text-align: center;
+    color: #5a6380;
+    font-size: .85em;
+    margin-bottom: 40px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 28px;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  .card {
+    background: #1a1d28;
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .card-label {
+    text-align: center;
+    font-size: .75em;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: #5a6380;
+    padding: 12px;
+    background: #111318;
+    border-bottom: 1px solid rgba(255,255,255,.05);
+  }
+  .card-inner { padding: 20px; }
+
+  /* ─── FÖRSLAG A: Enkel & ren ─── */
+  .a-section {
+    background: #1e2535;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.08);
+  }
+  .a-header {
+    background: #1e2535;
+    padding: 12px 16px;
+    font-weight: 700;
+    font-size: .88em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+  .a-body {
+    padding: 16px;
+    background: #252a38;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .a-last-fetch {
+    font-size: .78em;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .a-last-fetch::before {
+    content: '';
+    display: inline-block;
+    width: 6px; height: 6px;
+    background: #4ade80;
+    border-radius: 50%;
+    box-shadow: 0 0 6px #4ade80;
+  }
+  .a-btn {
+    background: #f0b429;
+    color: #0a0c10;
+    border: none;
+    border-radius: 8px;
+    padding: 11px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .88em;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    transition: background .15s;
+  }
+  .a-btn:hover { background: #f7c84a; }
+  .a-log {
+    background: #0a0c10;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: monospace;
+    font-size: .75em;
+    color: #4ade80;
+    min-height: 48px;
+  }
+  .a-log-line { opacity: .6; }
+  .a-log-line.ok { color: #4ade80; opacity: 1; }
+
+  /* ─── FÖRSLAG B: Dashboard-kort ─── */
+  .b-section {
+    background: #1e2535;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.08);
+  }
+  .b-header {
+    background: #1e2535;
+    padding: 12px 16px;
+    font-weight: 700;
+    font-size: .88em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+  .b-body { padding: 16px; background: #252a38; }
+  .b-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .b-stat {
+    background: #1e2535;
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,.06);
+  }
+  .b-stat-value {
+    font-size: 1.4em;
+    font-weight: 800;
+    color: #f0b429;
+    line-height: 1;
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 1px;
+  }
+  .b-stat-label {
+    font-size: .68em;
+    color: #5a6380;
+    margin-top: 3px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+  }
+  .b-btn {
+    background: linear-gradient(135deg, #f0b429, #e09010);
+    color: #0a0c10;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .88em;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    box-shadow: 0 4px 14px rgba(240,180,41,.25);
+    transition: all .15s;
+  }
+  .b-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(240,180,41,.35); }
+  .b-log {
+    background: #0a0c10;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: monospace;
+    font-size: .75em;
+    color: #4ade80;
+    margin-top: 12px;
+    min-height: 48px;
+  }
+
+  /* ─── FÖRSLAG C: Minimalistisk med status-strip ─── */
+  .c-section {
+    background: #1e2535;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.08);
+  }
+  .c-header {
+    background: #1e2535;
+    padding: 12px 16px;
+    font-weight: 700;
+    font-size: .88em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+  .c-body { background: #252a38; }
+  .c-status-strip {
+    background: rgba(74,222,128,.06);
+    border-bottom: 1px solid rgba(74,222,128,.12);
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .78em;
+    color: #4ade80;
+  }
+  .c-dot {
+    width: 7px; height: 7px;
+    background: #4ade80;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #4ade80;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .4; }
+  }
+  .c-content { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+  .c-btn {
+    background: rgba(240,180,41,.12);
+    color: #f0b429;
+    border: 1px solid rgba(240,180,41,.25);
+    border-radius: 8px;
+    padding: 11px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .88em;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    transition: all .15s;
+  }
+  .c-btn:hover { background: rgba(240,180,41,.2); border-color: rgba(240,180,41,.4); }
+  .c-log {
+    background: #0a0c10;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: monospace;
+    font-size: .75em;
+    color: #4ade80;
+    min-height: 48px;
+  }
+
+  .spin { display: inline-block; animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .log-line { margin-bottom: 2px; }
+  .log-ok { color: #4ade80; }
+  .log-info { color: #93c5fd; }
+  .log-warn { color: #fbbf24; }
+</style>
+</head>
+<body>
+
+<h1>Krokens Copa</h1>
+<p class="subtitle">Designförslag – "Hämta resultat"-sektionen under Admin</p>
+
+<div class="grid">
+
+  <!-- FÖRSLAG A -->
+  <div class="card">
+    <div class="card-label">Förslag A — Enkel &amp; ren</div>
+    <div class="card-inner">
+      <div class="a-section">
+        <div class="a-header">
+          ⚽ Hämta resultat <span>▼</span>
+        </div>
+        <div class="a-body">
+          <div class="a-last-fetch">Senast hämtat: 13 mar 21:45</div>
+          <button class="a-btn">
+            <span>🔄</span> Hämta resultat nu
+          </button>
+          <div class="a-log">
+            <div class="log-line log-ok">✓ Hämtade 3 resultat (Omg. 28)</div>
+            <div class="log-line log-info">→ Arsenal 2–1 Chelsea</div>
+            <div class="log-line log-info">→ City 3–0 Liverpool</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FÖRSLAG B -->
+  <div class="card">
+    <div class="card-label">Förslag B — Dashboard-kort</div>
+    <div class="card-inner">
+      <div class="b-section">
+        <div class="b-header">
+          ⚽ Hämta resultat <span>▼</span>
+        </div>
+        <div class="b-body">
+          <div class="b-stats">
+            <div class="b-stat">
+              <div class="b-stat-value">3</div>
+              <div class="b-stat-label">Nya resultat</div>
+            </div>
+            <div class="b-stat">
+              <div class="b-stat-value">21:45</div>
+              <div class="b-stat-label">Senast hämtat</div>
+            </div>
+          </div>
+          <button class="b-btn">
+            🔄 &nbsp;Hämta resultat nu
+          </button>
+          <div class="b-log">
+            <div class="log-line log-ok">✓ Arsenal 2–1 Chelsea → poäng räknade</div>
+            <div class="log-line log-ok">✓ City 3–0 Liverpool → poäng räknade</div>
+            <div class="log-line log-warn">⚠ PSG vs Real – ej avslutad</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FÖRSLAG C -->
+  <div class="card">
+    <div class="card-label">Förslag C — Minimalistisk</div>
+    <div class="card-inner">
+      <div class="c-section">
+        <div class="c-header">
+          ⚽ Hämta resultat <span>▼</span>
+        </div>
+        <div class="c-body">
+          <div class="c-status-strip">
+            <div class="c-dot"></div>
+            Senast hämtat: 13 mar 21:45
+          </div>
+          <div class="c-content">
+            <button class="c-btn">
+              🔄 &nbsp;Hämta resultat nu
+            </button>
+            <div class="c-log">
+              <div class="log-line log-ok">✓ 3 resultat hämtade (Omg. 28)</div>
+              <div class="log-line log-info">→ Uppdaterade 12 tipsrader</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<p style="text-align:center;margin-top:48px;font-size:.7em;color:#2a2e3d;">Made by: David Hefner</p>
+</body>
+</html>

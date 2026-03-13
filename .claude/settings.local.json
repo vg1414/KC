@@ -11,7 +11,8 @@
       "Bash(ls:*)",
       "mcp__plugin_firebase_firebase__auth_get_users",
       "mcp__plugin_firebase_firebase__realtimedatabase_get_data",
-      "mcp__plugin_firebase_firebase__realtimedatabase_set_data"
+      "mcp__plugin_firebase_firebase__realtimedatabase_set_data",
+      "WebFetch(domain:www.thesportsdb.com)"
     ]
   },
   "outputStyle": "default"

@@ -147,8 +147,9 @@ Kopiera och anpassa dessa delar (byt hårdkodade sökvägar mot `/leagues/{kod}/
 | Session 11 | ✅ Klar | 2026-03-08 | Tippnings-UX (eget tipp synligt, deadline-chips per grupp, Tippa-flik döljs), Mina ligor via Firebase userLeagues-index, pName-bug fixad |
 | Session 12 | ✅ Klar | 2026-03-08 | Tippa-korten bytte till Design 4 (vita kort, ljust tema), bakgrund Cool Slate #d8e0eb – design justeras vid ett senare tillfälle |
 | Session A  | ✅ Klar | 2026-03-13 | Firebase-omstrukturering: matcher flyttade från leagues/{code}/matches till globalMatches/{comp}/{season}/{matchId}. getSeasonForComp() tillagd, setupGlobalMatchListeners() tillagd, alla skriv-operationer uppdaterade. |
+| Session B  | ✅ Klar | 2026-03-13 | Allsvenskan (TheSportsDB): fetchAllsvenskanMatches, fetchAllsvenskanResults, loadMatchesForComp-branch, admin-panel, skapningsformulär, deadline-stöd, CSS-badge. Inga API-nyckelkrav för ALLSVENSKAN-ligor. |
 
-**Planerat (framtida session):** Session B – Allsvenskan (TheSportsDB). Superadmin-vy med alla användare och vilka ligor de spelar i/administrerar. Design-justering: finjustera Tippa-fliken och bakgrund ytterligare. Admin-panel "Ladda matcher"-sektionen (per-tävling-rader) behöver visuell polish.
+**Planerat (framtida session):** Superadmin-vy med alla användare och vilka ligor de spelar i/administrerar. Design-justering: finjustera Tippa-fliken och bakgrund ytterligare. Admin-panel "Ladda matcher"-sektionen (per-tävling-rader) behöver visuell polish.
 
 ---
 
@@ -301,8 +302,8 @@ Dessa kräver att du är inloggad på Firebase/GitHub:
 - [x] Skapa GitHub-repo `KC` under `vg1414` ✅ 2026-03-03
 
 ### Innan Session 6
-- [ ] Firebase Console → KrokensCopa-Multi → Authentication → Sign-in method → aktivera **Email/Password**
+- [x] Firebase Console → KrokensCopa-Multi → Authentication → Sign-in method → aktivera **Email/Password**
 
 ### Inför deploy (Session 4)
-- [ ] Aktivera GitHub Pages på repot (Settings → Pages → branch: main, folder: root)
+- [x] Aktivera GitHub Pages på repot (Settings → Pages → branch: main, folder: root)
 

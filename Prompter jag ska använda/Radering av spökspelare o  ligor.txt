@@ -1,0 +1,22 @@
+Hej Claude! Jag behöver hjälp att uppdatera koden i min webbapp "Krokens Copa". Appen är byggd med Vanilla JS och HTML i en enda index.html-fil, och använder Firebase Realtime Database (v9/v10 modulärt SDK).
+
+Mina nuvarande problem:
+
+Mina säkerhetsregler kräver ".write": "auth != null". Alla användare (inklusive jag som admin) har mail/lösenord-konton i Firebase Auth, men jag har ingen inloggningsfunktion i min viewSuperAdmin för att låsa upp raderingsrättigheterna.
+
+När jag raderar en liga idag blir det kvar "spökdata" (herrelösa noder). Eftersom databasen troligtvis är utspridd måste raderingen ske på flera sökvägar samtidigt.
+
+Jag behöver att du skriver HTML- och JS-koden för följande tre funktioner som ska in i min viewSuperAdmin:
+
+1. Auth-inloggning i Super Admin-vyn:
+Skapa ett litet formulär där jag kan skriva in min admin-mail och lösenord. Använd signInWithEmailAndPassword från firebase/auth. När jag är inloggad ska inloggningsformuläret döljas och mina raderingsknappar ska aktiveras/visas.
+
+2. Uppdaterad "Deep Delete" (Multi-path update):
+Skriv om min raderingsfunktion (t.ex. superAdminPerformDelete). Den ska använda update(ref(db), updates) för att radera all data relaterad till en liga på en och samma gång (exempelvis sätta leagues/{code}, sessions/{code} och eventuella players/{code} till null).
+
+3. Ett verktyg för "Vårstädning" av gamla spöken:
+Skapa en knapp ("Rensa spökdata") som bara är tillgänglig när jag är inloggad. När jag klickar på den ska en funktion hämta hem databasen (eller valda delar) och skanna efter noder som blivit kvar trots att deras tillhörande liga är borta, eller noder som är helt tomma, och radera dem.
+
+Viktiga tekniska krav:
+
+Blanda INTE ihop med Firestore! Använd enbart funktioner för Firebase Realtime Database (getDatabase, ref, update, remove, get).

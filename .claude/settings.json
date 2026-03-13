@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \":*)",
+      "Bash(node:*)",
+      "WebFetch(domain:api.football-data.org)",
+      "Bash(curl -s \"https://api.football-data.org/v4/matches/552069\" -H \"X-Auth-Token: 406217531e18462e97f40aea2c744b8e\")",
+      "Bash(python -c \"import sys,json; data=json.load\\(sys.stdin\\); text=data[0][''''text'''']; obj=json.loads\\(text\\); print\\(list\\(obj.keys\\(\\)\\)\\)\")",
+      "Bash(python -c \"from PIL import Image; img = Image.open\\(''apple-touch-icon.png''\\); print\\(img.size\\)\")",
+      "Bash(curl -s \"https://www.thesportsdb.com/api/v1/json/3/eventsseason.php?id=4347&s=2026\")"
+    ]
+  }
+}

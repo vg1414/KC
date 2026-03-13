@@ -18,6 +18,19 @@
 
 ### Nytt
 - Allsvenskan som ny tävlingstyp via TheSportsDB API (gratis, ingen CORS-proxy)
+
+## 2026-03-13 – Firebase-omstrukturering (Session A)
+
+### Tekniska förbättringar
+- Matcher flyttade från `leagues/{code}/matches` till `globalMatches/{comp}/{season}/{matchId}` för bättre skalbarhet
+- `getSeasonForComp()`-funktion tillagd för att hämta aktuell säsong per tävling
+- `setupGlobalMatchListeners()` tillagd för att lyssna på globala matcher
+- Alla skriv-operationer uppdaterade för den nya datastrukturen
+
+### Dokumentation
+- Nya filer: `Fredag.md`, `OMSTRUKTURERING.md`, `OPTIMERING_FORSLAG.md`, `design-preview-fetch.html`
+- Ny mapp: `Prompter jag ska använda/`
+- Ny mapp: `uefa-champions-league-vector-logo-seeklogo/`
 - `fetchAllsvenskanMatches(rounds)` – hämtar kommande Allsvenskan-omgångar
 - `fetchAllsvenskanResults(pendingMatches)` – hämtar resultat från TheSportsDB
 - Allsvenskan-checkbox + omgångsinput i skapningsformuläret
