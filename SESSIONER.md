@@ -146,8 +146,9 @@ Kopiera och anpassa dessa delar (byt hårdkodade sökvägar mot `/leagues/{kod}/
 | Session 10 | ✅ Klar | 2026-03-07 | Buggfixar (inbjudningslänk, auth-fel, lösenordsåterställning), Regler-tab, mobiloptimering |
 | Session 11 | ✅ Klar | 2026-03-08 | Tippnings-UX (eget tipp synligt, deadline-chips per grupp, Tippa-flik döljs), Mina ligor via Firebase userLeagues-index, pName-bug fixad |
 | Session 12 | ✅ Klar | 2026-03-08 | Tippa-korten bytte till Design 4 (vita kort, ljust tema), bakgrund Cool Slate #d8e0eb – design justeras vid ett senare tillfälle |
+| Session A  | ✅ Klar | 2026-03-13 | Firebase-omstrukturering: matcher flyttade från leagues/{code}/matches till globalMatches/{comp}/{season}/{matchId}. getSeasonForComp() tillagd, setupGlobalMatchListeners() tillagd, alla skriv-operationer uppdaterade. |
 
-**Planerat (framtida session):** Superadmin-vy med alla användare och vilka ligor de spelar i/administrerar. Design-justering: finjustera Tippa-fliken och bakgrund ytterligare.
+**Planerat (framtida session):** Session B – Allsvenskan (TheSportsDB). Superadmin-vy med alla användare och vilka ligor de spelar i/administrerar. Design-justering: finjustera Tippa-fliken och bakgrund ytterligare. Admin-panel "Ladda matcher"-sektionen (per-tävling-rader) behöver visuell polish.
 
 ---
 

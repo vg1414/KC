@@ -1,5 +1,16 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-13 – Firebase-omstrukturering + buggfixar
+
+### Ändringar
+- Matcher flyttade från `leagues/{code}/matches` till delad `globalMatches/{comp}/{säsong}/{matchId}` – ett resultat slår igenom i alla ligor direkt
+- Ny funktion `getSeasonForComp()` och `setupGlobalMatchListeners()`
+- Admin-panel "Ladda matcher" ombyggd: varje tävling får egen rad med omgångs-input och Hämta-knapp (inga dropdowns)
+- "Ladda matcher"-sektionen synlig för alla liga-admins (inte bara superadmin)
+- Stöd för 0 omgångar – rensar befintliga pending-matcher för den tävlingen
+- Bugg fixad: Firebase accepterar inte `undefined` – null-värden filtreras nu bort vid skrivning
+- Gamla pending-matcher för en tävling rensas automatiskt vid omladdning
+
 ## 2026-03-14 – Byt CORS-proxy till Cloudflare Worker
 
 ### Ändringar

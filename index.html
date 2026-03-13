@@ -1047,12 +1047,12 @@
                 <input type="text" id="creatorName" placeholder="T.ex. Anna" maxlength="40" autocomplete="off">
             </div>
 
-            <div class="field">
+            <div class="field" id="creatorEmailField">
                 <label>Din e-post</label>
                 <input type="email" id="creatorEmail" placeholder="din@email.com" autocomplete="email">
             </div>
 
-            <div class="field">
+            <div class="field" id="creatorPasswordField">
                 <label>Välj lösenord</label>
                 <input type="password" id="creatorPassword" placeholder="••••••••">
                 <span class="field-hint">Du använder detta för att logga in som admin.</span>
@@ -1078,17 +1078,17 @@
                 <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
                     <div id="createPlRoundsWrap" style="display:none;align-items:center;gap:10px;display:none;">
                         <label style="font-size:.82em;color:#8896aa;width:160px;">⚽ Premier League</label>
-                        <input type="number" id="createPlRounds" value="2" min="1" max="10"
+                        <input type="number" id="createPlRounds" value="2" min="0" max="10"
                             style="background:#0a0c10;border:1px solid #1e2535;border-radius:10px;padding:10px 14px;color:#e8edf5;font-family:'DM Sans',sans-serif;font-size:1em;width:80px;outline:none;">
                     </div>
                     <div id="createClRoundsWrap" style="display:none;align-items:center;gap:10px;">
                         <label style="font-size:.82em;color:#8896aa;width:160px;">🏆 Champions League</label>
-                        <input type="number" id="createClRounds" value="2" min="1" max="10"
+                        <input type="number" id="createClRounds" value="2" min="0" max="10"
                             style="background:#0a0c10;border:1px solid #1e2535;border-radius:10px;padding:10px 14px;color:#e8edf5;font-family:'DM Sans',sans-serif;font-size:1em;width:80px;outline:none;">
                     </div>
                     <div id="createWcRoundsWrap" style="display:none;align-items:center;gap:10px;">
                         <label style="font-size:.82em;color:#8896aa;width:160px;">🌍 VM</label>
-                        <input type="number" id="createWcRounds" value="2" min="1" max="10"
+                        <input type="number" id="createWcRounds" value="2" min="0" max="10"
                             style="background:#0a0c10;border:1px solid #1e2535;border-radius:10px;padding:10px 14px;color:#e8edf5;font-family:'DM Sans',sans-serif;font-size:1em;width:80px;outline:none;">
                     </div>
                 </div>
@@ -1384,30 +1384,8 @@
                         📥 Ladda matcher från API <span class="admin-toggle-icon">▼</span>
                     </div>
                     <div class="admin-section-body">
-                        <div class="admin-row">
-                            <div class="admin-field">
-                                <label>Tävling</label>
-                                <select id="adminCompSelect" onchange="window.updateCompFields()">
-                                    <option value="PL">⚽ Premier League</option>
-                                    <option value="CL">🏆 Champions League</option>
-                                    <option value="WC">🌍 VM</option>
-                                    <option value="BOTH">PL + CL</option>
-                                </select>
-                            </div>
-                            <div class="admin-field" id="plRoundsWrap">
-                                <label>PL-omgångar</label>
-                                <input type="number" id="adminPlRounds" value="2" min="1" max="10">
-                            </div>
-                            <div class="admin-field" id="clRoundsWrap" style="display:none">
-                                <label>CL-omgångar</label>
-                                <input type="number" id="adminClRounds" value="2" min="1" max="10">
-                            </div>
-                            <div class="admin-field" id="wmRoundsWrap" style="display:none">
-                                <label>VM-omgångar</label>
-                                <input type="number" id="adminWmRounds" value="2" min="1" max="10">
-                            </div>
-                        </div>
-                        <button class="btn-admin btn-admin-primary" onclick="window.adminLoadMatches()">📥 Hämta och spara matcher</button>
+                        <div id="adminCompRows"></div>
+                        <button class="btn-admin btn-admin-green" style="margin-top:6px;" onclick="window.adminLoadAllMatches()">📥 Hämta alla tävlingar</button>
                         <div class="admin-log" id="adminLoadLog"></div>
                     </div>
                 </div>
@@ -1621,6 +1599,7 @@
         let cachedFirstMatch = null;
         let renderScheduled  = false;
         let leagueUnsubscribers = [];
+        let globalMatchUnsubscribers = [];
 
         let plApiKey         = '';
         let autoFetchInterval = null;
@@ -1896,13 +1875,16 @@
         function isMatchStarted(dateStr) { return new Date() >= new Date(dateStr); }
 
         function getDeadlineKey(match) {
-            const comp = match.competition || (
-                match.id && match.id.startsWith('pl_') ? 'PL' :
-                match.id && match.id.startsWith('wc_') ? 'WC' : 'CL'
-            );
+            const comp = match.competition;
             if (comp === 'PL') return 'PL';
             if (comp === 'WC') return 'WC';
             return match.stage ? `CL_${match.stage}` : 'CL';
+        }
+
+        function getSeasonForComp(comp) {
+            if (comp === 'WC') return '2026';
+            if (comp === 'ALLSVENSKAN') return '2026';
+            return '2025-2026';
         }
 
         function getEffectiveDeadline(match) {
@@ -2137,6 +2119,8 @@
         function setupLeagueListeners(code) {
             leagueUnsubscribers.forEach(u => u());
             leagueUnsubscribers = [];
+            globalMatchUnsubscribers.forEach(u => u());
+            globalMatchUnsubscribers = [];
 
             // Återställ state
             members = {}; invitedEmails = {};
@@ -2164,15 +2148,6 @@
             leagueUnsubscribers.push(
                 onValue(ref(database, `${base}/invitedEmails`), snap => {
                     invitedEmails = snap.val() || {};
-                })
-            );
-
-            leagueUnsubscribers.push(
-                onValue(ref(database, `${base}/matches`), snap => {
-                    const data = snap.val();
-                    matches = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
-                    cachedFirstMatch = null;
-                    if (currentUser) scheduleRender();
                 })
             );
 
@@ -2205,8 +2180,30 @@
             );
 
             // Godkännande-systemet borttaget – pendingMembers listener borttagen
+
+            setupGlobalMatchListeners(currentLeagueInfo.competitions || []);
         }
 
+        function setupGlobalMatchListeners(comps) {
+            globalMatchUnsubscribers.forEach(u => u());
+            globalMatchUnsubscribers = [];
+            const allCompMatches = {};
+            (comps || []).forEach(comp => {
+                const season = getSeasonForComp(comp);
+                const path = `globalMatches/${comp}/${season}`;
+                const unsub = onValue(ref(database, path), snap => {
+                    const data = snap.val();
+                    allCompMatches[comp] = data
+                        ? Object.entries(data).map(([key, obj]) => ({ ...obj, id: key }))
+                        : [];
+                    matches = Object.values(allCompMatches).flat();
+                    matches.sort((a, b) => new Date(a.date) - new Date(b.date));
+                    cachedFirstMatch = null;
+                    if (currentUser) scheduleRender();
+                });
+                globalMatchUnsubscribers.push(unsub);
+            });
+        }
 
         // ─── Login (Firebase Auth) ────────────────────────────────────────────────
         window.handleLogin = async function() {
@@ -2415,7 +2412,7 @@
             const fetchResultsSection    = document.getElementById('adminFetchResultsSection');
             if (apiKeySection)       apiKeySection.style.display       = isGhost() ? '' : 'none';
             if (activityLogSection)  activityLogSection.style.display  = isGhost() ? '' : 'none';
-            if (loadMatchesSection)  loadMatchesSection.style.display  = isGhost() ? '' : 'none';
+            if (loadMatchesSection)  loadMatchesSection.style.display  = isAdmin() ? '' : 'none';
             if (fetchResultsSection) fetchResultsSection.style.display = isAdmin() ? '' : 'none';
 
             showView('viewApp');
@@ -2442,11 +2439,12 @@
                 }, 1500);
             }
 
-            // Fyll admin-ligainfo
+            // Fyll admin-ligainfo + rendera comp-rader
             const shareCode = document.getElementById('adminShareCode');
             const shareUrl  = document.getElementById('adminShareUrl');
             if (shareCode) shareCode.textContent = currentLeagueCode;
             if (shareUrl)  shareUrl.textContent  = `https://vg1414.github.io/KC/?liga=${currentLeagueCode}&register=1`;
+            renderAdminCompRows();
 
             scheduleRender();
         }
@@ -3112,19 +3110,20 @@
                     : `${leagueName} - ${CL_STAGE_LABELS[first.stage] || first.stage}${first.matchday > 1 ? ' (Returmatch)' : ''}`;
                 labels.push(roundLabel);
 
-                roundMatches.forEach((m, idx) => {
+                roundMatches.forEach((m) => {
                     const utcDate = new Date(m.utcDate);
                     const opts = { timeZone: 'Europe/Stockholm', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false };
                     const dp = {};
                     new Intl.DateTimeFormat('sv-SE', opts).formatToParts(utcDate).forEach(p => { dp[p.type] = p.value; });
                     converted.push({
-                        id: `${code.toLowerCase()}_${roundKey}_${idx}`,
+                        id: String(m.id),
                         homeTeam: m.homeTeam.shortName || m.homeTeam.name,
                         awayTeam: m.awayTeam.shortName || m.awayTeam.name,
                         league: roundLabel,
                         date: `${dp.year}-${dp.month}-${dp.day}T${dp.hour}:${dp.minute}`,
                         actualOutcome: null, actualScore: null,
-                        apiMatchId: m.id, competition: code, stage: m.stage || null
+                        apiMatchId: m.id, competition: code, stage: m.stage || null,
+                        setBy: null, setAt: null
                     });
                 });
             });
@@ -3132,61 +3131,105 @@
         }
 
         // ─── Ladda matcher ────────────────────────────────────────────────────────
-        window.adminLoadMatches = async function() {
+        function renderAdminCompRows() {
+            const container = document.getElementById('adminCompRows');
+            if (!container) return;
+            const comps = currentLeagueInfo.competitions || [];
+            const compNames = { PL: '⚽ Premier League', CL: '🏆 Champions League', WC: '🌍 VM' };
+            const defRounds = currentLeagueInfo.defaultRounds || {};
+            container.innerHTML = comps.map(comp => `
+                <div class="admin-row" style="align-items:flex-end;margin-bottom:6px;">
+                    <div class="admin-field" style="flex:2;">
+                        <label>${compNames[comp] || comp}</label>
+                        <input type="number" id="adminRounds_${comp}" value="${defRounds[comp] ?? 2}" min="0" max="30" style="width:70px;">
+                    </div>
+                    <div style="display:flex;align-items:center;gap:4px;margin-bottom:1px;">
+                        <span style="font-size:.78em;color:#9ca3af;">omgångar</span>
+                        <button class="btn-admin btn-admin-primary" style="padding:6px 12px;" onclick="window.adminLoadComp('${comp}')">Hämta</button>
+                    </div>
+                </div>`).join('');
+        }
+
+        async function loadMatchesForComp(comp, rounds) {
+            if (rounds <= 0) {
+                const season = getSeasonForComp(comp);
+                const deletes = {};
+                matches
+                    .filter(m => m.competition === comp && !m.setBy)
+                    .forEach(m => { deletes[`globalMatches/${comp}/${season}/${m.id}`] = null; });
+                if (Object.keys(deletes).length > 0) await update(ref(database), deletes);
+                adminLog(`🗑️ ${comp}: alla pending-matcher borttagna`);
+                return 0;
+            }
+            const result = await fetchCompetitionMatches(comp, rounds);
+            const matchesToLoad = result.converted;
+            if (matchesToLoad.length === 0) { adminLog(`⚠️ Inga ${comp}-matcher hittades.`); return 0; }
+            const existingMap = {};
+            matches.forEach(m => { existingMap[m.id] = m; });
+            const newMatches = matchesToLoad.map(m => {
+                const ex = existingMap[m.id];
+                return ex ? { ...m, actualOutcome: ex.actualOutcome ?? null, actualScore: ex.actualScore ?? null, setBy: ex.setBy ?? null, setAt: ex.setAt ?? null } : m;
+            });
+            const updates = {};
+            newMatches.forEach(m => {
+                const s = getSeasonForComp(m.competition);
+                const { id, ...rest } = m;
+                updates[`globalMatches/${m.competition}/${s}/${m.id}`] = Object.fromEntries(Object.entries(rest).filter(([, v]) => v !== null && v !== undefined));
+            });
+            // Radera gamla pending-matcher för denna tävling som inte ingår i den nya laddningen
+            const newIds = new Set(matchesToLoad.map(m => m.id));
+            const season = getSeasonForComp(comp);
+            matches
+                .filter(m => m.competition === comp && !newIds.has(m.id) && !m.setBy)
+                .forEach(m => { updates[`globalMatches/${comp}/${season}/${m.id}`] = null; });
+            await update(ref(database), updates);
+            adminLog(`✅ ${comp}: ${matchesToLoad.length} matcher (${result.labels.join(', ')})`);
+            return matchesToLoad.length;
+        }
+
+        window.adminLoadComp = async function(comp) {
             if (!isAdmin()) return;
             if (!plApiKey) {
                 try { const s = await get(ref(database, 'config/apikey')); plApiKey = s.val() || ''; } catch(e) {}
             }
-            if (!plApiKey) { showAppMsg('❌ Ingen API-nyckel sparad. Kontakta ligeansvarig.', 'error'); return; }
-
-            const competition = document.getElementById('adminCompSelect')?.value || 'PL';
-            const plRounds = parseInt(document.getElementById('adminPlRounds')?.value || 2);
-            const clRounds = parseInt(document.getElementById('adminClRounds')?.value || 2);
-            const wmRounds = parseInt(document.getElementById('adminWmRounds')?.value || 2);
-            const compNames = { PL: 'Premier League', CL: 'Champions League', WC: 'VM', BOTH: 'PL + CL' };
-
-            if (!confirm(`Hämta matcher från ${compNames[competition]}?\n\nNya matcher läggs till. Befintliga resultat bevaras.`)) return;
-
+            if (!plApiKey) { showAppMsg('❌ Ingen API-nyckel sparad.', 'error'); return; }
+            const rounds = parseInt(document.getElementById(`adminRounds_${comp}`)?.value || 2);
+            const compNames = { PL: 'Premier League', CL: 'Champions League', WC: 'VM' };
+            if (!confirm(`Hämta matcher från ${compNames[comp] || comp}?\nNya matcher läggs till. Befintliga resultat bevaras.`)) return;
             const logEl = document.getElementById('adminLoadLog');
             if (logEl) logEl.textContent = '';
-
-            adminLog(`📥 Hämtar från ${compNames[competition]}...`);
-
             try {
-                let matchesToLoad = [], roundLabels = [];
-                if (competition === 'BOTH') {
-                    const [pl, cl] = await Promise.all([
-                        fetchCompetitionMatches('PL', plRounds),
-                        fetchCompetitionMatches('CL', clRounds)
-                    ]);
-                    matchesToLoad = [...pl.converted, ...cl.converted];
-                    roundLabels   = [...pl.labels, ...cl.labels];
-                    matchesToLoad.sort((a, b) => new Date(a.date) - new Date(b.date));
-                } else {
-                    const rounds = { PL: plRounds, CL: clRounds, WC: wmRounds }[competition] || 2;
-                    const result = await fetchCompetitionMatches(competition, rounds);
-                    matchesToLoad = result.converted;
-                    roundLabels   = result.labels;
+                const count = await loadMatchesForComp(comp, rounds);
+                if (count > 0) {
+                    await logActivity('ADMIN_LOAD_MATCHES', `Laddade ${count} ${comp}-matcher`);
+                    showAppMsg(`✅ ${count} matcher laddade!`, 'success');
                 }
+            } catch (error) {
+                adminLog(`❌ FEL: ${error.message}`);
+                showAppMsg('❌ Kunde inte hämta: ' + error.message, 'error');
+            }
+        };
 
-                if (matchesToLoad.length === 0) { adminLog('⚠️ Inga matcher hittades.'); return; }
-
-                // Bevara befintliga resultat vid merge
-                const existingMap = {};
-                matches.forEach(m => { existingMap[m.id] = m; });
-                const merged = matchesToLoad.map(m => {
-                    const ex = existingMap[m.id];
-                    return ex ? { ...m, actualOutcome: ex.actualOutcome, actualScore: ex.actualScore, setBy: ex.setBy, setAt: ex.setAt } : m;
-                });
-                // Behåll matcher som inte ingår i den nya laddningen
-                matches.forEach(m => { if (!matchesToLoad.find(nm => nm.id === m.id)) merged.push(m); });
-                merged.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-                adminLog(`✅ Konverterade ${matchesToLoad.length} matcher`);
-                await set(ref(database, `leagues/${currentLeagueCode}/matches`), merged);
-                await logActivity('ADMIN_LOAD_MATCHES', `Laddade ${matchesToLoad.length} matcher (${roundLabels.join(', ')})`);
-                adminLog(`✅ KLART! ${merged.length} matcher totalt i Firebase.`);
-                showAppMsg(`✅ ${matchesToLoad.length} matcher laddade!`, 'success');
+        window.adminLoadAllMatches = async function() {
+            if (!isAdmin()) return;
+            if (!plApiKey) {
+                try { const s = await get(ref(database, 'config/apikey')); plApiKey = s.val() || ''; } catch(e) {}
+            }
+            if (!plApiKey) { showAppMsg('❌ Ingen API-nyckel sparad.', 'error'); return; }
+            const comps = currentLeagueInfo.competitions || [];
+            if (!confirm(`Hämta matcher för alla tävlingar (${comps.join(', ')})?`)) return;
+            const logEl = document.getElementById('adminLoadLog');
+            if (logEl) logEl.textContent = '';
+            let total = 0;
+            try {
+                for (const comp of comps) {
+                    const rounds = parseInt(document.getElementById(`adminRounds_${comp}`)?.value || 2);
+                    total += await loadMatchesForComp(comp, rounds);
+                }
+                if (total > 0) {
+                    await logActivity('ADMIN_LOAD_MATCHES', `Laddade ${total} matcher (${comps.join(', ')})`);
+                    showAppMsg(`✅ ${total} matcher laddade!`, 'success');
+                }
             } catch (error) {
                 adminLog(`❌ FEL: ${error.message}`);
                 showAppMsg('❌ Kunde inte hämta: ' + error.message, 'error');
@@ -3273,9 +3316,15 @@
                 }
             }
 
-            if (foundResults > 0) {
-                await set(ref(database, `leagues/${currentLeagueCode}/matches`), matchesCopy);
-            }
+            const resultUpdates = {};
+            matchesCopy
+                .filter(m => m.setBy === 'API')
+                .forEach(m => {
+                    const s = getSeasonForComp(m.competition);
+                    const { id, ...rest } = m;
+                    resultUpdates[`globalMatches/${m.competition}/${s}/${m.id}`] = Object.fromEntries(Object.entries(rest).filter(([, v]) => v !== null && v !== undefined));
+                });
+            if (Object.keys(resultUpdates).length > 0) await update(ref(database), resultUpdates);
             fetchLog(`✅ Klar! ${foundResults} nya resultat`);
             const lastEl = document.getElementById('lastFetchStatus');
             if (lastEl) lastEl.textContent = `Senast: ${new Date().toLocaleTimeString('sv-SE')}`;
@@ -3360,12 +3409,18 @@
             try {
                 if (homeVal === 'POSTPONED') {
                     matchesCopy[idx] = { ...matchesCopy[idx], actualOutcome: 'POSTPONED', actualScore: null, setBy: currentUser, setAt: new Date().toISOString() };
-                    await set(ref(database, `leagues/${currentLeagueCode}/matches`), matchesCopy);
+                    const updM = matchesCopy[idx];
+                    const s = getSeasonForComp(updM.competition);
+                    const { id: _id, ...matchData } = updM;
+                    await set(ref(database, `globalMatches/${updM.competition}/${s}/${updM.id}`), matchData);
                     await logActivity('SET_RESULT', `Inställd: ${match.homeTeam} vs ${match.awayTeam}`);
                     showAppMsg('⚠️ Match markerad som inställd', 'info');
                 } else if (homeVal === 'CLEAR') {
                     matchesCopy[idx] = { ...matchesCopy[idx], actualOutcome: null, actualScore: null, setBy: null, setAt: null };
-                    await set(ref(database, `leagues/${currentLeagueCode}/matches`), matchesCopy);
+                    const updM = matchesCopy[idx];
+                    const s = getSeasonForComp(updM.competition);
+                    const { id: _id, ...matchData } = updM;
+                    await set(ref(database, `globalMatches/${updM.competition}/${s}/${updM.id}`), matchData);
                     await logActivity('CLEAR_RESULT', `Rensade: ${match.homeTeam} vs ${match.awayTeam}`);
                     showAppMsg('🗑️ Resultat rensat', 'info');
                 } else {
@@ -3374,7 +3429,10 @@
                     if (isNaN(h) || isNaN(a) || h < 0 || a < 0) { showAppMsg('❌ Ogiltiga siffror', 'error'); return; }
                     const outcome = h > a ? '1' : h < a ? '2' : 'X';
                     matchesCopy[idx] = { ...matchesCopy[idx], actualOutcome: outcome, actualScore: `${h}-${a}`, setBy: currentUser, setAt: new Date().toISOString() };
-                    await set(ref(database, `leagues/${currentLeagueCode}/matches`), matchesCopy);
+                    const updM = matchesCopy[idx];
+                    const s = getSeasonForComp(updM.competition);
+                    const { id: _id, ...matchData } = updM;
+                    await set(ref(database, `globalMatches/${updM.competition}/${s}/${updM.id}`), matchData);
                     await logActivity('SET_RESULT', `Resultat: ${match.homeTeam} ${h}-${a} ${match.awayTeam}`);
                     showAppMsg(`✅ ${match.homeTeam} ${h}–${a} ${match.awayTeam}`, 'success');
                 }
@@ -3687,20 +3745,17 @@
                 try { const s = await get(ref(database, 'config/apikey')); plApiKey = s.val() || ''; } catch(e) {}
             }
             if (!plApiKey) { showAppMsg('⚠️ Ingen API-nyckel – matcher kunde inte hämtas.', 'error'); return; }
-
             try {
-                let allMatches = [], allLabels = [];
+                let total = 0;
                 for (const comp of comps) {
-                    const r = rounds[comp] || 2;
-                    const result = await fetchCompetitionMatches(comp, r);
-                    allMatches = [...allMatches, ...result.converted];
-                    allLabels  = [...allLabels,  ...result.labels];
+                    total += await loadMatchesForComp(comp, rounds[comp] || 2);
                 }
-                if (allMatches.length === 0) { showAppMsg('⚠️ Inga matcher hittades via API.', 'error'); return; }
-                allMatches.sort((a, b) => new Date(a.date) - new Date(b.date));
-                await set(ref(database, `leagues/${currentLeagueCode}/matches`), allMatches);
-                await logActivity('AUTO_LOAD_MATCHES', `Auto-laddade ${allMatches.length} matcher (${allLabels.join(', ')})`);
-                showAppMsg(`✅ ${allMatches.length} matcher laddade automatiskt!`, 'success');
+                if (total > 0) {
+                    await logActivity('AUTO_LOAD_MATCHES', `Auto-laddade ${total} matcher (${comps.join(', ')})`);
+                    showAppMsg(`✅ ${total} matcher laddade automatiskt!`, 'success');
+                } else {
+                    showAppMsg('⚠️ Inga matcher hittades via API.', 'error');
+                }
             } catch(e) {
                 showAppMsg('❌ Kunde inte hämta matcher automatiskt: ' + e.message, 'error');
             }
@@ -3726,16 +3781,6 @@
                 const statusEl = document.getElementById('saStatus');
                 if (statusEl) { statusEl.style.color = '#f87171'; statusEl.textContent = `❌ Kunde inte radera: ${e.message}`; }
             }
-        };
-
-        window.updateCompFields = function() {
-            const comp = document.getElementById('adminCompSelect')?.value || 'PL';
-            const plWrap = document.getElementById('plRoundsWrap');
-            const clWrap = document.getElementById('clRoundsWrap');
-            const wmWrap = document.getElementById('wmRoundsWrap');
-            if (plWrap) plWrap.style.display = (comp === 'PL' || comp === 'BOTH') ? '' : 'none';
-            if (clWrap) clWrap.style.display = (comp === 'CL' || comp === 'BOTH') ? '' : 'none';
-            if (wmWrap) wmWrap.style.display = (comp === 'WC') ? '' : 'none';
         };
 
         // ─── Hub ─────────────────────────────────────────────────────────────────
@@ -3918,6 +3963,8 @@
             deadlines         = {};
             leagueUnsubscribers.forEach(u => u());
             leagueUnsubscribers = [];
+            globalMatchUnsubscribers.forEach(u => u());
+            globalMatchUnsubscribers = [];
 
             history.pushState({}, '', window.location.pathname);
             if (currentAuthUser) { renderHub(); showView('viewHub'); }
@@ -3926,6 +3973,15 @@
 
         window.showCreateForm = function() {
             clearStatus('createStatus');
+            const alreadyLoggedIn = !!auth.currentUser;
+            const emailField    = document.getElementById('creatorEmailField');
+            const passwordField = document.getElementById('creatorPasswordField');
+            if (emailField)    emailField.style.display    = alreadyLoggedIn ? 'none' : '';
+            if (passwordField) passwordField.style.display = alreadyLoggedIn ? 'none' : '';
+            if (alreadyLoggedIn && currentUser) {
+                const nameEl = document.getElementById('creatorName');
+                if (nameEl && !nameEl.value) nameEl.value = currentUser;
+            }
             showView('viewCreate');
         };
 
@@ -3936,10 +3992,11 @@
             const creatorPassword = document.getElementById('creatorPassword').value;
             const name            = document.getElementById('leagueName').value.trim();
 
+            const alreadyLoggedIn = !!auth.currentUser;
             const creatorNameErr = validateName(creatorName);
             if (creatorNameErr) { showStatus('createStatus', '❌ ' + creatorNameErr, 'error'); return; }
-            if (!creatorEmail)    { showStatus('createStatus', '❌ Ange din e-postadress', 'error'); return; }
-            if (!creatorPassword) { showStatus('createStatus', '❌ Välj ett lösenord', 'error'); return; }
+            if (!alreadyLoggedIn && !creatorEmail)    { showStatus('createStatus', '❌ Ange din e-postadress', 'error'); return; }
+            if (!alreadyLoggedIn && !creatorPassword) { showStatus('createStatus', '❌ Välj ett lösenord', 'error'); return; }
             if (!name)            { showStatus('createStatus', '❌ Ange ett liganamn', 'error'); return; }
 
             const comps = [];
@@ -3961,17 +4018,22 @@
             clearStatus('createStatus');
 
             try {
-                // Skapa eller logga in Firebase-konto
+                // Skapa eller logga in Firebase-konto (hoppas över om redan inloggad)
                 let user;
-                try {
-                    user = (await createUserWithEmailAndPassword(auth, creatorEmail, creatorPassword)).user;
-                } catch (e) {
-                    if (e.code === 'auth/email-already-in-use') {
-                        user = (await signInWithEmailAndPassword(auth, creatorEmail, creatorPassword)).user;
-                    } else { throw e; }
+                if (alreadyLoggedIn) {
+                    user = auth.currentUser;
+                } else {
+                    try {
+                        user = (await createUserWithEmailAndPassword(auth, creatorEmail, creatorPassword)).user;
+                    } catch (e) {
+                        if (e.code === 'auth/email-already-in-use') {
+                            user = (await signInWithEmailAndPassword(auth, creatorEmail, creatorPassword)).user;
+                        } else { throw e; }
+                    }
                 }
 
                 const code = await generateUniqueCode();
+                const effectiveEmail = user.email || creatorEmail;
 
                 await set(ref(database, `leagues/${code}`), {
                     info: {
@@ -3980,9 +4042,8 @@
                         adminUID: user.uid, defaultRounds
                     },
                     members: {
-                        [user.uid]: { name: creatorName, email: creatorEmail, joinedAt: Date.now() }
+                        [user.uid]: { name: creatorName, email: effectiveEmail, joinedAt: Date.now() }
                     },
-                    matches: [],
                     predictions: {}, exactPredictions: {}
                 });
                 await set(ref(database, `userLeagues/${user.uid}/${code}`), { name, role: 'admin' });
@@ -4000,7 +4061,7 @@
                     league_name:  name,
                     league_code:  code,
                     admin_name:   creatorName,
-                    admin_email:  creatorEmail,
+                    admin_email:  effectiveEmail,
                     competitions: comps.join(', '),
                     join_mode:    joinMode,
                     league_url:   `https://vg1414.github.io/KC/?liga=${code}`
