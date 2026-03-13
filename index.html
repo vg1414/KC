@@ -2259,6 +2259,18 @@
                 })
             );
 
+            leagueUnsubscribers.push(
+                onValue(ref(database, `${base}/info`), snap => {
+                    const info = snap.val();
+                    if (!info) return;
+                    currentLeagueInfo = info;
+                    if (info.deadlineMode && info.deadlineMode !== deadlineMode) {
+                        deadlineMode = info.deadlineMode;
+                        if (currentUser) scheduleRender();
+                    }
+                })
+            );
+
             // Godkännande-systemet borttaget – pendingMembers listener borttagen
 
             setupGlobalMatchListeners(currentLeagueInfo.competitions || []);

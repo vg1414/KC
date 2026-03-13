@@ -1,5 +1,10 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-13 – Buggfix: tippa-flik försvinner för spelare
+
+### Fixat
+- Lade till Firebase-lyssnare på `leagues/{kod}/info` så att ändringar av `deadlineMode` av admin nu synkas i realtid till alla inloggade spelare utan att de behöver ladda om sidan
+
 ## 2026-03-13 – Deadline-system + bugfixar
 
 ### Nytt
