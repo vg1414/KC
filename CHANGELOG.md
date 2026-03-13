@@ -1,5 +1,13 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-13 – Rensning av tillfällig migreringskod
+
+### Ändringar
+- Raderade 8 förstabens-matcher (CL LAST_16) från Firebase som saknade tippningar
+- Tog bort migreringssektion från admin-panelen (loadFinishedCLStage, adminLoadFinishedCL, migrateOldPredictions)
+
+---
+
 ## 2026-03-13 – Firebase-omstrukturering + buggfixar
 
 ### Ändringar
