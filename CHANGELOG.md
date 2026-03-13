@@ -1,5 +1,11 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-13 – Gruppering per omgång i tippa-fliken + auto-fokus mellan matcher
+
+### Förbättrat
+- Tippa-fliken visar nu en tydlig omgångsrubrik (t.ex. "Premier League – Omgång 15") ovanför varje grupp av matcher
+- Auto-fokus: efter bortasiffran hoppar fokus automatiskt till nästa matchs hemmafält
+
 ## 2026-03-13 – Open Graph-taggar för WhatsApp-förhandsgranskning
 
 ### Lagt till

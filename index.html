@@ -779,6 +779,17 @@
 
         /* ── Deadline-chips – Design 4 ── */
         .deadlines-row { margin-bottom: 10px; }
+        .round-group-header {
+            font-size: .75em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: #9ca3af;
+            padding: 16px 4px 6px;
+            border-top: 1px solid #e5e7eb;
+            margin-top: 4px;
+        }
+        .round-group-header:first-child { border-top: none; padding-top: 4px; }
 
         .deadline-chip {
             display: flex;
@@ -2878,7 +2889,7 @@
                                 <span class="score-dash">–</span>
                                 <input type="number" min="0" max="99" id="exact-away-${m.id}"
                                     value="${awayVal}"
-                                    oninput="window.updateScorePrediction('${m.id}')"
+                                    oninput="window.updateScorePrediction('${m.id}'); window.advanceToNextMatch('${m.id}', this)"
                                     class="score-input${hasVal ? ' has-val' : ''}" placeholder="?">
                             </div>
                             <div class="pred-team pred-team-away">
@@ -2943,6 +2954,7 @@
                 });
                 lgOrder.forEach(league => {
                     const sorted = [...lgGroups[league]].sort((a, b) => new Date(a.date) - new Date(b.date));
+                    html += `<div class="round-group-header">${league}</div>`;
                     html += sorted.map(m => renderPredCard(m, isMatchLocked(m))).join('');
                 });
             } else {
@@ -2954,7 +2966,11 @@
                         !min || new Date(m.date) < new Date(min) ? m : min, null);
                     const eff          = firstMatch ? getEffectiveDeadline(firstMatch) : null;
                     const showChip     = deadlineMode === 'perRound';
-                    if (showChip && eff) html += buildDeadlineChip(eff.time, eff.auto, label);
+                    if (showChip && eff) {
+                        html += buildDeadlineChip(eff.time, eff.auto, label);
+                    } else {
+                        html += `<div class="round-group-header">${label}</div>`;
+                    }
                     const sorted = [...groupMatches].sort((a, b) => new Date(a.date) - new Date(b.date));
                     html += sorted.map(m => renderPredCard(m, isMatchLocked(m))).join('');
                 });
@@ -3137,6 +3153,20 @@
             if (val.length === 1 && val >= '0' && val <= '9') {
                 const away = document.getElementById(`exact-away-${matchId}`);
                 if (away) { away.focus(); away.select(); }
+            }
+        };
+
+        window.advanceToNextMatch = function(matchId, el) {
+            const val = el.value;
+            if (val.length !== 1 || val < '0' || val > '9') return;
+            // Hitta alla synliga hemmafält i ordning
+            const allHomeInputs = Array.from(document.querySelectorAll('.score-input[id^="exact-home-"]'))
+                .filter(inp => !inp.closest('.pred-match.locked'));
+            const idx = allHomeInputs.findIndex(inp => inp.id === `exact-home-${matchId}`);
+            if (idx !== -1 && idx + 1 < allHomeInputs.length) {
+                const next = allHomeInputs[idx + 1];
+                next.focus();
+                next.select();
             }
         };
 
