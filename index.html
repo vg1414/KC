@@ -2616,7 +2616,12 @@
                 onValue(ref(database, `${base}/info`), snap => {
                     const info = snap.val();
                     if (!info) return;
+                    const prevComps = (currentLeagueInfo.competitions || []).join(',');
                     currentLeagueInfo = info;
+                    const newComps = (info.competitions || []).join(',');
+                    if (newComps !== prevComps) {
+                        setupGlobalMatchListeners(info.competitions || []);
+                    }
                     if (info.deadlineMode && info.deadlineMode !== deadlineMode) {
                         deadlineMode = info.deadlineMode;
                         if (currentUser) scheduleRender();
@@ -3718,7 +3723,7 @@
                         <input type="number" id="adminRounds_${comp}" value="${loadedRounds}" min="0" max="30" style="width:28px;background:none;border:none;color:#f0b429;font-size:.86em;font-weight:700;text-align:center;outline:none;-moz-appearance:textfield;">
                         <button onclick="(function(b){var i=b.parentElement.querySelector('input');i.value=Math.min(30,parseInt(i.value||0)+1);})(this)" style="width:26px;height:26px;background:none;border:none;color:#9ca3af;font-size:1em;cursor:pointer;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.color='#f0b429'" onmouseout="this.style.color='#9ca3af'">+</button>
                     </div>
-                    <span style="font-size:.78em;color:#9ca3af;white-space:nowrap;">omgångar${isActive ? '' : ' (ej laddad)'}</span>
+                    <span style="font-size:.78em;color:#9ca3af;white-space:nowrap;">omgångar</span>
                 </div>`;
             }).join('');
         }
@@ -3759,6 +3764,13 @@
                 .filter(m => m.competition === comp && !newIds.has(m.id) && !m.setBy)
                 .forEach(m => { updates[`globalMatches/${comp}/${season}/${m.id}`] = null; });
             await update(ref(database), updates);
+            // Om tävlingen inte redan finns i ligans competitions-lista, lägg till den
+            const existingComps = currentLeagueInfo.competitions || [];
+            if (!existingComps.includes(comp)) {
+                const updatedComps = [...existingComps, comp];
+                await update(ref(database, `leagues/${currentLeagueCode}/info`), { competitions: updatedComps });
+                adminLog(`📋 ${comp} lades till i ligans tävlingslista`);
+            }
             adminLog(`✅ ${comp}: ${matchesToLoad.length} matcher (${result.labels.join(', ')})`);
             return { count: matchesToLoad.length, converted: newMatches };
         }

@@ -1,5 +1,15 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-14 – Buggfix: tävlingar som saknas i competitions-listan + UI
+
+### Buggfixar
+- PL-matcher försvann för liga 37U5PT – `competitions`-arrayen i ligans info uppdaterades aldrig när PL-matcher laddades
+- Info-listenern anropar nu `setupGlobalMatchListeners` om `competitions`-listan ändras i Firebase
+- När admin laddar matcher för en tävling som saknas i ligans `competitions`-lista läggs den nu till automatiskt
+
+### UI
+- Tog bort "(ej laddad)" från admin-matchladdning – gråfärgen räcker som signal
+
 ## 2026-03-13 – Buggfixar och UI-förbättringar
 
 ### Buggfixar
