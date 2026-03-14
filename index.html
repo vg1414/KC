@@ -1765,6 +1765,17 @@
                 </div>
                 </div>
 
+                <!-- Radera liga -->
+                <div class="admin-section" id="adminDeleteSection" style="display:none">
+                    <div class="admin-section-header" onclick="window.toggleAdminSection(this)" style="color:#f87171;">
+                        🗑️ Radera liga <span class="admin-toggle-icon">▼</span>
+                    </div>
+                    <div class="admin-section-body">
+                        <p style="font-size:.85em;color:#8896aa;margin:0 0 14px;">Raderar ligan och all dess data permanent – spelare, tips, matcher och inställningar. Kan inte ångras.</p>
+                        <button class="btn-admin btn-admin-danger" style="width:100%;" onclick="window.openDeleteLeagueModal()">🗑️ Radera liga</button>
+                    </div>
+                </div>
+
                 <!-- Admin-guide -->
                 <div class="admin-section">
                     <div class="admin-section-header" onclick="window.toggleAdminSection(this)">
@@ -1887,6 +1898,26 @@
         </div>
     </div>
 
+    <!-- ── Radera liga-modal ── -->
+    <div id="deleteLeagueModal" style="display:none" class="result-modal-overlay" onclick="if(event.target===this)window.closeDeleteLeagueModal()">
+        <div class="result-modal" style="max-width:380px;">
+            <div class="result-modal-title" style="color:#f87171;">🗑️ Radera liga</div>
+            <div class="result-modal-match" style="color:#b8c4d4;font-size:.88em;line-height:1.6;">
+                All data raderas permanent – spelare, tips, matcher och inställningar. Det går inte att ångra.<br><br>
+                Ange ditt lösenord för att bekräfta.
+            </div>
+            <div style="margin:16px 0 6px;">
+                <input type="password" id="deleteLeaguePassword" placeholder="Ditt lösenord"
+                    style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:#1e2535;color:#d0d6e0;font-family:'DM Sans',sans-serif;font-size:.95em;">
+            </div>
+            <div id="deleteLeagueError" style="color:#f87171;font-size:.82em;min-height:18px;margin-bottom:12px;"></div>
+            <div class="result-modal-btns">
+                <button class="btn-admin btn-admin-secondary" style="flex:1" onclick="window.closeDeleteLeagueModal()">Avbryt</button>
+                <button id="deleteLeagueConfirmBtn" class="btn-admin" style="flex:1;background:#dc2626;color:#fff;" onclick="window.confirmDeleteLeague()">🗑️ Radera</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ── FAQ Bottom Sheet (landningssida) ── -->
     <div id="landingFaqOverlay" style="display:none;" onclick="if(event.target===this)window.closeLandingFaq()" class="faq-sheet-overlay">
         <div class="faq-sheet">
@@ -1973,7 +2004,7 @@
     <script type="module">
         import { initializeApp }                            from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getDatabase, ref, set, get, onValue, push, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-        import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, reauthenticateWithCredential, EmailAuthProvider } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyB-bBX07bnuMMfEJhsrSppMOmlHRUZQbWk",
@@ -2898,10 +2929,12 @@
             const activityLogSection     = document.getElementById('activityLogSection');
             const loadMatchesSection     = document.getElementById('adminLoadMatchesSection');
             const fetchResultsSection    = document.getElementById('adminFetchResultsSection');
+            const deleteSection          = document.getElementById('adminDeleteSection');
             if (apiKeySection)       apiKeySection.style.display       = isGhost() ? '' : 'none';
             if (activityLogSection)  activityLogSection.style.display  = isGhost() ? '' : 'none';
             if (loadMatchesSection)  loadMatchesSection.style.display  = isAdmin() ? '' : 'none';
             if (fetchResultsSection) fetchResultsSection.style.display = isAdmin() ? '' : 'none';
+            if (deleteSection)       deleteSection.style.display       = (isAdmin() && !isGhost()) ? '' : 'none';
 
             showView('viewApp');
             window.switchTab(isAdmin() ? 'admin' : 'tippning');
@@ -4592,6 +4625,72 @@
                 }
             } catch(e) {
                 showAppMsg('❌ Kunde inte hämta matcher automatiskt: ' + e.message, 'error');
+            }
+        };
+
+        // ─── Admin: radera liga ───────────────────────────────────────────────────
+        window.openDeleteLeagueModal = function() {
+            const modal = document.getElementById('deleteLeagueModal');
+            if (!modal) return;
+            document.getElementById('deleteLeaguePassword').value = '';
+            document.getElementById('deleteLeagueError').textContent = '';
+            const btn = document.getElementById('deleteLeagueConfirmBtn');
+            btn.disabled = false;
+            btn.textContent = '🗑️ Radera';
+            modal.style.display = 'flex';
+            setTimeout(() => document.getElementById('deleteLeaguePassword').focus(), 100);
+        };
+
+        window.closeDeleteLeagueModal = function() {
+            const modal = document.getElementById('deleteLeagueModal');
+            if (modal) modal.style.display = 'none';
+        };
+
+        window.confirmDeleteLeague = async function() {
+            const password = document.getElementById('deleteLeaguePassword').value;
+            const errorEl  = document.getElementById('deleteLeagueError');
+            const btn      = document.getElementById('deleteLeagueConfirmBtn');
+            errorEl.textContent = '';
+
+            if (!password) { errorEl.textContent = 'Ange ditt lösenord.'; return; }
+            if (!currentAuthUser?.email) { errorEl.textContent = 'Inte inloggad.'; return; }
+
+            btn.disabled = true;
+            btn.textContent = 'Raderar…';
+
+            try {
+                const credential = EmailAuthProvider.credential(currentAuthUser.email, password);
+                await reauthenticateWithCredential(currentAuthUser, credential);
+
+                const code = currentLeagueCode;
+                const [membersSnap, invitedSnap] = await Promise.all([
+                    get(ref(database, `leagues/${code}/members`)),
+                    get(ref(database, `leagues/${code}/invitedEmails`))
+                ]);
+
+                const updates = {};
+                updates[`leagues/${code}`] = null;
+                if (membersSnap.exists()) {
+                    Object.keys(membersSnap.val()).forEach(uid => {
+                        updates[`userLeagues/${uid}/${code}`] = null;
+                    });
+                }
+                if (invitedSnap.exists()) {
+                    Object.keys(invitedSnap.val()).forEach(encodedEmail => {
+                        updates[`pendingInvitations/${encodedEmail}/${code}`] = null;
+                    });
+                }
+                await update(ref(database), updates);
+
+                window.location.href = window.location.pathname;
+            } catch(e) {
+                btn.disabled = false;
+                btn.textContent = '🗑️ Radera';
+                if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') {
+                    errorEl.textContent = 'Fel lösenord. Försök igen.';
+                } else {
+                    errorEl.textContent = 'Något gick fel: ' + e.message;
+                }
             }
         };
 

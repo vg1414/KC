@@ -1,5 +1,15 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-14 – Admin kan radera liga
+
+### Nytt
+- Admin kan radera sin liga via en ny sektion i admin-panelen (ovanför Admin-guide)
+- Bekräftelsedialog kräver att admin anger sitt lösenord (Firebase re-autentisering) innan radering sker
+- Vid radering rensas ligan, alla spelares kopplingar och inbjudna e-poster permanent
+- Ghost-admin ser inte sektionen
+
+---
+
 ## 2026-03-14 – Admin-meny: ny ordning + centrerad knapp
 
 ### Förändringar
