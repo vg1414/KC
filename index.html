@@ -3649,24 +3649,25 @@
             return { converted, labels };
         }
 
-        // ─── Allsvenskan: hämta matcher (TheSportsDB) ────────────────────────────
+        // ─── Allsvenskan: hämta matcher från Firebase (skrivs dit av GitHub Actions-scraper) ───
         async function fetchAllsvenskanMatches(rounds) {
-            adminLog('🔗 Hämtar Allsvenskan från TheSportsDB...');
-            const resp = await fetch('https://www.thesportsdb.com/api/v1/json/3/eventsseason.php?id=4347&s=2026');
-            if (!resp.ok) throw new Error(`TheSportsDB ${resp.status}`);
-            const data = await resp.json();
-            const upcoming = (data.events || [])
-                .filter(e => e.strStatus === 'Not Started')
-                .sort((a, b) => new Date(a.strTimestamp) - new Date(b.strTimestamp));
+            adminLog('🔗 Hämtar Allsvenskan från Firebase...');
+            const snap = await get(ref(database, 'globalMatches/ALLSVENSKAN/2026'));
+            const data = snap.val();
+            if (!data) throw new Error('Inga Allsvenskan-matcher i Firebase. Kör scrapern först (GitHub Actions).');
 
+            const all = Object.entries(data).map(([id, m]) => ({ id, ...m }));
+
+            // Gruppera per omgång, ta bara kommande/ospelad (ej FINISHED/POSTPONED utan befintligt resultat i ligan)
             const byRound = {};
-            upcoming.forEach(e => {
-                const r = e.intRound || '?';
+            all.forEach(m => {
+                const r = m.round || '?';
                 if (!byRound[r]) byRound[r] = [];
-                byRound[r].push(e);
+                byRound[r].push(m);
             });
 
             const roundKeys = Object.keys(byRound)
+                .filter(r => r !== '?')
                 .sort((a, b) => Number(a) - Number(b))
                 .slice(0, rounds);
 
@@ -3674,65 +3675,51 @@
             roundKeys.forEach(roundKey => {
                 const label = `Allsvenskan – Omgång ${roundKey}`;
                 labels.push(label);
-                byRound[roundKey].forEach(e => {
-                    // strTimeLocal/dateEventLocal är alltid null för Allsvenskan
-                    // Konvertera strTimestamp (UTC) till svensk tid via IANA-tidszon (hanterar CET/CEST automatiskt)
-                    let dateStr, timeStr;
-                    if (e.strTimestamp) {
-                        const utcDate = new Date(e.strTimestamp + 'Z');
-                        const fmt = new Intl.DateTimeFormat('sv-SE', {
-                            timeZone: 'Europe/Stockholm',
-                            year: 'numeric', month: '2-digit', day: '2-digit',
-                            hour: '2-digit', minute: '2-digit', hour12: false
+                byRound[roundKey]
+                    .sort((a, b) => new Date(a.date) - new Date(b.date))
+                    .forEach(m => {
+                        converted.push({
+                            id: m.id,
+                            homeTeam: m.homeTeam,
+                            awayTeam: m.awayTeam,
+                            league: label,
+                            date: m.date,
+                            actualOutcome: null, actualScore: null,
+                            apiMatchId: m.id,
+                            competition: 'ALLSVENSKAN',
+                            stage: null,
+                            setBy: null, setAt: null
                         });
-                        const parts = fmt.formatToParts(utcDate);
-                        const p = {};
-                        parts.forEach(({ type, value }) => { p[type] = value; });
-                        dateStr = `${p.year}-${p.month}-${p.day}`;
-                        timeStr = `${p.hour}:${p.minute}`;
-                    } else {
-                        dateStr = e.dateEventLocal || e.strTimestamp?.slice(0, 10) || '?';
-                        timeStr = '00:00';
-                    }
-                    converted.push({
-                        id: String(e.idEvent),
-                        homeTeam: e.strHomeTeam,
-                        awayTeam: e.strAwayTeam,
-                        league: label,
-                        date: `${dateStr}T${timeStr}`,
-                        actualOutcome: null, actualScore: null,
-                        apiMatchId: e.idEvent,
-                        competition: 'ALLSVENSKAN',
-                        stage: null,
-                        setBy: null, setAt: null
                     });
-                });
             });
-            adminLog(`✅ ${converted.length} Allsvenskan-matcher hämtade`);
+            adminLog(`✅ ${converted.length} Allsvenskan-matcher hämtade från Firebase`);
             return { converted, labels };
         }
 
-        // ─── Allsvenskan: hämta resultat (TheSportsDB) ───────────────────────────
+        // ─── Allsvenskan: hämta resultat från Firebase (uppdateras av GitHub Actions-scraper) ──
         async function fetchAllsvenskanResults(pendingMatches) {
             if (!pendingMatches.length) return 0;
-            fetchLog('🔗 Hämtar Allsvenskan-resultat...');
-            const resp = await fetch('https://www.thesportsdb.com/api/v1/json/3/eventsseason.php?id=4347&s=2026');
-            if (!resp.ok) { fetchLog(`⚠️ TheSportsDB ${resp.status}`); return 0; }
-            const data = await resp.json();
-            const finished = (data.events || []).filter(e => e.strStatus === 'Match Finished');
+            fetchLog('🔗 Kollar Allsvenskan-resultat i Firebase...');
+            const snap = await get(ref(database, 'globalMatches/ALLSVENSKAN/2026'));
+            const data = snap.val();
+            if (!data) { fetchLog('⚠️ Inga Allsvenskan-data i Firebase'); return 0; }
+
             let found = 0;
             const updates = {};
             for (const match of pendingMatches) {
-                const game = finished.find(e => String(e.idEvent) === String(match.id));
-                if (!game) continue;
-                const h = parseInt(game.intHomeScore), a = parseInt(game.intAwayScore);
-                if (isNaN(h) || isNaN(a)) continue;
-                const outcome = h > a ? '1' : h < a ? '2' : 'X';
-                const updated = { ...match, actualOutcome: outcome, actualScore: `${h}-${a}`,
-                                  setBy: 'API', setAt: new Date().toISOString() };
+                const firebaseMatch = data[match.id];
+                if (!firebaseMatch) continue;
+                if (firebaseMatch.setBy !== 'API' || !firebaseMatch.actualOutcome) continue;
+                if (firebaseMatch.actualOutcome === 'POSTPONED') continue;
+
+                const updated = { ...match,
+                    actualOutcome: firebaseMatch.actualOutcome,
+                    actualScore: firebaseMatch.actualScore,
+                    setBy: 'API', setAt: firebaseMatch.setAt || new Date().toISOString()
+                };
                 const { id: _id, ...matchData } = updated;
                 updates[`globalMatches/ALLSVENSKAN/2026/${match.id}`] = matchData;
-                fetchLog(`✅ ${match.homeTeam} ${h}-${a} ${match.awayTeam}`);
+                fetchLog(`✅ ${match.homeTeam} ${firebaseMatch.actualScore} ${match.awayTeam}`);
                 found++;
             }
             if (found > 0) await update(ref(database), updates);

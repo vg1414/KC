@@ -1,5 +1,13 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-14 – Allsvenskan-scraper via GitHub Actions
+
+### Nytt
+- `scripts/scrape_allsvenskan.py`: hämtar alla 240 Allsvenskan 2026-matcher från allsvenskan.se (GraphQL) och skriver till Firebase (`globalMatches/ALLSVENSKAN/2026/`)
+- `.github/workflows/allsvenskan.yml`: GitHub Actions-workflow som kör fixtures dagligen kl 07:00 och kollar resultat var 30:e minut 14:00–01:30
+- `.gitignore`: Firebase service account JSON läggs aldrig till i repot
+- `index.html`: `fetchAllsvenskanMatches()` och `fetchAllsvenskanResults()` läser nu från Firebase istället för TheSportsDB – alltid komplett och korrekt data
+
 ## 2026-03-14 – Auto-radering av inaktiva ligor
 
 ### Nytt

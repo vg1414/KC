@@ -1,0 +1,7 @@
+# Firebase service account (hemlig nyckel – ska ALDRIG pushas till GitHub)
+*firebase-adminsdk*.json
+
+# Python
+__pycache__/
+*.pyc
+.env

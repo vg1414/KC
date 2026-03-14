@@ -151,6 +151,14 @@ Kopiera och anpassa dessa delar (byt hårdkodade sökvägar mot `/leagues/{kod}/
 
 **Planerat (framtida session):** Superadmin-vy med alla användare och vilka ligor de spelar i/administrerar. Design-justering: finjustera Tippa-fliken och bakgrund ytterligare. Admin-panel "Ladda matcher"-sektionen (per-tävling-rader) behöver visuell polish.
 
+**Öppet beslut – Allsvenskan-scraper:**
+När GitHub Actions-scrapern uppdaterar datum/tider i Firebase-cachen (`globalMatches/ALLSVENSKAN/2026`) – ska den även uppdatera datum/tider i **befintliga ligor** automatiskt?
+- **A) Enkelt (nuvarande):** Admin laddar om omgången manuellt om en match byter tid.
+- **B) Avancerat:** Scrapern söker igenom alla ligor och uppdaterar automatiskt om datum/tid ändrats.
+Beslutet är uppskjutet. Ta upp det när/om tidsjusteringar i Allsvenskan visar sig vara ett praktiskt problem.
+
+**Framtida feature (planerad):** "Tippa ditt lags säsong" – vid ligaskapande väljer admin en tävling (t.ex. Allsvenskan) och sedan ett specifikt lag. Ligan innehåller då bara matcher där det laget deltar. Firebase-scrapern lagrar redan lag per match så datan är redo.
+
 ---
 
 ---

@@ -1,0 +1,61 @@
+name: Allsvenskan Scraper
+
+on:
+  schedule:
+    # Fixtures: en gång per dag kl 05:00 UTC (07:00 svensk tid)
+    - cron: "0 5 * * *"
+    # Resultat: var 30:e minut mellan 12:00–23:30 UTC (14:00–01:30 svensk tid)
+    # OBS: GitHub Actions cron stödjer inte intervall kortare än 5 min
+    # Vi kör var 30:e minut under matchfönstret (lör/sön 12–23 UTC, vardagar 16–23 UTC)
+    - cron: "*/30 12-23 * * *"
+
+  # Tillåt manuell körning från GitHub Actions-sidan
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Mode: fixtures eller results"
+        required: true
+        default: "fixtures"
+        type: choice
+        options:
+          - fixtures
+          - results
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checka ut koden
+        uses: actions/checkout@v4
+
+      - name: Sätt upp Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Installera beroenden
+        run: |
+          pip install requests firebase-admin
+
+      - name: Bestäm mode (fixtures på morgonen, results annars)
+        id: mode
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "mode=${{ github.event.inputs.mode }}" >> $GITHUB_OUTPUT
+          else
+            HOUR=$(date -u +%H)
+            MINUTE=$(date -u +%M)
+            # Om det är 05:xx UTC → fixtures-körning
+            if [ "$HOUR" = "05" ]; then
+              echo "mode=fixtures" >> $GITHUB_OUTPUT
+            else
+              echo "mode=results" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Kör scraper
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          python scripts/scrape_allsvenskan.py ${{ steps.mode.outputs.mode }}
