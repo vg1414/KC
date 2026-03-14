@@ -2037,6 +2037,7 @@
                     authInitialized  = true;
                     currentAuthUser  = user;
                     currentUserUID   = user?.uid || null;
+                    cleanupInactiveLeagues();
                     routeFromUrl();
                 } else {
                     currentAuthUser = user;
@@ -2048,6 +2049,41 @@
             console.error('Firebase-fel:', err);
             setEl('notFoundMsg', 'Firebase-fel: ' + err.message);
             showView('viewNotFound');
+        }
+
+        // ─── Cleanup: radera inaktiva ligor (sista tippade match >30 dagar gammal) ──
+        async function cleanupInactiveLeagues() {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const lastCleanup = localStorage.getItem('lastCleanupDate');
+            if (lastCleanup === todayStr) return; // redan kört idag
+
+            try {
+                const snap = await get(ref(database, 'leagues'));
+                if (!snap.exists()) return;
+                const allLeagues = snap.val();
+                const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+                const toDelete = [];
+
+                for (const [code, league] of Object.entries(allLeagues)) {
+                    const info = league?.info || {};
+                    const lastMatchDate = info.lastMatchDate || null;
+                    const hasPredictions = league?.predictions && Object.keys(league.predictions).length > 0;
+
+                    // Radera bara om ligan har tippningar och sista matchdatum är satt och >30 dagar gammalt
+                    if (hasPredictions && lastMatchDate && lastMatchDate < thirtyDaysAgo) {
+                        toDelete.push(code);
+                    }
+                }
+
+                for (const code of toDelete) {
+                    await set(ref(database, `leagues/${code}`), null);
+                    console.log(`🗑️ Inaktiv liga raderad: ${code}`);
+                }
+
+                localStorage.setItem('lastCleanupDate', todayStr);
+            } catch (err) {
+                console.warn('Cleanup misslyckades:', err);
+            }
         }
 
         // ─── URL-routing ──────────────────────────────────────────────────────────
@@ -3934,6 +3970,26 @@
             fetchLog(`✅ Klar! ${foundResults} nya resultat`);
             const lastEl = document.getElementById('lastFetchStatus');
             if (lastEl) lastEl.textContent = `Senast: ${new Date().toLocaleTimeString('sv-SE')}`;
+
+            // Uppdatera lastMatchDate på ligan (max 1 gång/dag)
+            if (foundResults > 0 && currentLeagueCode) {
+                const todayStr = new Date().toISOString().split('T')[0];
+                const infoSnap = await get(ref(database, `leagues/${currentLeagueCode}/info/lastMatchDateChecked`));
+                if (infoSnap.val() !== todayStr) {
+                    // Hitta senast spelade match (med resultat) som har tippningar
+                    const tippedMatchIds = Object.keys(predictions || {});
+                    const playedAndTipped = matchesCopy.filter(m => m.actualOutcome && tippedMatchIds.includes(m.id));
+                    if (playedAndTipped.length > 0) {
+                        const latestDate = playedAndTipped
+                            .map(m => new Date(m.date).getTime())
+                            .reduce((a, b) => Math.max(a, b), 0);
+                        await update(ref(database, `leagues/${currentLeagueCode}/info`), {
+                            lastMatchDate: latestDate,
+                            lastMatchDateChecked: todayStr
+                        });
+                    }
+                }
+            }
         }
 
         window.manualFetchResults = async function() {

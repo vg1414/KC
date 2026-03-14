@@ -1,5 +1,12 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-14 – Auto-radering av inaktiva ligor
+
+### Nytt
+- Inaktiva ligor raderas automatiskt efter 30 dagar (räknas från senaste spelade match med tippningar)
+- `lastMatchDate` sparas på ligan max en gång per dag när resultat hämtas
+- Cleanup körs vid appstart max en gång per dag
+
 ## 2026-03-14 – Buggfix: tävlingar som saknas i competitions-listan + UI
 
 ### Buggfixar
