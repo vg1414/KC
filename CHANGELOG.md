@@ -1,5 +1,12 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-14 – Dölj raderade ligor i hubben
+
+### Buggfix
+- Ligavalssidan visade inte längre existerande ligor – nu kontrolleras varje liga mot Firebase och saknade ligor filtreras bort och rensas automatiskt från användarens index
+
+---
+
 ## 2026-03-14 – Allsvenskan-scraper via GitHub Actions
 
 ### Nytt

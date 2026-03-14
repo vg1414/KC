@@ -4633,18 +4633,31 @@
                         }
                     }
                     if (leagueEntries.length > 0) {
-                        mySection.style.display = '';
-                        myList.innerHTML = leagueEntries.map(([code, info]) => `
-                            <button onclick="window.location.href='?liga=${code}'"
-                                style="width:100%;display:flex;justify-content:space-between;align-items:center;
-                                       background:#0a0c10;border:1px solid #1e2535;border-radius:10px;
-                                       padding:12px 16px;color:#e8edf5;font-family:'DM Sans',sans-serif;
-                                       font-size:.95em;cursor:pointer;text-align:left;transition:border-color .2s;"
-                                onmouseover="this.style.borderColor='#f0b429'"
-                                onmouseout="this.style.borderColor='#1e2535'">
-                                <span>${info.name}${info.role === 'admin' ? '<span style="color:#f0b429;font-size:.75em;margin-left:6px;">(Admin)</span>' : ''}</span>
-                                <span style="font-family:monospace;font-size:.85em;color:#f0b429;letter-spacing:3px;">${code}</span>
-                            </button>`).join('');
+                        // Kontrollera vilka ligor som faktiskt finns kvar
+                        const existChecks = await Promise.all(leagueEntries.map(([code]) =>
+                            get(ref(database, `leagues/${code}/info`)).then(s => ({ code, exists: s.exists() }))
+                        ));
+                        // Rensa bort raderade ligor från userLeagues-indexet
+                        for (const { code, exists } of existChecks) {
+                            if (!exists) {
+                                set(ref(database, `userLeagues/${currentAuthUser.uid}/${code}`), null).catch(() => {});
+                            }
+                        }
+                        const validEntries = leagueEntries.filter(([code]) => existChecks.find(c => c.code === code)?.exists);
+                        if (validEntries.length > 0) {
+                            mySection.style.display = '';
+                            myList.innerHTML = validEntries.map(([code, info]) => `
+                                <button onclick="window.location.href='?liga=${code}'"
+                                    style="width:100%;display:flex;justify-content:space-between;align-items:center;
+                                           background:#0a0c10;border:1px solid #1e2535;border-radius:10px;
+                                           padding:12px 16px;color:#e8edf5;font-family:'DM Sans',sans-serif;
+                                           font-size:.95em;cursor:pointer;text-align:left;transition:border-color .2s;"
+                                    onmouseover="this.style.borderColor='#f0b429'"
+                                    onmouseout="this.style.borderColor='#1e2535'">
+                                    <span>${info.name}${info.role === 'admin' ? '<span style="color:#f0b429;font-size:.75em;margin-left:6px;">(Admin)</span>' : ''}</span>
+                                    <span style="font-family:monospace;font-size:.85em;color:#f0b429;letter-spacing:3px;">${code}</span>
+                                </button>`).join('');
+                        } else { mySection.style.display = 'none'; }
                     } else { mySection.style.display = 'none'; }
                 } catch(e) { mySection.style.display = 'none'; }
             }
