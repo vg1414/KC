@@ -1,5 +1,12 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-14 – Buggfix: deadline omgång för omgång
+
+### Buggfix
+- Allsvenskan-matcher fick alla samma deadline-nyckel (`ALLSVENSKAN`) vilket gav fel spelstopp – nu per omgång precis som PL
+
+---
+
 ## 2026-03-14 – Dölj raderade ligor i hubben
 
 ### Buggfix

@@ -2339,7 +2339,6 @@
             // perRound
             const comp = match.competition;
             if (comp === 'CL') return match.stage ? `CL_${match.stage}` : 'CL';
-            if (comp === 'ALLSVENSKAN') return 'ALLSVENSKAN';
             return sanitizeDeadlineKey(match.league || comp);
         }
 
