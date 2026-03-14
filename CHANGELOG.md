@@ -1,5 +1,14 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-14 – Buggfixar: tippsynlighet efter spelstopp + färger
+
+### Fixat
+- Matcher-fliken: andras tippningar visas nu efter spelstopp (inte bara för startade matcher)
+- Tippa-fliken: döljs korrekt när alla spelstopp passerat (periodic timer-koll tillagd)
+- `getEffectiveDeadline`: fallback i global mode om GLOBAL-nyckeln saknas
+- `adminSetDeadlineMode`: rensar gamla deadlines vid lägesbyte (förhindrar nyckelkonflikter)
+- Färger i matcher-fliken: pred-row fick explicit textfärg, rätt/fel tydligare mot mörk bakgrund
+
 ## 2026-03-14 – Admin kan radera liga
 
 ### Nytt

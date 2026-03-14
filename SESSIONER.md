@@ -157,7 +157,7 @@ När GitHub Actions-scrapern uppdaterar datum/tider i Firebase-cachen (`globalMa
 - **B) Avancerat:** Scrapern söker igenom alla ligor och uppdaterar automatiskt om datum/tid ändrats.
 Beslutet är uppskjutet. Ta upp det när/om tidsjusteringar i Allsvenskan visar sig vara ett praktiskt problem.
 
-**Framtida feature (planerad):** "Tippa ditt lags säsong" – vid ligaskapande väljer admin en tävling (t.ex. Allsvenskan) och sedan ett specifikt lag. Ligan innehåller då bara matcher där det laget deltar. Firebase-scrapern lagrar redan lag per match så datan är redo.
+**Framtida feature (planerad):** "Tippa ditt lags säsong" – vid ligaskapande väljer admin en tävling (t.ex. Allsvenskan) och sedan ett specifikt lag. Spelarna tippar då säsongens ALLA matcher för det laget (hemma och borta). Flöde: välj liga → välj lag → alla matcherna för det laget laddas in automatiskt. Firebase-scrapern lagrar redan lag per match så datan är redo när featuren ska byggas.
 
 ---
 

@@ -744,12 +744,12 @@
         .match-teams { font-weight: 600; color: #d0d6e0; margin-bottom: 3px; }
         .match-meta  { color: #6b7280; font-size: .82em; margin-bottom: 6px; }
 
-        .pred-row           { padding: 3px 0; font-size: .84em; }
-        .pred-row-correct   { color: #059669; font-weight: 600; }
-        .pred-row-wrong     { color: #dc2626; }
-        .pred-row-pending   { color: #059669; }
-        .pred-row-waiting   { color: #9ca3af; }
-        .pred-row-postponed { color: #d97706; }
+        .pred-row           { padding: 3px 0; font-size: .84em; color: #d0d6e0; }
+        .pred-row-correct   { color: #4ade80; font-weight: 600; }
+        .pred-row-wrong     { color: #f87171; }
+        .pred-row-pending   { color: #94a3b8; }
+        .pred-row-waiting   { color: #6b7280; }
+        .pred-row-postponed { color: #fbbf24; }
 
         .pts-badge           { padding: 1px 6px; border-radius: 10px; font-size: .8em; font-weight: 600; margin-left: 4px; }
         .pts-badge-correct   { background: rgba(5,150,105,.2); color: #34d399; }
@@ -2352,7 +2352,7 @@
             });
         }
 
-        setInterval(updateCountdownSpans, 60000);
+        setInterval(() => { updateCountdownSpans(); updateTippaTabVisibility(); }, 60000);
 
         // ─── Match-hjälpare ───────────────────────────────────────────────────────
         function isMatchStarted(dateStr) { return new Date() >= new Date(dateStr); }
@@ -2384,6 +2384,9 @@
             const key = getDeadlineKey(match);
             if (deadlines[key]) return { time: deadlines[key], auto: false };
             if (deadlineMode === 'global') {
+                // Fallback: om GLOBAL-nyckeln saknas, ta vilken deadline som helst (t.ex. om mode byttes utan migrering)
+                const anyDl = Object.values(deadlines).find(v => v);
+                if (anyDl) return { time: anyDl, auto: false };
                 // Inget globalt spelstopp satt → varje match låser vid sin egen start
                 return { time: match.date, auto: true };
             }
@@ -3043,19 +3046,26 @@
                 if (!m.actualOutcome) {
                     predsHtml = '<div style="margin-top:8px;">';
                     allPlayers.forEach(player => {
-                        // Visa alltid eget faktiskt tips, oavsett status
-                        if (player === currentUser && matchPreds[player]) {
-                            const pred  = matchPreds[player];
-                            const exact = matchExact[player];
-                            const label = { '1': m.homeTeam, 'X': 'Oavgjort', '2': m.awayTeam }[pred] || pred;
+                        const pred  = matchPreds[player];
+                        const exact = matchExact[player];
+                        const label = { '1': m.homeTeam, 'X': 'Oavgjort', '2': m.awayTeam }[pred] || pred;
+                        if (pred && (locked || started)) {
+                            // Spelstopp passerat – visa faktiskt tips för alla
                             const display = exact
                                 ? `<strong>${exact.replace('-', ' – ')}</strong> <span style="font-size:.85em;">(${label})</span>`
                                 : `<strong>${label}</strong>`;
-                            const rowClass = (locked || started) ? 'pred-row' : 'pred-row pred-row-pending';
-                            predsHtml += `<div class="${rowClass}" style="color:#b8c4d4;">🎯 ${player}: ${display}</div>`;
-                        } else if (matchPreds[player]) {
-                            const rowClass = (locked || started) ? 'pred-row pred-row-pending' : 'pred-row pred-row-pending';
-                            predsHtml += `<div class="${rowClass}">✅ ${player}: Har tippat</div>`;
+                            const isMine = player === currentUser;
+                            predsHtml += `<div class="pred-row" style="${isMine ? 'color:#b8c4d4;' : ''}">🎯 ${player}: ${display}</div>`;
+                        } else if (pred) {
+                            // Före spelstopp – dölj andras faktiska tips
+                            if (player === currentUser) {
+                                const display = exact
+                                    ? `<strong>${exact.replace('-', ' – ')}</strong> <span style="font-size:.85em;">(${label})</span>`
+                                    : `<strong>${label}</strong>`;
+                                predsHtml += `<div class="pred-row pred-row-pending" style="color:#b8c4d4;">🎯 ${player}: ${display}</div>`;
+                            } else {
+                                predsHtml += `<div class="pred-row pred-row-pending">✅ ${player}: Har tippat</div>`;
+                            }
                         } else {
                             predsHtml += `<div class="pred-row pred-row-waiting">⏳ ${player}: Har inte tippat ännu</div>`;
                         }
@@ -3228,8 +3238,8 @@
                     const lockedLabel = `<span class="pred-locked-tipp">${myExact ? `Din tipp: <strong>${myExact.replace('-', ' – ')}</strong>` : 'Du tippade inte'}</span><span class="pred-locked-chip">STÄNGD</span>`;
 
                     let predsHtml = '';
-                    if (started && Object.keys(matchPreds).length > 0) {
-                        // Matchen har startat – visa alla tippningar
+                    if (isEffLocked && Object.keys(matchPreds).length > 0) {
+                        // Deadline passerad eller matchen startad – visa alla tippningar
                         predsHtml = `<div class="predictions-revealed">
                             <h4>Alla tippningar:</h4>
                             ${Object.entries(matchPreds).map(([player, pred]) => {
@@ -4414,10 +4424,12 @@
         window.adminSetDeadlineMode = async function(mode) {
             if (!isAdmin()) return;
             try {
+                // Rensa alla gamla deadlines när läget byts – undviker nyckelkonflikter
+                await set(ref(database, `leagues/${currentLeagueCode}/deadlines`), null);
                 await set(ref(database, `leagues/${currentLeagueCode}/info/deadlineMode`), mode);
                 deadlineMode = mode;
                 renderAdminDeadlines();
-                showAppMsg('✅ Spelstoppsläge uppdaterat', 'success');
+                showAppMsg('✅ Spelstoppsläge uppdaterat – sätt nya spelstopp nedan', 'success');
             } catch (err) { showAppMsg('❌ ' + err.message, 'error'); }
         };
 
