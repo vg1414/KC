@@ -1679,30 +1679,6 @@
                     </div>
                 </div>
 
-                <!-- Ladda matcher -->
-                <div class="admin-section" id="adminLoadMatchesSection">
-                    <div class="admin-section-header" onclick="window.toggleAdminSection(this)">
-                        📥 Ladda matcher från API <span class="admin-toggle-icon">▼</span>
-                    </div>
-                    <div class="admin-section-body">
-                        <div id="adminCompRows"></div>
-                        <button class="btn-fetch-now" style="margin-top:10px;" onclick="window.adminLoadAllMatches()">Ladda matcher</button>
-                        <div class="admin-log" id="adminLoadLog"></div>
-                    </div>
-                </div>
-
-                <!-- Hämta resultat -->
-                <div class="admin-section" id="adminFetchResultsSection">
-                    <div class="admin-section-header" onclick="window.toggleAdminSection(this)">
-                        ⚽ Hämta resultat <span class="admin-toggle-icon">▼</span>
-                    </div>
-                    <div class="admin-section-body">
-                        <div class="fetch-last-status" id="lastFetchStatus">Senast: –</div>
-                        <button class="btn-fetch-now" onclick="window.manualFetchResults()">Hämta resultat nu</button>
-                        <div class="admin-log" id="fetchLog"></div>
-                    </div>
-                </div>
-
                 <!-- Spelare -->
                 <div class="admin-section">
                     <div class="admin-section-header" onclick="window.toggleAdminSection(this)">
@@ -1728,6 +1704,30 @@
                     </div>
                     <div class="admin-section-body">
                         <div id="adminDeadlinesList"></div>
+                    </div>
+                </div>
+
+                <!-- Hämta resultat -->
+                <div class="admin-section" id="adminFetchResultsSection">
+                    <div class="admin-section-header" onclick="window.toggleAdminSection(this)">
+                        ⚽ Hämta resultat <span class="admin-toggle-icon">▼</span>
+                    </div>
+                    <div class="admin-section-body">
+                        <div class="fetch-last-status" id="lastFetchStatus">Senast: –</div>
+                        <button class="btn-fetch-now" style="display:block;margin:0 auto;" onclick="window.manualFetchResults()">Hämta resultat nu</button>
+                        <div class="admin-log" id="fetchLog"></div>
+                    </div>
+                </div>
+
+                <!-- Ladda matcher -->
+                <div class="admin-section" id="adminLoadMatchesSection">
+                    <div class="admin-section-header" onclick="window.toggleAdminSection(this)">
+                        📥 Ladda matcher från API <span class="admin-toggle-icon">▼</span>
+                    </div>
+                    <div class="admin-section-body">
+                        <div id="adminCompRows"></div>
+                        <button class="btn-fetch-now" style="margin-top:10px;" onclick="window.adminLoadAllMatches()">Ladda matcher</button>
+                        <div class="admin-log" id="adminLoadLog"></div>
                     </div>
                 </div>
 

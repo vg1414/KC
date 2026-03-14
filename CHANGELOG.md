@@ -1,5 +1,13 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-14 – Admin-meny: ny ordning + centrerad knapp
+
+### Förändringar
+- Admin-sektioner omordnade: Ligainfo → Spelare → Spelstopp → Hämta resultat → Ladda matcher → Admin-guide
+- "Hämta resultat nu"-knappen centrerad
+
+---
+
 ## 2026-03-14 – Buggfix: deadline omgång för omgång
 
 ### Buggfix
