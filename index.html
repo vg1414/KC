@@ -3658,7 +3658,7 @@
 
             const all = Object.entries(data).map(([id, m]) => ({ id, ...m }));
 
-            // Gruppera per omgång, ta bara kommande/ospelad (ej FINISHED/POSTPONED utan befintligt resultat i ligan)
+            // Gruppera per omgång
             const byRound = {};
             all.forEach(m => {
                 const r = m.round || '?';
@@ -3666,9 +3666,15 @@
                 byRound[r].push(m);
             });
 
+            // Ta bara omgångar vars första match INTE har passerat (framtida omgångar)
+            const now = new Date();
             const roundKeys = Object.keys(byRound)
                 .filter(r => r !== '?')
                 .sort((a, b) => Number(a) - Number(b))
+                .filter(r => {
+                    const firstMatch = byRound[r].reduce((min, m) => new Date(m.date) < new Date(min.date) ? m : min, byRound[r][0]);
+                    return new Date(firstMatch.date) > now;
+                })
                 .slice(0, rounds);
 
             const converted = [], labels = [];
@@ -3767,6 +3773,18 @@
                 : await fetchCompetitionMatches(comp, rounds);
             const matchesToLoad = result.converted;
             if (matchesToLoad.length === 0) { adminLog(`⚠️ Inga ${comp}-matcher hittades.`); return { count: 0, converted: [] }; }
+            // För ALLSVENSKAN: radera ALLA befintliga matcher (inkl. gamla TheSportsDB-ID:n) innan ny laddning
+            if (comp === 'ALLSVENSKAN') {
+                const clearUpdates = {};
+                const season = getSeasonForComp(comp);
+                matches
+                    .filter(m => m.competition === comp && !m.setBy)
+                    .forEach(m => { clearUpdates[`globalMatches/${comp}/${season}/${m.id}`] = null; });
+                if (Object.keys(clearUpdates).length > 0) {
+                    await update(ref(database), clearUpdates);
+                    adminLog(`🗑️ Raderade ${Object.keys(clearUpdates).length} gamla ALLSVENSKAN-matcher`);
+                }
+            }
             const existingMap = {};
             matches.forEach(m => { existingMap[m.id] = m; });
             const newMatches = matchesToLoad.map(m => {
@@ -3780,7 +3798,7 @@
                 const { id, ...rest } = m;
                 updates[`globalMatches/${m.competition}/${s}/${m.id}`] = Object.fromEntries(Object.entries(rest).filter(([, v]) => v !== null && v !== undefined));
             });
-            // Radera gamla pending-matcher för denna tävling som inte ingår i den nya laddningen
+            // Radera ALLA befintliga pending-matcher för denna tävling (inkl. gamla TheSportsDB-ID:n)
             const newIds = new Set(matchesToLoad.map(m => m.id));
             const season = getSeasonForComp(comp);
             matches
