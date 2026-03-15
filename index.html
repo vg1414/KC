@@ -739,21 +739,29 @@
         .round-body.collapsed { max-height: 0; }
 
         /* ── Match-kort (Matcher-flik) ── */
-        .match-item { padding: 14px; border-bottom: 1px solid rgba(255,255,255,.06); font-size: .88em; }
+        .match-item { padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,.06); font-size: 1em; }
         .match-item:last-child { border-bottom: none; }
-        .match-teams { font-weight: 600; color: #d0d6e0; margin-bottom: 3px; }
-        .match-meta  { color: #6b7280; font-size: .82em; margin-bottom: 6px; }
+        .match-teams { font-weight: 700; color: #d0d6e0; margin-bottom: 4px; font-size: 1.15em; }
+        .match-score-inline { color: #f0b429; font-family: 'JetBrains Mono', monospace; font-weight: 700; margin-left: 8px; }
+        .match-meta  { color: #6b7280; font-size: .82em; margin-bottom: 8px; }
 
-        .pred-row           { padding: 3px 0; font-size: .84em; color: #d0d6e0; }
-        .pred-row-correct   { color: #4ade80; font-weight: 600; }
-        .pred-row-wrong     { color: #f87171; }
+        .pred-row           { padding: 2px 6px; font-size: .80em; color: #d0d6e0; display: flex; align-items: center; gap: 6px; }
+        .pred-row-correct   { color: #d0d6e0; font-weight: 600; }
+        .pred-row-wrong     { color: #d0d6e0; }
         .pred-row-pending   { color: #94a3b8; }
         .pred-row-waiting   { color: #6b7280; }
         .pred-row-postponed { color: #fbbf24; }
 
-        .pts-badge           { padding: 1px 6px; border-radius: 10px; font-size: .8em; font-weight: 600; margin-left: 4px; }
+        .pred-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+        .pred-row-me { background: rgba(240,180,41,.13); border-radius: 5px; font-weight: 600; }
+        .pred-dot-correct   { background: #4ade80; }
+        .pred-dot-wrong     { background: #f87171; }
+        .pred-dot-missing   { background: #374151; }
+        .pred-dot-postponed { background: #fbbf24; }
+
+        .pts-badge           { padding: 2px 7px; border-radius: 10px; font-size: .85em; font-weight: 600; margin-left: 4px; }
         .pts-badge-correct   { background: rgba(5,150,105,.2); color: #34d399; }
-        .pts-badge-wrong     { background: rgba(255,255,255,.06); color: #5a6380; }
+        .pts-badge-wrong     { background: rgba(248,113,113,.15); color: #f87171; }
 
         /* ── Prediction-kort – Design 4 ── */
         .pred-match {
@@ -3015,13 +3023,17 @@
                 const started     = isMatchStarted(m.date);
                 const locked      = isMatchLocked(m);
                 const scoreStr    = m.actualScore ? ` (${m.actualScore})` : '';
-                const outcomeText = {
-                    '1': `✅ ${m.homeTeam} vann${scoreStr}`,
-                    'X': `✅ Oavgjort${scoreStr}`,
-                    '2': `✅ ${m.awayTeam} vann${scoreStr}`,
-                    'POSTPONED': '⚠️ Match inställd – alla får 0 poäng'
+                // Inline-resultat i lagnamnsraden (visas direkt efter lagnamnen)
+                const inlineScore = m.actualOutcome && m.actualScore && m.actualOutcome !== 'POSTPONED'
+                    ? ` <span class="match-score-inline">${m.actualScore}</span>` : '';
+                // Statustext för meta-raden (utan score, det visas inline ovan)
+                const outcomeStatus = {
+                    '1': '✅',
+                    'X': '✅',
+                    '2': '✅',
+                    'POSTPONED': '⚠️ Inställd'
                 };
-                const status = m.actualOutcome ? (outcomeText[m.actualOutcome] || m.actualOutcome) :
+                const status = m.actualOutcome ? (outcomeStatus[m.actualOutcome] || m.actualOutcome) :
                                (started ? '⏳ Väntar på resultat...' : '📅 Ej startad');
 
                 const matchPreds     = predictions[m.id] || {};
@@ -3049,20 +3061,21 @@
                         const pred  = matchPreds[player];
                         const exact = matchExact[player];
                         const label = { '1': m.homeTeam, 'X': 'Oavgjort', '2': m.awayTeam }[pred] || pred;
+                        const isMine = player === currentUser;
+                        const meClass = isMine ? ' pred-row-me' : '';
                         if (pred && (locked || started)) {
                             // Spelstopp passerat – visa faktiskt tips för alla
                             const display = exact
                                 ? `<strong>${exact.replace('-', ' – ')}</strong> <span style="font-size:.85em;">(${label})</span>`
                                 : `<strong>${label}</strong>`;
-                            const isMine = player === currentUser;
-                            predsHtml += `<div class="pred-row" style="${isMine ? 'color:#b8c4d4;' : ''}">🎯 ${player}: ${display}</div>`;
+                            predsHtml += `<div class="pred-row${meClass}">🎯 ${player}: ${display}</div>`;
                         } else if (pred) {
                             // Före spelstopp – dölj andras faktiska tips
-                            if (player === currentUser) {
+                            if (isMine) {
                                 const display = exact
                                     ? `<strong>${exact.replace('-', ' – ')}</strong> <span style="font-size:.85em;">(${label})</span>`
                                     : `<strong>${label}</strong>`;
-                                predsHtml += `<div class="pred-row pred-row-pending" style="color:#b8c4d4;">🎯 ${player}: ${display}</div>`;
+                                predsHtml += `<div class="pred-row pred-row-pending${meClass}">🎯 ${player}: ${display}</div>`;
                             } else {
                                 predsHtml += `<div class="pred-row pred-row-pending">✅ ${player}: Har tippat</div>`;
                             }
@@ -3078,22 +3091,22 @@
                         const pred  = matchPreds[player];
                         const exact = matchExact[player];
                         const label = { '1': m.homeTeam, 'X': 'Oavgjort', '2': m.awayTeam }[pred] || pred;
+                        const meClass = player === currentUser ? ' pred-row-me' : '';
                         if (!pred) {
-                            predsHtml += `<div class="pred-row pred-row-waiting">❌ ${player}: Tippade inte</div>`;
+                            predsHtml += `<div class="pred-row pred-row-waiting${meClass}"><span class="pred-dot pred-dot-missing"></span>${player}: Tippade inte</div>`;
                         } else if (isPostponed) {
                             const exactTag = exact ? ` [${exact}]` : '';
-                            predsHtml += `<div class="pred-row pred-row-postponed">⚠️ ${player}: ${label}${exactTag}</div>`;
+                            predsHtml += `<div class="pred-row pred-row-postponed${meClass}"><span class="pred-dot pred-dot-postponed"></span>${player}: ${label}${exactTag}</div>`;
                         } else {
                             const isCorrect   = pred === m.actualOutcome;
                             const exactRight  = exact && m.actualScore && exact === m.actualScore;
                             const isUnicorn   = isCorrect && exactRight && correctOutcomeCount === 1;
                             const isSniper    = isCorrect && correctOutcomeCount === 1 && !isUnicorn;
-                            const icon        = isCorrect ? '✅' : '❌';
                             const exactTag    = exact ? ` [${exact}]${exactRight ? ` 🔮+50${isUnicorn ? ' 🦄' : ''}` : ''}` : '';
                             const sniperTag   = isSniper ? ' 🎯' : '';
                             const pts         = getCachedPoints(m.id, player);
                             const ptsBadge    = `<span class="pts-badge ${isCorrect ? 'pts-badge-correct' : 'pts-badge-wrong'}">${pts}p</span>`;
-                            predsHtml += `<div class="pred-row ${isCorrect ? 'pred-row-correct' : 'pred-row-wrong'}">${icon} ${player}: ${label}${exactTag}${sniperTag}${ptsBadge}</div>`;
+                            predsHtml += `<div class="pred-row ${isCorrect ? 'pred-row-correct' : 'pred-row-wrong'}${meClass}"><span class="pred-dot ${isCorrect ? 'pred-dot-correct' : 'pred-dot-wrong'}"></span>${player}: ${label}${exactTag}${sniperTag}${ptsBadge}</div>`;
                         }
                     });
                     predsHtml += '</div>';
@@ -3101,11 +3114,11 @@
 
                 const canSetResult = !!currentUser && started && (isAdmin() || m.setBy !== 'API') && m.actualOutcome !== 'POSTPONED';
                 const resultBtn = canSetResult ? `<button class="result-set-btn" onclick="window.openResultModal('${m.id}')">${m.actualOutcome ? '✏️ Ändra resultat' : '📝 Sätt resultat'}</button>` : '';
-                const setByText = m.setBy && m.actualOutcome ? `  (Satt av: ${m.setBy === 'API' ? 'API' : m.setBy})` : '';
+                const setByText = m.setBy && m.actualOutcome ? ` · (Satt av: ${m.setBy === 'API' ? 'API' : m.setBy})` : '';
 
                 return `
                     <div class="match-item">
-                        <div class="match-teams">${m.homeTeam} vs ${m.awayTeam}</div>
+                        <div class="match-teams">${m.homeTeam} vs ${m.awayTeam}${inlineScore}</div>
                         <div class="match-meta">${dateStr} · ${status}${setByText}</div>
                         ${predsHtml}
                         ${resultBtn}

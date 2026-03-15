@@ -1,5 +1,14 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-15 – Design: matcher-fliken förbättrad
+
+### Ändrat
+- Röda ❌ och gröna ✅ före spelarnamn ersatta med diskreta 6px färgprickar (grön=rätt, röd=fel)
+- Spelarnamn och tippat resultat behåller neutral färg – pricken bär färginformationen
+- 0p vid fel tippning visas nu i rött (liksom poäng i grönt vid rätt)
+- Eget namn highlightat med subtil guldbakgrund för snabb igenkänning
+- Textstorlek på spelarrader minskad till 0.8em för renare intryck
+
 ## 2026-03-14 – Buggfixar: tippsynlighet efter spelstopp + färger
 
 ### Fixat
