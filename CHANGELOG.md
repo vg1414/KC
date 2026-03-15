@@ -1,5 +1,16 @@
 # CHANGELOG – Krokens Copa Multi-Liga
 
+## 2026-03-15 – Flaggningssystem för felaktiga resultat
+
+### Nytt
+- Spelare kan flagga API-satta resultat som felaktiga (🚩 visas direkt efter resultatet, synlig i 24h)
+- Max 3 flaggningar per match, en per spelare – sparas med namn och tidpunkt
+- Flaggad match: inga poäng räknas, gula pluppar visas istället för gröna/röda
+- Admin-sektion "🚩 Flaggade matcher" (efter Spelstopp) med lista, tidpunkt, utgångstid och knapp för att rensa flagga
+- Auto-fetch re-fetchar bara flaggade matcher (ej alla API-resultat < 48h) – sparar API-anrop
+- Flagga löper ut automatiskt efter 48h från matchstart
+- Admin-listan uppdateras live när sektionen är öppen
+
 ## 2026-03-15 – Design: matcher-fliken förbättrad
 
 ### Ändrat

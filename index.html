@@ -763,6 +763,9 @@
         .pts-badge           { padding: 2px 7px; border-radius: 10px; font-size: .85em; font-weight: 600; margin-left: 4px; }
         .pts-badge-correct   { background: rgba(5,150,105,.2); color: #34d399; }
         .pts-badge-wrong     { background: rgba(248,113,113,.15); color: #f87171; }
+        .pred-dot-flagged    { background: #fbbf24; }
+        .pred-row-flagged    { color: #b8c4d4; }
+        .pts-badge-flagged   { background: rgba(251,191,36,.15); color: #fbbf24; }
 
         /* ── Prediction-kort – Design 4 ── */
         .pred-match {
@@ -1065,6 +1068,9 @@
         .result-modal-btns { display: flex; gap: 8px; }
         .result-set-btn { display: block; width: 100%; padding: 6px 10px; margin-top: 6px; background: rgba(255,255,255,.07); color: #d0d6e0; border: none; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: .82em; font-weight: 600; cursor: pointer; text-align: left; }
         .result-set-btn:hover { background: rgba(255,255,255,.12); }
+        .flag-btn { display: inline; background: none; border: none; padding: 0; margin-left: 14px; font-size: .9em; cursor: pointer; opacity: .7; vertical-align: middle; }
+        .flag-btn:hover { opacity: 1; }
+        .flag-btn.flag-btn-done { opacity: .35; cursor: default; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script>emailjs.init('9rPplYGAXUrKEEOiq');</script>
@@ -1716,6 +1722,16 @@
                     </div>
                 </div>
 
+                <!-- Flaggade matcher -->
+                <div class="admin-section">
+                    <div class="admin-section-header" onclick="window.toggleAdminSection(this)">
+                        🚩 Flaggade matcher <span class="admin-toggle-icon">▼</span>
+                    </div>
+                    <div class="admin-section-body" id="flaggedMatchesBody">
+                        <div id="flaggedMatchesList" style="font-size:.88em;color:#8896aa;">Laddar...</div>
+                    </div>
+                </div>
+
                 <!-- Hämta resultat -->
                 <div class="admin-section" id="adminFetchResultsSection">
                     <div class="admin-section-header" onclick="window.toggleAdminSection(this)">
@@ -1814,6 +1830,7 @@
                         </div>
                     </div>
                 </div>
+
 
 
             </div><!-- /tab-admin -->
@@ -2427,6 +2444,7 @@
             const match = getMatch(matchId);
             if (!match || !match.actualOutcome) return 0;
             if (match.actualOutcome === 'POSTPONED') return 0;
+            if (match.isFlagged) return 0;
 
             let pts = 0;
             const playerPred = predictions[matchId]?.[player];
@@ -2497,6 +2515,10 @@
                     renderAdminPlayers();
                     renderAdminDeadlines();
                     renderAdminCompRows();
+                    const flaggedBody = document.getElementById('flaggedMatchesBody');
+                    if (flaggedBody && flaggedBody.classList.contains('open')) {
+                        window.renderFlaggedMatches();
+                    }
                 }
             });
         }
@@ -3028,7 +3050,12 @@
                 const inlineScore = m.actualOutcome && m.actualScore && m.actualOutcome !== 'POSTPONED'
                     ? ` <span class="match-score-inline">${m.actualScore}</span>` : '';
                 // Statustext för meta-raden (utan score, det visas inline ovan)
-                const outcomeStatus = {
+                const outcomeStatus = m.isFlagged ? {
+                    '1': '🟡',
+                    'X': '🟡',
+                    '2': '🟡',
+                    'POSTPONED': '⚠️ Inställd'
+                } : {
                     '1': '✅',
                     'X': '✅',
                     '2': '✅',
@@ -3098,6 +3125,11 @@
                         } else if (isPostponed) {
                             const exactTag = exact ? ` [${exact}]` : '';
                             predsHtml += `<div class="pred-row pred-row-postponed${meClass}"><span class="pred-dot pred-dot-postponed"></span>${player}: ${label}${exactTag}</div>`;
+                        } else if (m.isFlagged) {
+                            const exactTag = exact ? ` [${exact}]` : '';
+                            const pts      = getCachedPoints(m.id, player);
+                            const ptsBadge = `<span class="pts-badge pts-badge-flagged">${pts}p</span>`;
+                            predsHtml += `<div class="pred-row pred-row-flagged${meClass}"><span class="pred-dot pred-dot-flagged"></span>${player}: ${label}${exactTag}${ptsBadge}</div>`;
                         } else {
                             const isCorrect   = pred === m.actualOutcome;
                             const exactRight  = exact && m.actualScore && exact === m.actualScore;
@@ -3117,9 +3149,20 @@
                 const resultBtn = canSetResult ? `<button class="result-set-btn" onclick="window.openResultModal('${m.id}')">${m.actualOutcome ? '✏️ Ändra resultat' : '📝 Sätt resultat'}</button>` : '';
                 const setByText = m.setBy && m.actualOutcome ? ` · (Satt av: ${m.setBy === 'API' ? 'API' : m.setBy})` : '';
 
+                const matchAgeHours = (new Date() - new Date(m.date)) / 3600000;
+                const existingFlags = m.flags ? Object.values(m.flags) : [];
+                const alreadyFlagged = existingFlags.some(f => f.by === currentUser);
+                const flagsFull = existingFlags.length >= 3;
+                const canFlag = !!currentUser && m.setBy === 'API' && m.actualOutcome && m.actualOutcome !== 'POSTPONED' && matchAgeHours < 24 && !alreadyFlagged && !flagsFull;
+                const flagBtn = (!!currentUser && m.setBy === 'API' && m.actualOutcome && m.actualOutcome !== 'POSTPONED' && matchAgeHours < 24)
+                    ? (alreadyFlagged || flagsFull
+                        ? `<button class="flag-btn flag-btn-done" disabled title="Du har flaggat detta resultat">🚩</button>`
+                        : `<button class="flag-btn" onclick="window.flagMatch('${m.id}')" title="Flagga felaktigt resultat">🚩</button>`)
+                    : '';
+
                 return `
                     <div class="match-item">
-                        <div class="match-teams">${m.homeTeam} vs ${m.awayTeam}${inlineScore}</div>
+                        <div class="match-teams">${m.homeTeam} vs ${m.awayTeam}${inlineScore}${flagBtn}</div>
                         <div class="match-meta">${dateStr} · ${status}${setByText}</div>
                         ${predsHtml}
                         ${resultBtn}
@@ -3621,6 +3664,56 @@
                     if (activityLogUnsubscriber) { activityLogUnsubscriber(); activityLogUnsubscriber = null; }
                 }
             }
+            if (body.querySelector('#flaggedMatchesList') && body.classList.contains('open')) {
+                window.renderFlaggedMatches();
+            }
+        };
+
+        window.renderFlaggedMatches = function() {
+            const el = document.getElementById('flaggedMatchesList');
+            if (!el) return;
+            const flagged = matches.filter(m => m.isFlagged);
+            if (flagged.length === 0) {
+                el.innerHTML = '<span style="color:#8896aa;">Inga flaggade matcher just nu.</span>';
+                return;
+            }
+            const now = new Date();
+            el.innerHTML = flagged.map(m => {
+                const flags = m.flags ? Object.values(m.flags).sort((a, b) => new Date(a.at) - new Date(b.at)) : [];
+                const matchDate = new Date(m.date);
+                const expiresAt = new Date(matchDate.getTime() + 48 * 3600000);
+                const expiresInMs = expiresAt - now;
+                const expiresStr = expiresInMs > 0
+                    ? `om ${Math.floor(expiresInMs / 3600000)}h ${Math.floor((expiresInMs % 3600000) / 60000)}min`
+                    : 'utgången';
+                const flagsHtml = flags.map(f => {
+                    const atStr = f.at ? new Date(f.at).toLocaleString('sv-SE', { dateStyle: 'short', timeStyle: 'short' }) : '–';
+                    return `<div style="color:#8896aa;font-size:.82em;">🚩 ${f.by} · ${atStr}</div>`;
+                }).join('');
+                return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06);">
+                    <div>
+                        <div style="font-weight:600;color:#d0d6e0;">${m.homeTeam} vs ${m.awayTeam} <span style="color:#f87171;">${m.actualScore || ''}</span></div>
+                        ${flagsHtml}
+                        <div style="color:#8896aa;font-size:.82em;">Löper ut: ${expiresStr}</div>
+                    </div>
+                    <button onclick="window.clearFlag('${m.id}')" style="background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.25);border-radius:6px;padding:4px 10px;font-size:.82em;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-left:12px;">Rensa flagga</button>
+                </div>`;
+            }).join('');
+        };
+
+        window.clearFlag = async function(matchId) {
+            const match = getMatch(matchId);
+            if (!match) return;
+            const s = getSeasonForComp(match.competition);
+            try {
+                await update(ref(database), {
+                    [`globalMatches/${match.competition}/${s}/${matchId}/isFlagged`]: false,
+                    [`globalMatches/${match.competition}/${s}/${matchId}/flags`]: null
+                });
+                showAppMsg('Flagga borttagen', 'info');
+            } catch (err) {
+                showAppMsg('❌ Kunde inte rensa flagga: ' + err.message, 'error');
+            }
         };
 
         // ─── CL-fasetiketter ─────────────────────────────────────────────────────
@@ -3777,7 +3870,8 @@
                 const updated = { ...match,
                     actualOutcome: firebaseMatch.actualOutcome,
                     actualScore: firebaseMatch.actualScore,
-                    setBy: 'API', setAt: firebaseMatch.setAt || new Date().toISOString()
+                    setBy: 'API', setAt: firebaseMatch.setAt || new Date().toISOString(),
+                    isFlagged: false, flags: null
                 };
                 const { id: _id, ...matchData } = updated;
                 updates[`globalMatches/ALLSVENSKAN/2026/${match.id}`] = matchData;
@@ -3846,7 +3940,7 @@
             const newMatches = matchesToLoad.map(m => {
                 const ex = existingMap[m.id];
                 // Bevara bara resultat från existerande matcher – datum/tid skrivs alltid över med ny data
-                return ex ? { ...m, actualOutcome: ex.actualOutcome ?? null, actualScore: ex.actualScore ?? null, setBy: ex.setBy ?? null, setAt: ex.setAt ?? null } : m;
+                return ex ? { ...m, actualOutcome: ex.actualOutcome ?? null, actualScore: ex.actualScore ?? null, setBy: ex.setBy ?? null, setAt: ex.setAt ?? null, isFlagged: ex.isFlagged ?? null, flags: ex.flags ?? null } : m;
             });
             const updates = {};
             newMatches.forEach(m => {
@@ -3939,16 +4033,24 @@
             if (!plApiKey) return;
             const now = new Date();
             const pendingMatches = matches.filter(match => {
-                if (match.setBy === 'API') {
-                    const ageHours = match.setAt ? (now - new Date(match.setAt)) / 3600000 : Infinity;
-                    if (ageHours > 48) return false;
-                }
-                if (match.actualOutcome === 'POSTPONED') {
-                    const ageHours = (now - new Date(match.date)) / 3600000;
-                    if (ageHours > 48) return false;
-                }
                 if (!isMatchStarted(match.date)) return false;
-                return (now - new Date(match.date)) / 3600000 >= 100/60;
+                const matchAgeHours = (now - new Date(match.date)) / 3600000;
+                if (matchAgeHours < 100/60) return false;
+
+                // API-satta resultat: re-fetcha bara om flaggad och < 48h gammal
+                if (match.setBy === 'API' && match.actualOutcome && match.actualOutcome !== 'POSTPONED') {
+                    if (!match.isFlagged) return false;
+                    if (matchAgeHours >= 48) return false;  // auto-expire av flagga
+                    return true;
+                }
+
+                // Inställd: kontrollera upp till 48h efter matchdatum
+                if (match.actualOutcome === 'POSTPONED') {
+                    return matchAgeHours <= 48;
+                }
+
+                // Inget resultat ännu: alltid med
+                return true;
             });
 
             if (pendingMatches.length === 0) {
@@ -3977,6 +4079,7 @@
             });
 
             const matchesCopy = [...matches];
+            const updatedMatchIds = new Set();
 
             for (const key of Object.keys(groups)) {
                 const group = groups[key];
@@ -4005,10 +4108,20 @@
                         const outcome = hg > ag ? '1' : hg < ag ? '2' : 'X';
                         const idx = matchesCopy.findIndex(m => m.id === match.id);
                         if (idx >= 0) {
-                            matchesCopy[idx] = { ...matchesCopy[idx], actualOutcome: outcome, actualScore: `${hg}-${ag}`, setBy: 'API', setAt: new Date().toISOString() };
-                            fetchLog(`✅ ${match.homeTeam} ${hg}-${ag} ${match.awayTeam}`);
-                            await logActivity('AUTO_RESULT', `API: ${match.homeTeam} ${hg}-${ag} ${match.awayTeam}`);
-                            foundResults++;
+                            const prevScore = matchesCopy[idx].actualScore;
+                            const newScore = `${hg}-${ag}`;
+                            const scoreChanged = prevScore !== newScore;
+
+                            matchesCopy[idx] = { ...matchesCopy[idx], actualOutcome: outcome, actualScore: newScore, setBy: 'API', setAt: new Date().toISOString(), isFlagged: false, flags: null };
+                            updatedMatchIds.add(match.id);
+
+                            if (scoreChanged) {
+                                fetchLog(`🔄 ${match.homeTeam} ${newScore} ${match.awayTeam} (rättad från ${prevScore || 'inget'})`);
+                                await logActivity('AUTO_RESULT', `API (rättad): ${match.homeTeam} ${newScore} ${match.awayTeam}`);
+                                foundResults++;
+                            } else {
+                                fetchLog(`ℹ️ ${match.homeTeam} ${newScore} ${match.awayTeam} – samma resultat, flagg rensat`);
+                            }
                         }
                     }
 
@@ -4021,7 +4134,7 @@
 
             const resultUpdates = {};
             matchesCopy
-                .filter(m => m.setBy === 'API' && m.competition !== 'ALLSVENSKAN')
+                .filter(m => updatedMatchIds.has(m.id))
                 .forEach(m => {
                     const s = getSeasonForComp(m.competition);
                     const { id, ...rest } = m;
@@ -4108,6 +4221,37 @@
         window.closeResultModal = function() {
             document.getElementById('resultModal').style.display = 'none';
             currentModalMatchId = null;
+        };
+
+        window.flagMatch = async function(matchId) {
+            if (!currentUser) return;
+            const match = getMatch(matchId);
+            if (!match) return;
+
+            // Kolla om denna användare redan flaggat
+            const existingFlags = match.flags ? Object.values(match.flags) : [];
+            if (existingFlags.some(f => f.by === currentUser)) return;
+            // Max 3 flaggningar per match
+            if (existingFlags.length >= 3) return;
+
+            const confirmed = confirm(
+                `Flagga resultatet för ${match.homeTeam} vs ${match.awayTeam} (${match.actualScore}) som felaktigt?\n\n` +
+                `Detta gör att resultatet hämtas om automatiskt nästa gång auto-hämtning körs.`
+            );
+            if (!confirmed) return;
+
+            try {
+                const s = getSeasonForComp(match.competition);
+                const newFlagKey = `flag${Date.now()}`;
+                const updates = {
+                    [`globalMatches/${match.competition}/${s}/${matchId}/isFlagged`]: true,
+                    [`globalMatches/${match.competition}/${s}/${matchId}/flags/${newFlagKey}`]: { by: currentUser, at: new Date().toISOString() }
+                };
+                await update(ref(database), updates);
+                showAppMsg('🚩 Resultat flaggat – hämtas om vid nästa auto-körning', 'info');
+            } catch (err) {
+                showAppMsg('❌ Kunde inte flagga: ' + err.message, 'error');
+            }
         };
 
         window.setModalPostponed = function() {
