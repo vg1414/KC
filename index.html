@@ -4137,8 +4137,13 @@
                 .filter(m => updatedMatchIds.has(m.id))
                 .forEach(m => {
                     const s = getSeasonForComp(m.competition);
-                    const { id, ...rest } = m;
-                    resultUpdates[`globalMatches/${m.competition}/${s}/${m.id}`] = Object.fromEntries(Object.entries(rest).filter(([, v]) => v !== null && v !== undefined));
+                    const base = `globalMatches/${m.competition}/${s}/${m.id}`;
+                    resultUpdates[`${base}/actualOutcome`] = m.actualOutcome;
+                    resultUpdates[`${base}/actualScore`] = m.actualScore;
+                    resultUpdates[`${base}/setBy`] = m.setBy;
+                    resultUpdates[`${base}/setAt`] = m.setAt;
+                    resultUpdates[`${base}/isFlagged`] = false;
+                    resultUpdates[`${base}/flags`] = null;
                 });
             if (Object.keys(resultUpdates).length > 0) await update(ref(database), resultUpdates);
             fetchLog(`✅ Klar! ${foundResults} nya resultat`);
@@ -4274,20 +4279,24 @@
             const idx = matchesCopy.findIndex(m => m.id === currentModalMatchId);
             if (idx < 0) return;
             try {
+                const s = getSeasonForComp(match.competition);
+                const basePath = `globalMatches/${match.competition}/${s}/${currentModalMatchId}`;
                 if (homeVal === 'POSTPONED') {
-                    matchesCopy[idx] = { ...matchesCopy[idx], actualOutcome: 'POSTPONED', actualScore: null, setBy: currentUser, setAt: new Date().toISOString() };
-                    const updM = matchesCopy[idx];
-                    const s = getSeasonForComp(updM.competition);
-                    const { id: _id, ...matchData } = updM;
-                    await set(ref(database, `globalMatches/${updM.competition}/${s}/${updM.id}`), matchData);
+                    await update(ref(database), {
+                        [`${basePath}/actualOutcome`]: 'POSTPONED',
+                        [`${basePath}/actualScore`]: null,
+                        [`${basePath}/setBy`]: currentUser,
+                        [`${basePath}/setAt`]: new Date().toISOString()
+                    });
                     await logActivity('SET_RESULT', `Inställd: ${match.homeTeam} vs ${match.awayTeam}`);
                     showAppMsg('⚠️ Match markerad som inställd', 'info');
                 } else if (homeVal === 'CLEAR') {
-                    matchesCopy[idx] = { ...matchesCopy[idx], actualOutcome: null, actualScore: null, setBy: null, setAt: null };
-                    const updM = matchesCopy[idx];
-                    const s = getSeasonForComp(updM.competition);
-                    const { id: _id, ...matchData } = updM;
-                    await set(ref(database, `globalMatches/${updM.competition}/${s}/${updM.id}`), matchData);
+                    await update(ref(database), {
+                        [`${basePath}/actualOutcome`]: null,
+                        [`${basePath}/actualScore`]: null,
+                        [`${basePath}/setBy`]: null,
+                        [`${basePath}/setAt`]: null
+                    });
                     await logActivity('CLEAR_RESULT', `Rensade: ${match.homeTeam} vs ${match.awayTeam}`);
                     showAppMsg('🗑️ Resultat rensat', 'info');
                 } else {
@@ -4295,11 +4304,12 @@
                     const h = parseInt(homeVal), a = parseInt(awayVal);
                     if (isNaN(h) || isNaN(a) || h < 0 || a < 0) { showAppMsg('❌ Ogiltiga siffror', 'error'); return; }
                     const outcome = h > a ? '1' : h < a ? '2' : 'X';
-                    matchesCopy[idx] = { ...matchesCopy[idx], actualOutcome: outcome, actualScore: `${h}-${a}`, setBy: currentUser, setAt: new Date().toISOString() };
-                    const updM = matchesCopy[idx];
-                    const s = getSeasonForComp(updM.competition);
-                    const { id: _id, ...matchData } = updM;
-                    await set(ref(database, `globalMatches/${updM.competition}/${s}/${updM.id}`), matchData);
+                    await update(ref(database), {
+                        [`${basePath}/actualOutcome`]: outcome,
+                        [`${basePath}/actualScore`]: `${h}-${a}`,
+                        [`${basePath}/setBy`]: currentUser,
+                        [`${basePath}/setAt`]: new Date().toISOString()
+                    });
                     await logActivity('SET_RESULT', `Resultat: ${match.homeTeam} ${h}-${a} ${match.awayTeam}`);
                     showAppMsg(`✅ ${match.homeTeam} ${h}–${a} ${match.awayTeam}`, 'success');
                 }
