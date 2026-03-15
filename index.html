@@ -757,6 +757,7 @@
         .pred-dot-correct   { background: #4ade80; }
         .pred-dot-wrong     { background: #f87171; }
         .pred-dot-missing   { background: #374151; }
+        .pred-dot-pending   { background: #fbbf24; }
         .pred-dot-postponed { background: #fbbf24; }
 
         .pts-badge           { padding: 2px 7px; border-radius: 10px; font-size: .85em; font-weight: 600; margin-left: 4px; }
@@ -3068,14 +3069,14 @@
                             const display = exact
                                 ? `<strong>${exact.replace('-', ' – ')}</strong> <span style="font-size:.85em;">(${label})</span>`
                                 : `<strong>${label}</strong>`;
-                            predsHtml += `<div class="pred-row${meClass}">🎯 ${player}: ${display}</div>`;
+                            predsHtml += `<div class="pred-row${meClass}"><span class="pred-dot pred-dot-pending"></span>${player}: ${display}</div>`;
                         } else if (pred) {
                             // Före spelstopp – dölj andras faktiska tips
                             if (isMine) {
                                 const display = exact
                                     ? `<strong>${exact.replace('-', ' – ')}</strong> <span style="font-size:.85em;">(${label})</span>`
                                     : `<strong>${label}</strong>`;
-                                predsHtml += `<div class="pred-row pred-row-pending${meClass}">🎯 ${player}: ${display}</div>`;
+                                predsHtml += `<div class="pred-row pred-row-pending${meClass}"><span class="pred-dot pred-dot-pending"></span>${player}: ${display}</div>`;
                             } else {
                                 predsHtml += `<div class="pred-row pred-row-pending">✅ ${player}: Har tippat</div>`;
                             }
